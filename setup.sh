@@ -107,6 +107,20 @@ else
     CHROME_URL=$(echo "${RELEASE_DATA}" | grep -o '"browser_download_url": "[^"]*chromium[^"]*\.zip"' | head -1 | sed 's/"browser_download_url": "//;s/"//')
     FIREFOX_URL=$(echo "${RELEASE_DATA}" | grep -o '"browser_download_url": "[^"]*\.xpi"' | head -1 | sed 's/"browser_download_url": "//;s/"//')
     
+    # Debug: show what we found
+    if [ -n "${CHROME_URL}" ]; then
+        print_info "Chrome URL found: ${CHROME_URL}"
+    fi
+    if [ -n "${FIREFOX_URL}" ]; then
+        print_info "Firefox URL found: ${FIREFOX_URL}"
+    else
+        # Try to construct Firefox URL from Chrome URL
+        if [ -n "${CHROME_URL}" ]; then
+            FIREFOX_URL=$(echo "${CHROME_URL}" | sed 's/\.chromium\.zip$/.xpi/')
+            print_info "Constructed Firefox URL: ${FIREFOX_URL}"
+        fi
+    fi
+    
     echo ""
     
     # Download Chrome/Edge extension
@@ -120,14 +134,23 @@ else
             # Extract
             echo "📦 Extracting Chrome/Edge extension..."
             mkdir -p "${EXTENSIONS_DIR}/adnauseam-chrome"
-            unzip -q -o "${TEMP_DIR}/adnauseam-chrome.zip" -d "${EXTENSIONS_DIR}/adnauseam-chrome"
+            unzip -q -o "${TEMP_DIR}/adnauseam-chrome.zip" -d "${TEMP_DIR}/chrome-extract"
             
-            # Verify manifest.json exists
-            if [ -f "${EXTENSIONS_DIR}/adnauseam-chrome/manifest.json" ]; then
+            # Find manifest.json and move files to correct location
+            MANIFEST_PATH=$(find "${TEMP_DIR}/chrome-extract" -name "manifest.json" -type f | head -1)
+            if [ -n "${MANIFEST_PATH}" ]; then
+                MANIFEST_DIR=$(dirname "${MANIFEST_PATH}")
+                cp -r "${MANIFEST_DIR}"/* "${EXTENSIONS_DIR}/adnauseam-chrome/"
                 print_success "Chrome/Edge extension ready"
                 print_info "Location: ${EXTENSIONS_DIR}/adnauseam-chrome"
             else
-                print_error "Extension extraction failed (no manifest.json)"
+                print_error "Extension extraction failed (no manifest.json found)"
+                print_info "Trying direct extraction..."
+                # Try extracting directly in case structure is flat
+                unzip -q -o "${TEMP_DIR}/adnauseam-chrome.zip" -d "${EXTENSIONS_DIR}/adnauseam-chrome"
+                if [ -f "${EXTENSIONS_DIR}/adnauseam-chrome/manifest.json" ]; then
+                    print_success "Chrome/Edge extension ready (direct extraction)"
+                fi
             fi
         else
             print_error "Failed to download Chrome/Edge extension"
