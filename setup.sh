@@ -51,7 +51,7 @@ print_header "Browser Chaos Generator with AdNauseam"
 # ============================================================
 echo "📦 Installing dependencies..."
 apt-get update -qq > /dev/null 2>&1
-apt-get install -y curl unzip -qq > /dev/null 2>&1
+apt-get install -y curl unzip zip -qq > /dev/null 2>&1
 pip install selenium --quiet
 print_success "Dependencies installed"
 echo ""
