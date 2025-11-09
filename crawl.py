@@ -189,6 +189,14 @@ def create_driver(browser_type):
             
     elif browser_type == 'firefox':
         options = webdriver.FirefoxOptions()
+        # Set preferences to allow unsigned extensions
+        options.set_preference("xpinstall.signatures.required", False)
+        options.set_preference("extensions.langpacks.signatures.required", False)
+        options.set_preference("extensions.webextensions.uuids", '{"adnauseam@rednoise.org": "{12345678-1234-1234-1234-123456789012}"}')
+        if os.path.exists(EXTENSION_PATHS['firefox']):
+            print(f'[{browser_type}] ✓ Will install AdNauseam extension after driver creation')
+        else:
+            print(f'[{browser_type}] ⚠ AdNauseam extension not found at {EXTENSION_PATHS["firefox"]}')
         
     elif browser_type == 'edge':
         options = webdriver.EdgeOptions()
@@ -217,10 +225,11 @@ def create_driver(browser_type):
     # For Firefox, install extension after driver creation
     if browser_type == 'firefox' and os.path.exists(EXTENSION_PATHS['firefox']):
         try:
-            driver.install_addon(EXTENSION_PATHS['firefox'], temporary=True)
-            print(f'[{browser_type}] ✓ Installed AdNauseam extension')
+            driver.install_addon(EXTENSION_PATHS['firefox'], temporary=False)
+            print(f'[{browser_type}] ✓ Installed AdNauseam extension (permanent)')
+            time.sleep(2)  # Give extension time to initialize
         except Exception as e:
-            print(f'[{browser_type}] Failed to install extension: {str(e)[:50]}')
+            print(f'[{browser_type}] Failed to install extension: {str(e)[:100]}')
     
     driver.set_page_load_timeout(30)
     
