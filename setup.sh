@@ -214,7 +214,6 @@ echo ""
     else
         print_warning "Edge extension URL not configured"
     fi
-fi
 
 echo ""
 
