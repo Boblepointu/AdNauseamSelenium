@@ -104,116 +104,116 @@ print_info "Firefox: ${FIREFOX_URL}"
 print_info "Edge: ${EDGE_URL}"
 
 echo ""
+
+# Download Chrome/Edge extension
+if [ -n "${CHROME_URL}" ]; then
+    echo "📥 Downloading Chrome/Edge extension..."
+    print_info "URL: ${CHROME_URL}"
     
-    # Download Chrome/Edge extension
-    if [ -n "${CHROME_URL}" ]; then
-        echo "📥 Downloading Chrome/Edge extension..."
-        print_info "URL: ${CHROME_URL}"
+    if curl -fsSL "${CHROME_URL}" -o "${TEMP_DIR}/adnauseam-chrome.zip"; then
+        print_success "Download complete"
         
-        if curl -fsSL "${CHROME_URL}" -o "${TEMP_DIR}/adnauseam-chrome.zip"; then
-            print_success "Download complete"
-            
-            # Extract
-            echo "📦 Extracting Chrome/Edge extension..."
-            mkdir -p "${EXTENSIONS_DIR}/adnauseam-chrome"
-            unzip -q -o "${TEMP_DIR}/adnauseam-chrome.zip" -d "${TEMP_DIR}/chrome-extract"
-            
-            # Find manifest.json and move files to correct location
-            MANIFEST_PATH=$(find "${TEMP_DIR}/chrome-extract" -name "manifest.json" -type f | head -1)
-            if [ -n "${MANIFEST_PATH}" ]; then
-                MANIFEST_DIR=$(dirname "${MANIFEST_PATH}")
-                cp -r "${MANIFEST_DIR}"/* "${EXTENSIONS_DIR}/adnauseam-chrome/"
-                print_success "Chrome/Edge extension ready"
-                print_info "Location: ${EXTENSIONS_DIR}/adnauseam-chrome"
-            else
-                print_error "Extension extraction failed (no manifest.json found)"
-                print_info "Trying direct extraction..."
-                # Try extracting directly in case structure is flat
-                unzip -q -o "${TEMP_DIR}/adnauseam-chrome.zip" -d "${EXTENSIONS_DIR}/adnauseam-chrome"
-                if [ -f "${EXTENSIONS_DIR}/adnauseam-chrome/manifest.json" ]; then
-                    print_success "Chrome/Edge extension ready (direct extraction)"
-                fi
-            fi
+        # Extract
+        echo "📦 Extracting Chrome/Edge extension..."
+        mkdir -p "${EXTENSIONS_DIR}/adnauseam-chrome"
+        unzip -q -o "${TEMP_DIR}/adnauseam-chrome.zip" -d "${TEMP_DIR}/chrome-extract"
+        
+        # Find manifest.json and move files to correct location
+        MANIFEST_PATH=$(find "${TEMP_DIR}/chrome-extract" -name "manifest.json" -type f | head -1)
+        if [ -n "${MANIFEST_PATH}" ]; then
+            MANIFEST_DIR=$(dirname "${MANIFEST_PATH}")
+            cp -r "${MANIFEST_DIR}"/* "${EXTENSIONS_DIR}/adnauseam-chrome/"
+            print_success "Chrome/Edge extension ready"
+            print_info "Location: ${EXTENSIONS_DIR}/adnauseam-chrome"
         else
-            print_error "Failed to download Chrome/Edge extension"
+            print_error "Extension extraction failed (no manifest.json found)"
+            print_info "Trying direct extraction..."
+            # Try extracting directly in case structure is flat
+            unzip -q -o "${TEMP_DIR}/adnauseam-chrome.zip" -d "${EXTENSIONS_DIR}/adnauseam-chrome"
+            if [ -f "${EXTENSIONS_DIR}/adnauseam-chrome/manifest.json" ]; then
+                print_success "Chrome/Edge extension ready (direct extraction)"
+            fi
         fi
     else
-        print_warning "Chrome/Edge extension URL not found in release"
+        print_error "Failed to download Chrome/Edge extension"
     fi
+else
+    print_warning "Chrome/Edge extension URL not found in release"
+fi
+
+echo ""
+
+# Download Firefox extension
+if [ -n "${FIREFOX_URL}" ]; then
+    echo "📥 Downloading Firefox extension..."
+    print_info "URL: ${FIREFOX_URL}"
     
-    echo ""
-    
-    # Download Firefox extension
-    if [ -n "${FIREFOX_URL}" ]; then
-        echo "📥 Downloading Firefox extension..."
-        print_info "URL: ${FIREFOX_URL}"
+    if curl -fsSL "${FIREFOX_URL}" -o "${TEMP_DIR}/adnauseam-firefox.zip"; then
+        print_success "Download complete"
         
-        if curl -fsSL "${FIREFOX_URL}" -o "${TEMP_DIR}/adnauseam-firefox.zip"; then
-            print_success "Download complete"
-            
-            # Extract Firefox extension
-            echo "📦 Extracting Firefox extension..."
-            unzip -q -o "${TEMP_DIR}/adnauseam-firefox.zip" -d "${TEMP_DIR}/firefox-extract"
-            
-            # Find the .xpi file or manifest.json
-            XPI_FILE=$(find "${TEMP_DIR}/firefox-extract" -name "*.xpi" -type f | head -1)
-            if [ -n "${XPI_FILE}" ]; then
-                cp "${XPI_FILE}" "${EXTENSIONS_DIR}/adnauseam.xpi"
-                print_success "Firefox extension ready"
+        # Extract Firefox extension
+        echo "📦 Extracting Firefox extension..."
+        unzip -q -o "${TEMP_DIR}/adnauseam-firefox.zip" -d "${TEMP_DIR}/firefox-extract"
+        
+        # Find the .xpi file or manifest.json
+        XPI_FILE=$(find "${TEMP_DIR}/firefox-extract" -name "*.xpi" -type f | head -1)
+        if [ -n "${XPI_FILE}" ]; then
+            cp "${XPI_FILE}" "${EXTENSIONS_DIR}/adnauseam.xpi"
+            print_success "Firefox extension ready"
+            print_info "Location: ${EXTENSIONS_DIR}/adnauseam.xpi"
+        else
+            # Maybe it's already unpacked, look for manifest
+            MANIFEST_PATH=$(find "${TEMP_DIR}/firefox-extract" -name "manifest.json" -type f | head -1)
+            if [ -n "${MANIFEST_PATH}" ]; then
+                # Zip it up ourselves
+                MANIFEST_DIR=$(dirname "${MANIFEST_PATH}")
+                cd "${MANIFEST_DIR}"
+                zip -q -r "${EXTENSIONS_DIR}/adnauseam.xpi" ./*
+                cd - > /dev/null
+                print_success "Firefox extension ready (created .xpi)"
                 print_info "Location: ${EXTENSIONS_DIR}/adnauseam.xpi"
             else
-                # Maybe it's already unpacked, look for manifest
-                MANIFEST_PATH=$(find "${TEMP_DIR}/firefox-extract" -name "manifest.json" -type f | head -1)
-                if [ -n "${MANIFEST_PATH}" ]; then
-                    # Zip it up ourselves
-                    MANIFEST_DIR=$(dirname "${MANIFEST_PATH}")
-                    cd "${MANIFEST_DIR}"
-                    zip -q -r "${EXTENSIONS_DIR}/adnauseam.xpi" ./*
-                    cd - > /dev/null
-                    print_success "Firefox extension ready (created .xpi)"
-                    print_info "Location: ${EXTENSIONS_DIR}/adnauseam.xpi"
-                else
-                    print_error "Could not find .xpi or manifest.json"
-                fi
+                print_error "Could not find .xpi or manifest.json"
             fi
-        else
-            print_error "Failed to download Firefox extension"
         fi
     else
-        print_warning "Firefox extension URL not configured"
+        print_error "Failed to download Firefox extension"
     fi
+else
+    print_warning "Firefox extension URL not configured"
+fi
+
+echo ""
+
+# Download Edge extension (same as Chrome but separate)
+if [ -n "${EDGE_URL}" ]; then
+    echo "📥 Downloading Edge extension..."
+    print_info "URL: ${EDGE_URL}"
     
-    echo ""
-    
-    # Download Edge extension (same as Chrome but separate)
-    if [ -n "${EDGE_URL}" ]; then
-        echo "📥 Downloading Edge extension..."
-        print_info "URL: ${EDGE_URL}"
+    if curl -fsSL "${EDGE_URL}" -o "${TEMP_DIR}/adnauseam-edge.zip"; then
+        print_success "Download complete"
         
-        if curl -fsSL "${EDGE_URL}" -o "${TEMP_DIR}/adnauseam-edge.zip"; then
-            print_success "Download complete"
-            
-            # Extract
-            echo "📦 Extracting Edge extension..."
-            mkdir -p "${EXTENSIONS_DIR}/adnauseam-edge"
-            unzip -q -o "${TEMP_DIR}/adnauseam-edge.zip" -d "${TEMP_DIR}/edge-extract"
-            
-            # Find manifest.json and move files to correct location
-            MANIFEST_PATH=$(find "${TEMP_DIR}/edge-extract" -name "manifest.json" -type f | head -1)
-            if [ -n "${MANIFEST_PATH}" ]; then
-                MANIFEST_DIR=$(dirname "${MANIFEST_PATH}")
-                cp -r "${MANIFEST_DIR}"/* "${EXTENSIONS_DIR}/adnauseam-edge/"
-                print_success "Edge extension ready"
-                print_info "Location: ${EXTENSIONS_DIR}/adnauseam-edge"
-            else
-                print_error "Edge extension extraction failed (no manifest.json found)"
-            fi
+        # Extract
+        echo "📦 Extracting Edge extension..."
+        mkdir -p "${EXTENSIONS_DIR}/adnauseam-edge"
+        unzip -q -o "${TEMP_DIR}/adnauseam-edge.zip" -d "${TEMP_DIR}/edge-extract"
+        
+        # Find manifest.json and move files to correct location
+        MANIFEST_PATH=$(find "${TEMP_DIR}/edge-extract" -name "manifest.json" -type f | head -1)
+        if [ -n "${MANIFEST_PATH}" ]; then
+            MANIFEST_DIR=$(dirname "${MANIFEST_PATH}")
+            cp -r "${MANIFEST_DIR}"/* "${EXTENSIONS_DIR}/adnauseam-edge/"
+            print_success "Edge extension ready"
+            print_info "Location: ${EXTENSIONS_DIR}/adnauseam-edge"
         else
-            print_error "Failed to download Edge extension"
+            print_error "Edge extension extraction failed (no manifest.json found)"
         fi
     else
-        print_warning "Edge extension URL not configured"
+        print_error "Failed to download Edge extension"
     fi
+else
+    print_warning "Edge extension URL not configured"
+fi
 
 echo ""
 
