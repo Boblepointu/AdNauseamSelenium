@@ -8,7 +8,6 @@ set -e  # Exit on error
 GITHUB_REPO="Boblepointu/AdNauseamSelenium"
 GITHUB_BRANCH="master"
 CRAWL_SCRIPT_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/crawl.py"
-ADNAUSEAM_RELEASES_API="https://api.github.com/repos/dhowe/AdNauseam/releases/latest"
 EXTENSIONS_DIR="/extensions"
 TEMP_DIR="/tmp/adnauseam-setup"
 
@@ -93,35 +92,18 @@ print_header "Downloading AdNauseam Extensions"
 mkdir -p "${EXTENSIONS_DIR}"
 mkdir -p "${TEMP_DIR}"
 
-# Get latest release info from GitHub API
-echo "🔍 Fetching latest AdNauseam release info..."
-RELEASE_DATA=$(curl -fsSL "${ADNAUSEAM_RELEASES_API}")
+# Use direct download links (always get latest)
+echo "🔍 Using AdNauseam direct download links..."
+CHROME_URL="https://github.com/dhowe/AdNauseam/releases/latest/download/adnauseam.chromium.zip"
+FIREFOX_URL="https://github.com/dhowe/AdNauseam/releases/latest/download/adnauseam.firefox.zip"
+EDGE_URL="https://github.com/dhowe/AdNauseam/releases/latest/download/adnauseam.edge.zip"
 
-if [ $? -ne 0 ]; then
-    print_error "Failed to fetch release information"
-    print_warning "Will attempt to use existing extensions if available"
-else
-    print_success "Release information retrieved"
-    
-    # Extract download URLs
-    CHROME_URL=$(echo "${RELEASE_DATA}" | grep -o '"browser_download_url": "[^"]*chromium[^"]*\.zip"' | head -1 | sed 's/"browser_download_url": "//;s/"//')
-    FIREFOX_URL=$(echo "${RELEASE_DATA}" | grep -o '"browser_download_url": "[^"]*\.xpi"' | head -1 | sed 's/"browser_download_url": "//;s/"//')
-    
-    # Debug: show what we found
-    if [ -n "${CHROME_URL}" ]; then
-        print_info "Chrome URL found: ${CHROME_URL}"
-    fi
-    if [ -n "${FIREFOX_URL}" ]; then
-        print_info "Firefox URL found: ${FIREFOX_URL}"
-    else
-        # Try to construct Firefox URL from Chrome URL
-        if [ -n "${CHROME_URL}" ]; then
-            FIREFOX_URL=$(echo "${CHROME_URL}" | sed 's/\.chromium\.zip$/.xpi/')
-            print_info "Constructed Firefox URL: ${FIREFOX_URL}"
-        fi
-    fi
-    
-    echo ""
+print_success "Download URLs configured"
+print_info "Chrome: ${CHROME_URL}"
+print_info "Firefox: ${FIREFOX_URL}"
+print_info "Edge: ${EDGE_URL}"
+
+echo ""
     
     # Download Chrome/Edge extension
     if [ -n "${CHROME_URL}" ]; then
@@ -166,14 +148,71 @@ else
         echo "📥 Downloading Firefox extension..."
         print_info "URL: ${FIREFOX_URL}"
         
-        if curl -fsSL "${FIREFOX_URL}" -o "${EXTENSIONS_DIR}/adnauseam.xpi"; then
-            print_success "Firefox extension ready"
-            print_info "Location: ${EXTENSIONS_DIR}/adnauseam.xpi"
+        if curl -fsSL "${FIREFOX_URL}" -o "${TEMP_DIR}/adnauseam-firefox.zip"; then
+            print_success "Download complete"
+            
+            # Extract Firefox extension
+            echo "📦 Extracting Firefox extension..."
+            unzip -q -o "${TEMP_DIR}/adnauseam-firefox.zip" -d "${TEMP_DIR}/firefox-extract"
+            
+            # Find the .xpi file or manifest.json
+            XPI_FILE=$(find "${TEMP_DIR}/firefox-extract" -name "*.xpi" -type f | head -1)
+            if [ -n "${XPI_FILE}" ]; then
+                cp "${XPI_FILE}" "${EXTENSIONS_DIR}/adnauseam.xpi"
+                print_success "Firefox extension ready"
+                print_info "Location: ${EXTENSIONS_DIR}/adnauseam.xpi"
+            else
+                # Maybe it's already unpacked, look for manifest
+                MANIFEST_PATH=$(find "${TEMP_DIR}/firefox-extract" -name "manifest.json" -type f | head -1)
+                if [ -n "${MANIFEST_PATH}" ]; then
+                    # Zip it up ourselves
+                    MANIFEST_DIR=$(dirname "${MANIFEST_PATH}")
+                    cd "${MANIFEST_DIR}"
+                    zip -q -r "${EXTENSIONS_DIR}/adnauseam.xpi" ./*
+                    cd - > /dev/null
+                    print_success "Firefox extension ready (created .xpi)"
+                    print_info "Location: ${EXTENSIONS_DIR}/adnauseam.xpi"
+                else
+                    print_error "Could not find .xpi or manifest.json"
+                fi
+            fi
         else
             print_error "Failed to download Firefox extension"
         fi
     else
-        print_warning "Firefox extension URL not found in release"
+        print_warning "Firefox extension URL not configured"
+    fi
+    
+    echo ""
+    
+    # Download Edge extension (same as Chrome but separate)
+    if [ -n "${EDGE_URL}" ]; then
+        echo "📥 Downloading Edge extension..."
+        print_info "URL: ${EDGE_URL}"
+        
+        if curl -fsSL "${EDGE_URL}" -o "${TEMP_DIR}/adnauseam-edge.zip"; then
+            print_success "Download complete"
+            
+            # Extract
+            echo "📦 Extracting Edge extension..."
+            mkdir -p "${EXTENSIONS_DIR}/adnauseam-edge"
+            unzip -q -o "${TEMP_DIR}/adnauseam-edge.zip" -d "${TEMP_DIR}/edge-extract"
+            
+            # Find manifest.json and move files to correct location
+            MANIFEST_PATH=$(find "${TEMP_DIR}/edge-extract" -name "manifest.json" -type f | head -1)
+            if [ -n "${MANIFEST_PATH}" ]; then
+                MANIFEST_DIR=$(dirname "${MANIFEST_PATH}")
+                cp -r "${MANIFEST_DIR}"/* "${EXTENSIONS_DIR}/adnauseam-edge/"
+                print_success "Edge extension ready"
+                print_info "Location: ${EXTENSIONS_DIR}/adnauseam-edge"
+            else
+                print_error "Edge extension extraction failed (no manifest.json found)"
+            fi
+        else
+            print_error "Failed to download Edge extension"
+        fi
+    else
+        print_warning "Edge extension URL not configured"
     fi
 fi
 
@@ -186,6 +225,7 @@ print_header "Verifying Extensions"
 
 CHROME_OK=false
 FIREFOX_OK=false
+EDGE_OK=false
 
 if [ -f "${EXTENSIONS_DIR}/adnauseam-chrome/manifest.json" ]; then
     print_success "Chrome/Edge extension: READY"
@@ -197,7 +237,7 @@ if [ -f "${EXTENSIONS_DIR}/adnauseam-chrome/manifest.json" ]; then
         print_info "Version: ${VERSION}"
     fi
 else
-    print_error "Chrome/Edge extension: NOT FOUND"
+    print_error "Chrome extension: NOT FOUND"
     print_info "Expected: ${EXTENSIONS_DIR}/adnauseam-chrome/manifest.json"
 fi
 
@@ -217,8 +257,24 @@ fi
 
 echo ""
 
+if [ -f "${EXTENSIONS_DIR}/adnauseam-edge/manifest.json" ]; then
+    print_success "Edge extension: READY"
+    EDGE_OK=true
+    
+    # Show version if available
+    VERSION=$(grep -o '"version": "[^"]*"' "${EXTENSIONS_DIR}/adnauseam-edge/manifest.json" | head -1 | sed 's/"version": "//;s/"//')
+    if [ -n "${VERSION}" ]; then
+        print_info "Version: ${VERSION}"
+    fi
+else
+    print_error "Edge extension: NOT FOUND"
+    print_info "Expected: ${EXTENSIONS_DIR}/adnauseam-edge/manifest.json"
+fi
+
+echo ""
+
 # Warn if no extensions available
-if [ "${CHROME_OK}" = false ] && [ "${FIREFOX_OK}" = false ]; then
+if [ "${CHROME_OK}" = false ] && [ "${FIREFOX_OK}" = false ] && [ "${EDGE_OK}" = false ]; then
     print_warning "No extensions found!"
     print_warning "Browsers will run without AdNauseam"
     print_info "Manual download: https://github.com/dhowe/AdNauseam/releases"
@@ -267,15 +323,21 @@ echo "  Selenium:    http://${SELENIUM_HUB}"
 echo ""
 
 if [ "${CHROME_OK}" = true ]; then
-    echo "  ✓ Chrome/Edge: Enabled with AdNauseam"
+    echo "  ✓ Chrome:      Enabled with AdNauseam"
 else
-    echo "  ✗ Chrome/Edge: No extension"
+    echo "  ✗ Chrome:      No extension"
 fi
 
 if [ "${FIREFOX_OK}" = true ]; then
     echo "  ✓ Firefox:     Enabled with AdNauseam"
 else
     echo "  ✗ Firefox:     No extension"
+fi
+
+if [ "${EDGE_OK}" = true ]; then
+    echo "  ✓ Edge:        Enabled with AdNauseam"
+else
+    echo "  ✗ Edge:        No extension"
 fi
 
 echo ""
