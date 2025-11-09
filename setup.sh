@@ -95,8 +95,8 @@ mkdir -p "${TEMP_DIR}"
 # Use direct download links (always get latest)
 echo "🔍 Using AdNauseam direct download links..."
 CHROME_URL="https://github.com/dhowe/AdNauseam/releases/latest/download/adnauseam.chromium.zip"
-FIREFOX_URL="https://github.com/dhowe/AdNauseam/releases/latest/download/adnauseam.firefox.zip"
-EDGE_URL="https://github.com/dhowe/AdNauseam/releases/latest/download/adnauseam.edge.zip"
+FIREFOX_URL="https://github.com/dhowe/AdNauseam/releases/download/v3.26.2/adnauseam-3.26.2.firefox.zip"
+EDGE_URL="https://github.com/dhowe/AdNauseam/releases/download/v3.26.2/adnauseam-3.26.2.edge.zip"
 
 print_success "Download URLs configured"
 print_info "Chrome: ${CHROME_URL}"
