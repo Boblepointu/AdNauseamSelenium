@@ -11,124 +11,39 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
 import time
 import random
+import os
 from urllib.parse import urlparse
 
-# Comprehensive list of websites across China, Europe, and America
-# Prioritized list with ad-heavy sites first
-sites = [
-    # High-ad content sites (news, tabloids, tech blogs)
-    "https://dailymail.co.uk", "https://forbes.com", "https://cnet.com", "https://techcrunch.com",
-    "https://weather.com", "https://msn.com", "https://yahoo.com", "https://aol.com",
-    "https://huffpost.com", "https://buzzfeed.com", "https://tmz.com", "https://ign.com",
-    
-    # News sites with ads
-    "https://cnn.com", "https://foxnews.com", "https://usatoday.com", "https://nypost.com",
-    "https://thesun.co.uk", "https://mirror.co.uk", "https://express.co.uk",
-    "https://bild.de", "https://20minutes.fr", "https://sport1.de",
-    
-    # Shopping/E-commerce (typically ad-heavy)
-    "https://ebay.com", "https://etsy.com", "https://aliexpress.com", "https://wish.com",
-    "https://groupon.com", "https://slickdeals.net", "https://rakuten.com",
-    # Chinese E-commerce
-    "https://taobao.com", "https://tmall.com", "https://jd.com", "https://pinduoduo.com", "https://vip.com",
-    "https://suning.com", "https://dangdang.com", "https://yanxuan.163.com", "https://xiaomiyoupin.com",
-    
-    # European E-commerce
-    "https://amazon.de", "https://amazon.fr", "https://amazon.co.uk", "https://amazon.es", "https://amazon.it",
-    "https://ebay.de", "https://ebay.fr", "https://ebay.co.uk", "https://zalando.de", "https://zalando.fr",
-    "https://otto.de", "https://cdiscount.com", "https://fnac.com", "https://mediamarkt.de", "https://saturn.de",
-    "https://carrefour.fr", "https://tesco.com", "https://sainsburys.co.uk", "https://allegro.pl",
-    
-    # American E-commerce
-    "https://amazon.com", "https://ebay.com", "https://walmart.com", "https://target.com", "https://bestbuy.com",
-    "https://homedepot.com", "https://lowes.com", "https://costco.com", "https://macys.com", "https://kohls.com",
-    "https://wayfair.com", "https://etsy.com", "https://newegg.com", "https://shein.com", "https://temu.com",
-    
-    # Search Engines
-    "https://google.com", "https://google.de", "https://google.fr", "https://google.co.uk", "https://bing.com",
-    "https://yahoo.com", "https://duckduckgo.com", "https://baidu.com", "https://yandex.com",
-    
-    # Social Media
-    "https://facebook.com", "https://instagram.com", "https://twitter.com", "https://linkedin.com", "https://reddit.com",
-    "https://pinterest.com", "https://tiktok.com", "https://youtube.com", "https://twitch.tv",
-    "https://weibo.com", "https://zhihu.com", "https://xiaohongshu.com", "https://bilibili.com",
-    
-    # News - European
-    "https://bbc.com", "https://theguardian.com", "https://telegraph.co.uk", "https://dailymail.co.uk",
-    "https://lemonde.fr", "https://lefigaro.fr", "https://spiegel.de", "https://bild.de", "https://zeit.de",
-    "https://elpais.com", "https://corriere.it", "https://repubblica.it",
-    
-    # News - American
-    "https://nytimes.com", "https://washingtonpost.com", "https://wsj.com", "https://usatoday.com", "https://cnn.com",
-    "https://foxnews.com", "https://nbcnews.com", "https://reuters.com", "https://bloomberg.com", "https://forbes.com",
-    
-    # News - Chinese
-    "https://sina.com.cn", "https://163.com", "https://sohu.com", "https://people.com.cn", "https://xinhuanet.com",
-    
-    # Technology
-    "https://techcrunch.com", "https://theverge.com", "https://wired.com", "https://arstechnica.com", "https://cnet.com",
-    "https://github.com", "https://stackoverflow.com", "https://hackernews.ycombinator.com",
-    
-    # Streaming
-    "https://netflix.com", "https://hulu.com", "https://disneyplus.com", "https://spotify.com", "https://twitch.tv",
-    "https://youku.com", "https://iqiyi.com", "https://v.qq.com",
-    
-    # Travel
-    "https://booking.com", "https://expedia.com", "https://airbnb.com", "https://tripadvisor.com", "https://kayak.com",
-    "https://skyscanner.com", "https://ctrip.com", "https://qunar.com",
-    
-    # Finance
-    "https://chase.com", "https://wellsfargo.com", "https://bankofamerica.com", "https://paypal.com",
-    "https://coinbase.com", "https://robinhood.com", "https://investing.com", "https://finance.yahoo.com",
-    "https://alipay.com", "https://eastmoney.com",
-    
-    # Sports
-    "https://espn.com", "https://skysports.com", "https://marca.com", "https://lequipe.fr", "https://gazzetta.it",
-    "https://nfl.com", "https://nba.com", "https://mlb.com",
-    
-    # Food Delivery
-    "https://ubereats.com", "https://doordash.com", "https://grubhub.com", "https://deliveroo.com", "https://justeat.com",
-    "https://ele.me", "https://meituan.com",
-    
-    # Job Sites
-    "https://indeed.com", "https://linkedin.com", "https://glassdoor.com", "https://monster.com",
-    "https://51job.com", "https://zhaopin.com",
-    
-    # Real Estate
-    "https://zillow.com", "https://redfin.com", "https://realtor.com", "https://rightmove.co.uk", "https://immobilienscout24.de",
-    "https://fang.com", "https://lianjia.com",
-    
-    # Gaming
-    "https://steam.steampowered.com", "https://epicgames.com", "https://ign.com", "https://gamespot.com",
-    "https://17173.com", "https://4399.com",
-    
-    # Education
-    "https://coursera.org", "https://udemy.com", "https://khanacademy.org", "https://edx.org", "https://duolingo.com",
-    
-    # Government
-    "https://usa.gov", "https://gov.uk", "https://gov.cn",
-    
-    # Automotive
-    "https://cars.com", "https://autotrader.com", "https://mobile.de", "https://autohome.com.cn",
-    
-    # Health
-    "https://webmd.com", "https://mayoclinic.org", "https://nhs.uk",
-    
-    # Wikipedia
-    "https://wikipedia.org", "https://en.wikipedia.org", "https://de.wikipedia.org", "https://fr.wikipedia.org",
-    
-    # Tech Services
-    "https://google.com", "https://microsoft.com", "https://apple.com", "https://amazon.com",
-    "https://alibaba.com", "https://tencent.com",
-    
-    # Fashion
-    "https://zara.com", "https://hm.com", "https://asos.com", "https://nike.com", "https://adidas.com",
-    
-    # Crypto
-    "https://coinbase.com", "https://binance.com", "https://coinmarketcap.com"
-]
-
 browsers = ['firefox', 'chrome', 'edge']
+
+def load_websites(file_path='/app/websites.txt'):
+    """Load websites from a text file, ignoring comments and empty lines"""
+    websites = []
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                # Skip empty lines and comments
+                if line and not line.startswith('#'):
+                    websites.append(line)
+        
+        print(f'✓ Loaded {len(websites)} websites from {file_path}')
+        return websites
+    except FileNotFoundError:
+        print(f'⚠ Warning: {file_path} not found, using fallback websites')
+        # Fallback to a minimal list if file not found
+        return [
+            "https://google.com", "https://bing.com", "https://yahoo.com",
+            "https://cnn.com", "https://bbc.com", "https://forbes.com"
+        ]
+    except Exception as e:
+        print(f'⚠ Error loading websites: {e}')
+        return [
+            "https://google.com", "https://bing.com", "https://yahoo.com"
+        ]
+
+# Load websites at startup
+sites = load_websites()
 
 def get_domain(url):
     """Extract domain from URL"""
@@ -141,20 +56,85 @@ def get_domain(url):
 def generate_random_user_agent():
     """Generate a random realistic user agent by combining different components"""
     
-    # Platform/OS options
+    # Platform/OS options - Desktop, Mobile, Tablet, Legacy
     platforms = [
+        # Modern Windows
         "Windows NT 10.0; Win64; x64",
         "Windows NT 11.0; Win64; x64",
         "Windows NT 10.0; WOW64",
+        "Windows NT 6.1; Win64; x64",  # Windows 7
+        "Windows NT 6.3; Win64; x64",  # Windows 8.1
+        "Windows NT 6.2; Win64; x64",  # Windows 8
+        "Windows NT 5.1",  # Windows XP
+        "Windows NT 6.0",  # Windows Vista
+        
+        # macOS
         "Macintosh; Intel Mac OS X 10_15_7",
         "Macintosh; Intel Mac OS X 11_6_0",
         "Macintosh; Intel Mac OS X 12_0_1",
+        "Macintosh; Intel Mac OS X 12_6_0",
+        "Macintosh; Intel Mac OS X 13_0_0",
         "Macintosh; Intel Mac OS X 13_1",
+        "Macintosh; Intel Mac OS X 13_2_1",
+        "Macintosh; Intel Mac OS X 13_4_1",
         "Macintosh; Intel Mac OS X 14_0",
+        "Macintosh; Intel Mac OS X 14_1_1",
+        "Macintosh; Intel Mac OS X 14_2_1",
+        "Macintosh; Intel Mac OS X 10_14_6",
+        "Macintosh; Intel Mac OS X 10_13_6",
+        
+        # Linux
         "X11; Linux x86_64",
         "X11; Ubuntu; Linux x86_64",
         "X11; Fedora; Linux x86_64",
         "X11; Linux i686",
+        "X11; CrOS x86_64 14541.0.0",  # ChromeOS
+        
+        # Android smartphones
+        "Linux; Android 13; SM-S918B",  # Samsung Galaxy S23 Ultra
+        "Linux; Android 13; SM-G998B",  # Samsung Galaxy S21 Ultra
+        "Linux; Android 12; SM-G991B",  # Samsung Galaxy S21
+        "Linux; Android 13; Pixel 7 Pro",
+        "Linux; Android 13; Pixel 7",
+        "Linux; Android 12; Pixel 6 Pro",
+        "Linux; Android 12; Pixel 6",
+        "Linux; Android 11; Pixel 5",
+        "Linux; Android 13; SM-A536B",  # Samsung Galaxy A53
+        "Linux; Android 12; SM-A525F",  # Samsung Galaxy A52
+        "Linux; Android 11; SM-G973F",  # Samsung Galaxy S10
+        "Linux; Android 10; SM-G960F",  # Samsung Galaxy S9
+        "Linux; Android 13; OnePlus KB2003",  # OnePlus 11
+        "Linux; Android 12; OnePlus LE2123",  # OnePlus 9 Pro
+        "Linux; Android 11; ONEPLUS A6013",  # OnePlus 6T
+        "Linux; Android 13; 2201123G",  # Xiaomi 12
+        "Linux; Android 12; M2102J20SG",  # Xiaomi Mi 11
+        "Linux; Android 11; Mi 10T Pro",
+        "Linux; Android 10; Mi 9",
+        
+        # Android tablets
+        "Linux; Android 13; SM-X906B",  # Samsung Galaxy Tab S9 Ultra
+        "Linux; Android 12; SM-X906C",  # Samsung Galaxy Tab S8 Ultra
+        "Linux; Android 11; SM-T870",  # Samsung Galaxy Tab S7
+        "Linux; Android 13; Lenovo TB-X606F",  # Lenovo Tab P11
+        "Linux; Android 12; Lenovo TB-J606F",  # Lenovo Tab M10
+        
+        # iOS (iPhone)
+        "iPhone; CPU iPhone OS 17_1 like Mac OS X",
+        "iPhone; CPU iPhone OS 17_0 like Mac OS X",
+        "iPhone; CPU iPhone OS 16_6 like Mac OS X",
+        "iPhone; CPU iPhone OS 16_5 like Mac OS X",
+        "iPhone; CPU iPhone OS 16_4 like Mac OS X",
+        "iPhone; CPU iPhone OS 16_3 like Mac OS X",
+        "iPhone; CPU iPhone OS 15_7 like Mac OS X",
+        "iPhone; CPU iPhone OS 15_6 like Mac OS X",
+        "iPhone; CPU iPhone OS 14_8 like Mac OS X",
+        
+        # iOS (iPad)
+        "iPad; CPU OS 17_1 like Mac OS X",
+        "iPad; CPU OS 16_6 like Mac OS X",
+        "iPad; CPU OS 16_5 like Mac OS X",
+        "iPad; CPU OS 15_7 like Mac OS X",
+        "iPad; CPU OS 14_8 like Mac OS X",
     ]
     
     # WebKit/AppleWebKit versions
@@ -162,34 +142,63 @@ def generate_random_user_agent():
         "537.36",
         "537.35",
         "537.34",
+        "537.33",
+        "537.32",
+        "537.31",
         "605.1.15",
         "605.1.16",
         "604.1.38",
+        "604.5.6",
+        "605.1.33",
+        "606.1.36",
+        "607.1.40",
+        "608.1.49",
+        "609.1.20",
     ]
     
     # Chrome versions (major.0.0.0 or major.0.build.0)
-    chrome_major_versions = [115, 116, 117, 118, 119, 120, 121, 122]
+    chrome_major_versions = [110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126]
     chrome_builds = [
         "0.0.0",
-        "0.6045.199",
+        "0.5414.119",
+        "0.5481.177",
+        "0.5615.137",
+        "0.5735.198",
+        "0.5845.179",
+        "0.5993.117",
         "0.6045.105",
+        "0.6045.199",
         "0.6099.109",
         "0.6100.88",
-        "0.0.6312.122",
-        "0.0.6367.91",
+        "0.6261.94",
+        "0.6312.122",
+        "0.6367.91",
+        "0.6367.201",
+        "0.6478.126",
+        "0.6563.110",
+        "0.6613.119",
     ]
     
     # Firefox versions
-    firefox_versions = [118, 119, 120, 121, 122, 123]
+    firefox_versions = [115, 116, 117, 118, 119, 120, 121, 122, 123, 124]
     
     # Edge versions
-    edge_versions = [115, 116, 117, 118, 119, 120, 121]
+    edge_versions = [115, 116, 117, 118, 119, 120, 121, 122]
     
     # Safari versions
-    safari_versions = ["16.1", "16.2", "16.3", "16.4", "16.5", "17.0", "17.1", "17.2"]
+    safari_versions = ["16.1", "16.2", "16.3", "16.4", "16.5", "16.6", "17.0", "17.1", "17.2"]
     
-    # Choose browser type
-    browser_type = random.choice(['chrome', 'firefox', 'safari', 'edge'])
+    # Legacy browser versions
+    opera_versions = ["12.16", "12.17", "11.64", "11.62", "10.63"]
+    ie_versions = ["11.0", "10.0", "9.0", "8.0", "7.0"]
+    trident_versions = ["7.0", "6.0", "5.0", "4.0"]
+    
+    # Choose browser type - weighted towards modern browsers
+    browser_choices = (
+        ['chrome'] * 35 + ['firefox'] * 25 + ['safari'] * 15 + 
+        ['edge'] * 15 + ['opera'] * 5 + ['ie'] * 5
+    )
+    browser_type = random.choice(browser_choices)
     platform = random.choice(platforms)
     
     if browser_type == 'chrome':
@@ -198,22 +207,39 @@ def generate_random_user_agent():
         chrome_build = random.choice(chrome_builds)
         chrome_version = f"{chrome_major}.{chrome_build}"
         
-        ua = f"Mozilla/5.0 ({platform}) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome_version} Safari/{webkit}"
+        # Filter platform for mobile Chrome
+        if 'Android' in platform or 'iPhone' in platform:
+            # Mobile Chrome
+            mobile_suffix = "Mobile Safari" if 'Android' in platform else ""
+            ua = f"Mozilla/5.0 ({platform}) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome_version} {mobile_suffix} Safari/{webkit}"
+        else:
+            # Desktop Chrome
+            ua = f"Mozilla/5.0 ({platform}) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome_version} Safari/{webkit}"
         
     elif browser_type == 'firefox':
         firefox_ver = random.choice(firefox_versions)
         # Firefox uses Gecko
-        ua = f"Mozilla/5.0 ({platform}; rv:{firefox_ver}.0) Gecko/20100101 Firefox/{firefox_ver}.0"
+        if 'Android' in platform:
+            # Mobile Firefox
+            ua = f"Mozilla/5.0 ({platform}) Gecko/{firefox_ver}.0 Firefox/{firefox_ver}.0"
+        else:
+            # Desktop Firefox
+            ua = f"Mozilla/5.0 ({platform}; rv:{firefox_ver}.0) Gecko/20100101 Firefox/{firefox_ver}.0"
         
     elif browser_type == 'safari':
-        # Safari only on macOS
-        mac_platforms = [p for p in platforms if 'Mac' in p]
-        if mac_platforms:
-            platform = random.choice(mac_platforms)
+        # Safari on macOS and iOS
         webkit = random.choice(webkit_versions)
         safari_ver = random.choice(safari_versions)
         
-        ua = f"Mozilla/5.0 ({platform}) AppleWebKit/{webkit} (KHTML, like Gecko) Version/{safari_ver} Safari/{webkit}"
+        if 'iPhone' in platform or 'iPad' in platform:
+            # iOS Safari
+            ua = f"Mozilla/5.0 ({platform}) AppleWebKit/{webkit} (KHTML, like Gecko) Version/{safari_ver} Mobile/15E148 Safari/{webkit}"
+        else:
+            # macOS Safari
+            mac_platforms = [p for p in platforms if 'Mac' in p and 'iPhone' not in p and 'iPad' not in p]
+            if mac_platforms:
+                platform = random.choice(mac_platforms)
+            ua = f"Mozilla/5.0 ({platform}) AppleWebKit/{webkit} (KHTML, like Gecko) Version/{safari_ver} Safari/{webkit}"
         
     elif browser_type == 'edge':
         webkit = random.choice(webkit_versions)
@@ -222,7 +248,42 @@ def generate_random_user_agent():
         chrome_build = random.choice(chrome_builds)
         chrome_version = f"{chrome_major}.{chrome_build}"
         
+        # Edge is primarily Windows
+        win_platforms = [p for p in platforms if 'Windows' in p]
+        if win_platforms:
+            platform = random.choice(win_platforms)
+        
         ua = f"Mozilla/5.0 ({platform}) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome_version} Safari/{webkit} Edg/{edge_ver}.0.{random.randint(1000, 9999)}.{random.randint(10, 99)}"
+    
+    elif browser_type == 'opera':
+        # Opera (legacy Presto and modern Chromium-based)
+        opera_ver = random.choice(opera_versions)
+        if float(opera_ver) < 15:
+            # Old Presto Opera
+            ua = f"Opera/9.80 ({platform}) Presto/2.12.388 Version/{opera_ver}"
+        else:
+            # Modern Chromium-based Opera
+            webkit = random.choice(webkit_versions)
+            chrome_major = random.choice(chrome_major_versions)
+            chrome_build = random.choice(chrome_builds)
+            chrome_version = f"{chrome_major}.{chrome_build}"
+            opera_major = random.randint(85, 105)
+            ua = f"Mozilla/5.0 ({platform}) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome_version} Safari/{webkit} OPR/{opera_major}.0.{random.randint(1000, 9999)}.{random.randint(10, 99)}"
+    
+    elif browser_type == 'ie':
+        # Internet Explorer (legacy)
+        ie_ver = random.choice(ie_versions)
+        trident_ver = random.choice(trident_versions)
+        
+        # IE only on Windows
+        win_platforms = [p for p in platforms if 'Windows' in p]
+        if win_platforms:
+            platform = random.choice(win_platforms)
+        
+        if float(ie_ver) >= 11:
+            ua = f"Mozilla/5.0 ({platform}; Trident/{trident_ver}; rv:{ie_ver}) like Gecko"
+        else:
+            ua = f"Mozilla/5.0 (compatible; MSIE {ie_ver}; {platform}; Trident/{trident_ver})"
     
     return ua
 
