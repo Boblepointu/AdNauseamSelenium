@@ -3755,6 +3755,24 @@ def create_driver(browser_type):
         options=options
     )
     
+    # Add CDP support to RemoteWebDriver for Chrome/Chromium/Edge
+    # RemoteWebDriver doesn't have execute_cdp_cmd by default in Selenium 4.15.2
+    if browser_type in ['chrome', 'chromium', 'edge']:
+        if not hasattr(driver, 'execute_cdp_cmd'):
+            def execute_cdp_cmd(cmd, cmd_args):
+                """
+                Execute Chrome Devtools Protocol command via Selenium
+                This adds CDP support to RemoteWebDriver
+                """
+                return driver.execute('executeCdpCommand', {
+                    'cmd': cmd,
+                    'params': cmd_args
+                })
+            
+            # Bind the method to the driver instance
+            import types
+            driver.execute_cdp_cmd = types.MethodType(execute_cdp_cmd, driver)
+    
     # Apply comprehensive CDP stealth for Chrome and Chromium (RemoteWebDriver compatible)
     if browser_type == 'chrome' or browser_type == 'chromium':
         try:
