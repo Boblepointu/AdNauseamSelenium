@@ -2726,29 +2726,109 @@ def auto_accept_cookies(driver, browser_type, max_attempts=3):
                 print(f'  [{browser_type}] 🍪 Clicked individual agree buttons')
                 time.sleep(0.5)
             
-            # Step 2: YouTube-specific consent handling (must be before generic)
+            # Step 2: Google & YouTube-specific consent handling (must be before generic)
             try:
-                youtube_accept_selectors = [
+                # Try XPath for Google consent buttons (more reliable for exact text matching)
+                google_consent_xpaths = [
+                    # French (primary for the user's case)
+                    "//button[contains(text(), 'Tout accepter')]",
+                    "//button[contains(., 'Tout accepter')]",
+                    "//button[normalize-space()='Tout accepter']",
+                    "//form//button[contains(text(), 'Tout accepter')]",
+                    "//form//button[contains(text(), 'accepter')]",
+                    "//div[@role='dialog']//button[contains(text(), 'Tout accepter')]",
+                    # English
+                    "//button[contains(text(), 'Accept all')]",
+                    "//button[contains(., 'Accept all')]",
+                    "//button[normalize-space()='Accept all']",
+                    "//form//button[contains(text(), 'Accept all')]",
+                    "//div[@role='dialog']//button[contains(text(), 'Accept all')]",
+                    # German
+                    "//button[contains(text(), 'Alle akzeptieren')]",
+                    "//form//button[contains(text(), 'Alle akzeptieren')]",
+                    # Spanish
+                    "//button[contains(text(), 'Aceptar todo')]",
+                    "//form//button[contains(text(), 'Aceptar todo')]",
+                    # Italian
+                    "//button[contains(text(), 'Accetta tutto')]",
+                    # Portuguese
+                    "//button[contains(text(), 'Aceitar tudo')]",
+                    # Dutch
+                    "//button[contains(text(), 'Alles accepteren')]",
+                    # Swedish
+                    "//button[contains(text(), 'Godkänn alla')]",
+                    # Danish
+                    "//button[contains(text(), 'Accepter alle')]",
+                    # Finnish
+                    "//button[contains(text(), 'Hyväksy kaikki')]",
+                ]
+                
+                # First try XPath selectors (more reliable for exact text matching)
+                for xpath in google_consent_xpaths:
+                    try:
+                        elements = driver.find_elements(By.XPATH, xpath)
+                        for element in elements:
+                            try:
+                                if element.is_displayed() and element.is_enabled():
+                                    element.click()
+                                    print(f'  [{browser_type}] 🍪 Accepted Google/YouTube consent (XPath)')
+                                    time.sleep(1)
+                                    return True
+                            except:
+                                continue
+                    except:
+                        continue
+                
+                # Then try CSS selectors for Google consent
+                google_consent_selectors = [
+                    # Google consent form specific selectors
+                    'form[action*="consent.google"] button[type="submit"]',
+                    'form[action*="consent"] button[type="submit"]',
+                    
+                    # YouTube-specific consent handling
                     'button[aria-label*="Accept all"]',
                     'button[aria-label*="accept all"]',
+                    'button[aria-label*="Accepter tout"]',
+                    'button[aria-label*="Tout accepter"]',
                     'ytd-button-renderer button[aria-label*="Accept"]',
                     'tp-yt-paper-dialog button[aria-label*="Accept all"]',
                     'c3-consent-bump button[aria-label*="Accept"]',
                     '[aria-label="Accept all"]',
+                    '[aria-label="Tout accepter"]',
                     '[aria-label="Accept the use of cookies"]',
-                    'button:has-text("Accept all")',
-                    'ytd-consent-bump-v2-lightbox button[aria-label*="Accept"]'
+                    'ytd-consent-bump-v2-lightbox button[aria-label*="Accept"]',
+                    
+                    # Additional Google consent patterns
+                    'button[jsname*="accept"]',
+                    'button[jsaction*="accept"]',
+                    
+                    # Generic dialog buttons (try first button in Google consent dialogs)
+                    'div[role="dialog"] button[type="button"]',
                 ]
                 
-                for selector in youtube_accept_selectors:
+                # Try CSS selectors
+                for selector in google_consent_selectors:
                     try:
                         elements = driver.find_elements(By.CSS_SELECTOR, selector)
                         for element in elements:
-                            if element.is_displayed():
-                                element.click()
-                                print(f'  [{browser_type}] 🍪 Accepted YouTube consent')
-                                time.sleep(1)
-                                return True
+                            try:
+                                if element.is_displayed() and element.is_enabled():
+                                    # Check button text to ensure it's the accept button
+                                    button_text = element.text.lower()
+                                    accept_keywords = ['accept', 'accepter', 'tout', 'all', 'alle', 'aceptar', 'accetta', 'aceitar', 'godkänn', 'hyväksy']
+                                    reject_keywords = ['reject', 'refus', 'refuse', 'deny', 'decline', 'opt out', 'options', 'settings', 'parameters', 'param']
+                                    
+                                    # Only click if it has accept keywords and no reject keywords
+                                    has_accept = any(keyword in button_text for keyword in accept_keywords)
+                                    has_reject = any(keyword in button_text for keyword in reject_keywords)
+                                    
+                                    if has_accept and not has_reject:
+                                        element.click()
+                                        print(f'  [{browser_type}] 🍪 Accepted Google/YouTube consent (CSS)')
+                                        time.sleep(1)
+                                        return True
+                            except:
+                                continue
                     except:
                         continue
             except:
@@ -5430,11 +5510,11 @@ def browse():
             # Simulate right-click behavior (5% chance)
             simulate_right_click(driver, browser_type)
             
-            # Simulate keyboard shortcuts (8% chance)
-            simulate_keyboard_shortcuts(driver, browser_type)
+            # Simulate keyboard shortcuts (5% chance)
+            # simulate_keyboard_shortcuts(driver, browser_type)  # TEMPORARILY DISABLED - causing timeouts
             
-            # Try typing in forms with proper data (15% chance)
-            simulate_typing_and_forms(driver, browser_type)
+            # Try typing in forms with proper data (10% chance)
+            # simulate_typing_and_forms(driver, browser_type)  # TEMPORARILY DISABLED - causing timeouts
             
             # Try to detect and click ads (60% chance)
             initial_tab_count = len(driver.window_handles)

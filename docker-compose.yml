@@ -375,7 +375,7 @@ services:
   # If you need more Chromium diversity, just add more Chrome versions instead
 
   # ============================================
-  # BROWSER AUTOMATION INSTANCES (5 instances)
+  # BROWSER AUTOMATION INSTANCES (20 instances)
   # ============================================
 
   # Instance 1 - Chrome variants
@@ -495,6 +495,397 @@ services:
       - chrome-130
       - edge-beta
       - edge-dev
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 6 - Chrome mix 1
+  browser-automation-6:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - chrome-95
+      - chrome-125
+      - firefox-130
+      - edge-125
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 7 - Firefox mix 1
+  browser-automation-7:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - firefox-98
+      - firefox-140
+      - chrome-120
+      - edge-130
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 8 - Edge mix 1
+  browser-automation-8:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - edge-114
+      - edge-latest
+      - chrome-110
+      - firefox-120
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 9 - Beta/Dev channels mix
+  browser-automation-9:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - chrome-beta
+      - firefox-beta
+      - edge-beta
+      - chromium-latest
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 10 - Latest versions mix
+  browser-automation-10:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - chrome-latest
+      - firefox-latest
+      - edge-latest
+      - chrome-130
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 11 - Chrome mix 2
+  browser-automation-11:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - chrome-110
+      - chrome-120
+      - firefox-110
+      - edge-120
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 12 - Firefox mix 2
+  browser-automation-12:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - firefox-120
+      - firefox-130
+      - chrome-95
+      - edge-114
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 13 - Dev channels focus
+  browser-automation-13:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - chrome-dev
+      - firefox-dev
+      - edge-dev
+      - chrome-125
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 14 - Chrome older versions
+  browser-automation-14:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - chrome-95
+      - chrome-110
+      - firefox-98
+      - firefox-110
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 15 - Chrome newer versions
+  browser-automation-15:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - chrome-125
+      - chrome-130
+      - firefox-140
+      - edge-130
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 16 - Balanced mix 1
+  browser-automation-16:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - chrome-120
+      - firefox-120
+      - edge-120
+      - chromium-latest
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 17 - Balanced mix 2
+  browser-automation-17:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - chrome-110
+      - firefox-130
+      - edge-125
+      - chrome-beta
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 18 - All Firefox focus
+  browser-automation-18:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - firefox-98
+      - firefox-110
+      - firefox-beta
+      - firefox-dev
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 19 - All Edge focus
+  browser-automation-19:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - edge-114
+      - edge-120
+      - edge-beta
+      - edge-dev
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 20 - Ultimate mix (all browser types)
+  browser-automation-20:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - chrome-latest
+      - firefox-latest
+      - edge-latest
+      - chromium-latest
+      - chrome-beta
     volumes:
       - ./crawl.py:/app/crawl.py:ro
       - ./persona_manager.py:/app/persona_manager.py:ro
