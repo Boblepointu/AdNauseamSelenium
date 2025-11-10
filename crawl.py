@@ -3759,12 +3759,12 @@ def create_driver(browser_type):
     # RemoteWebDriver doesn't have execute_cdp_cmd by default in Selenium 4.15.2
     if browser_type in ['chrome', 'chromium', 'edge']:
         if not hasattr(driver, 'execute_cdp_cmd'):
-            def execute_cdp_cmd(cmd, cmd_args):
+            def execute_cdp_cmd(self, cmd, cmd_args):
                 """
                 Execute Chrome Devtools Protocol command via Selenium
                 This adds CDP support to RemoteWebDriver
                 """
-                return driver.execute('executeCdpCommand', {
+                return self.execute('executeCdpCommand', {
                     'cmd': cmd,
                     'params': cmd_args
                 })
