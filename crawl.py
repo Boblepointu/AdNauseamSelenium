@@ -138,6 +138,94 @@ def get_domain(url):
     except:
         return ''
 
+def generate_random_user_agent():
+    """Generate a random realistic user agent by combining different components"""
+    
+    # Platform/OS options
+    platforms = [
+        "Windows NT 10.0; Win64; x64",
+        "Windows NT 11.0; Win64; x64",
+        "Windows NT 10.0; WOW64",
+        "Macintosh; Intel Mac OS X 10_15_7",
+        "Macintosh; Intel Mac OS X 11_6_0",
+        "Macintosh; Intel Mac OS X 12_0_1",
+        "Macintosh; Intel Mac OS X 13_1",
+        "Macintosh; Intel Mac OS X 14_0",
+        "X11; Linux x86_64",
+        "X11; Ubuntu; Linux x86_64",
+        "X11; Fedora; Linux x86_64",
+        "X11; Linux i686",
+    ]
+    
+    # WebKit/AppleWebKit versions
+    webkit_versions = [
+        "537.36",
+        "537.35",
+        "537.34",
+        "605.1.15",
+        "605.1.16",
+        "604.1.38",
+    ]
+    
+    # Chrome versions (major.0.0.0 or major.0.build.0)
+    chrome_major_versions = [115, 116, 117, 118, 119, 120, 121, 122]
+    chrome_builds = [
+        "0.0.0",
+        "0.6045.199",
+        "0.6045.105",
+        "0.6099.109",
+        "0.6100.88",
+        "0.0.6312.122",
+        "0.0.6367.91",
+    ]
+    
+    # Firefox versions
+    firefox_versions = [118, 119, 120, 121, 122, 123]
+    
+    # Edge versions
+    edge_versions = [115, 116, 117, 118, 119, 120, 121]
+    
+    # Safari versions
+    safari_versions = ["16.1", "16.2", "16.3", "16.4", "16.5", "17.0", "17.1", "17.2"]
+    
+    # Choose browser type
+    browser_type = random.choice(['chrome', 'firefox', 'safari', 'edge'])
+    platform = random.choice(platforms)
+    
+    if browser_type == 'chrome':
+        webkit = random.choice(webkit_versions)
+        chrome_major = random.choice(chrome_major_versions)
+        chrome_build = random.choice(chrome_builds)
+        chrome_version = f"{chrome_major}.{chrome_build}"
+        
+        ua = f"Mozilla/5.0 ({platform}) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome_version} Safari/{webkit}"
+        
+    elif browser_type == 'firefox':
+        firefox_ver = random.choice(firefox_versions)
+        # Firefox uses Gecko
+        ua = f"Mozilla/5.0 ({platform}; rv:{firefox_ver}.0) Gecko/20100101 Firefox/{firefox_ver}.0"
+        
+    elif browser_type == 'safari':
+        # Safari only on macOS
+        mac_platforms = [p for p in platforms if 'Mac' in p]
+        if mac_platforms:
+            platform = random.choice(mac_platforms)
+        webkit = random.choice(webkit_versions)
+        safari_ver = random.choice(safari_versions)
+        
+        ua = f"Mozilla/5.0 ({platform}) AppleWebKit/{webkit} (KHTML, like Gecko) Version/{safari_ver} Safari/{webkit}"
+        
+    elif browser_type == 'edge':
+        webkit = random.choice(webkit_versions)
+        edge_ver = random.choice(edge_versions)
+        chrome_major = random.choice(chrome_major_versions)  # Edge is Chromium-based
+        chrome_build = random.choice(chrome_builds)
+        chrome_version = f"{chrome_major}.{chrome_build}"
+        
+        ua = f"Mozilla/5.0 ({platform}) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome_version} Safari/{webkit} Edg/{edge_ver}.0.{random.randint(1000, 9999)}.{random.randint(10, 99)}"
+    
+    return ua
+
 def auto_accept_cookies(driver, browser_type):
     """Automatically detect and click cookie consent buttons"""
     try:
@@ -368,16 +456,9 @@ def detect_and_click_ads(driver, browser_type, click_chance=0.6):
 def create_driver(browser_type):
     """Create a Selenium WebDriver for automated browsing with anti-detection"""
     
-    # Realistic user agents (updated for 2025)
-    user_agents = [
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
-        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    ]
-    user_agent = random.choice(user_agents)
+    # Generate a random realistic user agent (thousands of combinations possible)
+    user_agent = generate_random_user_agent()
+    print(f'[{browser_type}] Generated UA: {user_agent[:80]}...')
     
     if browser_type == 'chrome':
         options = webdriver.ChromeOptions()
@@ -808,11 +889,19 @@ def browse():
     
     driver = create_driver(browser_type)
     
-    while True:
+    # Keep track of websites visited in this session
+    websites_visited = 0
+    max_websites_per_session = random.randint(80, 120)  # 80-120 sites per session
+    
+    print(f'[{browser_type}] 🎯 Session goal: Visit {max_websites_per_session} websites')
+    
+    while websites_visited < max_websites_per_session:
         try:
             start_url = random.choice(sites)
             start_domain = get_domain(start_url)
-            print(f'\n[{browser_type}] 🌐 Starting journey from: {start_url}')
+            websites_visited += 1
+            
+            print(f'\n[{browser_type}] 🌐 Website {websites_visited}/{max_websites_per_session}: {start_url}')
             
             driver.get(start_url)
             
@@ -840,7 +929,8 @@ def browse():
             
             time.sleep(random.uniform(1, 3))
             
-            max_depth = random.randint(30, 50)
+            # Navigate through links on this website
+            max_depth = random.randint(3, 8)  # Reduced depth per site to visit more sites
             current_depth = 0
             
             while current_depth < max_depth:
@@ -869,7 +959,7 @@ def browse():
                     # Find clickable links - be more lenient
                     links = driver.find_elements(By.TAG_NAME, 'a')
                     if not links:
-                        print(f'  [{browser_type}] No links found at depth {current_depth}, restarting journey')
+                        print(f'  [{browser_type}] No links found at depth {current_depth}, moving to next website')
                         break
                     
                     # Get more links and filter less strictly
@@ -884,7 +974,7 @@ def browse():
                             continue
                     
                     if not clickable:
-                        print(f'  [{browser_type}] No clickable links at depth {current_depth}, restarting journey')
+                        print(f'  [{browser_type}] No clickable links at depth {current_depth}, moving to next website')
                         break
                     
                     print(f'  [{browser_type}] Found {len(clickable)} clickable links')
@@ -908,31 +998,19 @@ def browse():
                     
                     print(f'  [{browser_type}] Internal: {len(internal_links)}, External: {len(external_links)}')
                     
-                    # Choose link strategy - more flexible
+                    # Choose link strategy - prefer internal to stay on site longer
                     chosen_link = None
-                    if current_depth == 0:
-                        # At depth 0, try internal first, but accept external if no internal
-                        if internal_links:
-                            chosen_link = random.choice(internal_links)
-                            print(f'  [{browser_type}] Depth {current_depth}: Choosing internal link')
-                        elif external_links:
-                            chosen_link = random.choice(external_links)
-                            print(f'  [{browser_type}] Depth {current_depth}: No internal links, choosing external')
-                    elif current_depth >= 1:
-                        # Prefer external links (70% chance)
-                        if external_links and random.random() < 0.7:
-                            chosen_link = random.choice(external_links)
-                            print(f'  [{browser_type}] Depth {current_depth}: → External link')
-                        elif internal_links:
-                            chosen_link = random.choice(internal_links)
-                            print(f'  [{browser_type}] Depth {current_depth}: → Internal link')
-                        elif external_links:
-                            chosen_link = random.choice(external_links)
-                            print(f'  [{browser_type}] Depth {current_depth}: → External link (fallback)')
-                        elif clickable:
-                            # Last resort: pick any clickable link
-                            chosen_link = random.choice(clickable)
-                            print(f'  [{browser_type}] Depth {current_depth}: → Any link (fallback)')
+                    if internal_links and random.random() < 0.8:  # 80% prefer internal
+                        chosen_link = random.choice(internal_links)
+                        print(f'  [{browser_type}] Depth {current_depth}: Choosing internal link')
+                    elif external_links:
+                        chosen_link = random.choice(external_links)
+                        print(f'  [{browser_type}] Depth {current_depth}: Choosing external link (will move to next website)')
+                        # If we go external, break after this click to count as new website
+                    elif internal_links:
+                        chosen_link = random.choice(internal_links)
+                    elif clickable:
+                        chosen_link = random.choice(clickable)
                     
                     if chosen_link:
                         try:
@@ -1004,9 +1082,12 @@ def browse():
                             
                             current_depth += 1
                             
+                            # If we went to external site, break to count as new website
                             if link_domain != start_domain:
+                                print(f'  [{browser_type}] 🔄 Moved to external site, counting as next website')
+                                websites_visited += 1
                                 start_domain = link_domain
-                                print(f'  [{browser_type}] 🔄 Now exploring: {start_domain}')
+                                break
                                 
                         except Exception as click_error:
                             print(f'  [{browser_type}] Navigation failed: {str(click_error)[:50]}')
@@ -1019,21 +1100,26 @@ def browse():
                     print(f'  [{browser_type}] Navigation error: {str(nav_error)[:50]}')
                     break
             
-            print(f'[{browser_type}] ✓ Journey complete. Depth: {current_depth}/{max_depth}')
-            time.sleep(random.uniform(2, 5))
+            print(f'[{browser_type}] ✓ Finished exploring website. Depth: {current_depth}/{max_depth}')
+            time.sleep(random.uniform(1, 3))
             
         except TimeoutException:
-            print(f'[{browser_type}] ⏱ Timeout, starting new journey')
+            print(f'[{browser_type}] ⏱ Timeout, moving to next website')
+            websites_visited += 1
         except WebDriverException as e:
             print(f'[{browser_type}] ⚠ WebDriver error: {str(e)[:80]}')
-            print(f'[{browser_type}] Recreating driver...')
-            try:
-                driver.quit()
-            except:
-                pass
-            driver = create_driver(browser_type)
+            print(f'[{browser_type}] Trying to continue with same session...')
+            time.sleep(2)
         except Exception as e:
             print(f'[{browser_type}] ⚠ Error: {str(e)[:80]}')
+    
+    # Session complete, close browser
+    print(f'\n[{browser_type}] ✅ Session complete! Visited {websites_visited} websites.')
+    print(f'[{browser_type}] Closing browser and starting new session...')
+    try:
+        driver.quit()
+    except:
+        pass
 
 if __name__ == '__main__':
     print("""
