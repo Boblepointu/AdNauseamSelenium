@@ -1,5 +1,9 @@
 version: '3.8'
 
+volumes:
+  personas-data:
+    driver: local
+
 services:
   # Selenium Hub
   selenium-hub:
@@ -55,8 +59,14 @@ services:
       - edge
     volumes:
       - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
       - ./setup.sh:/app/setup.sh:ro
       - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas  # Persistent persona storage
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted  # Options: weighted, random, round-robin, new
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
     command:
       - /bin/bash
       - -c
@@ -74,8 +84,14 @@ services:
       - edge
     volumes:
       - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
       - ./setup.sh:/app/setup.sh:ro
       - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas  # Shared persona storage
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
     command:
       - /bin/bash
       - -c
@@ -93,8 +109,14 @@ services:
       - edge
     volumes:
       - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
       - ./setup.sh:/app/setup.sh:ro
       - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas  # Shared persona storage
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
     command:
       - /bin/bash
       - -c

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Browser Chaos Generator
-Automates browsing across multiple sites to generate traffic
+Browser Chaos Generator with Advanced Anti-Fingerprinting
+Automates browsing across multiple sites with persistent persona management
 """
 
 from selenium import webdriver
@@ -14,7 +14,23 @@ import random
 import os
 from urllib.parse import urlparse
 
+# Import persona manager for persistent fingerprint rotation
+try:
+    from persona_manager import PersonaManager, fingerprint_to_dict
+    PERSONA_MANAGER_AVAILABLE = True
+except ImportError:
+    print('⚠️  PersonaManager not available, running without persistence')
+    PERSONA_MANAGER_AVAILABLE = False
+
 browsers = ['firefox', 'chrome', 'edge']
+
+# Persona rotation configuration from environment
+PERSONA_ROTATION_STRATEGY = os.getenv('PERSONA_ROTATION_STRATEGY', 'weighted')
+PERSONA_MAX_AGE_DAYS = int(os.getenv('PERSONA_MAX_AGE_DAYS', '30'))
+PERSONA_MAX_USES = int(os.getenv('PERSONA_MAX_USES', '100'))
+
+# Global persona manager instance
+persona_manager = PersonaManager() if PERSONA_MANAGER_AVAILABLE else None
 
 def load_websites(file_path='/app/websites.txt'):
     """Load websites from a text file, ignoring comments and empty lines"""
@@ -1141,137 +1157,247 @@ def generate_random_screen():
 def generate_random_user_agent():
     """Generate a random realistic user agent by combining different components"""
     
-    # Platform/OS options - Desktop, Mobile, Tablet, Legacy
+    # MASSIVELY EXPANDED Platform/OS options - Desktop, Mobile, Tablet, Legacy
     platforms = [
-        # Modern Windows
+        # Modern Windows (heavily weighted)
+        "Windows NT 10.0; Win64; x64",
+        "Windows NT 10.0; Win64; x64",
         "Windows NT 10.0; Win64; x64",
         "Windows NT 11.0; Win64; x64",
+        "Windows NT 11.0; Win64; x64",
         "Windows NT 10.0; WOW64",
+        "Windows NT 10.0; Win64; x64; rv:109.0",
+        "Windows NT 10.0; Win64; x64; rv:115.0",
         "Windows NT 6.1; Win64; x64",  # Windows 7
         "Windows NT 6.3; Win64; x64",  # Windows 8.1
         "Windows NT 6.2; Win64; x64",  # Windows 8
+        "Windows NT 6.1; WOW64",  # Windows 7 32-bit on 64-bit
+        "Windows NT 6.3; WOW64",
         "Windows NT 5.1",  # Windows XP
         "Windows NT 6.0",  # Windows Vista
+        "Windows NT 10.0; ARM64",
         
-        # macOS
+        # macOS (massively expanded)
+        "Macintosh; Intel Mac OS X 10_15_7",
         "Macintosh; Intel Mac OS X 10_15_7",
         "Macintosh; Intel Mac OS X 11_6_0",
+        "Macintosh; Intel Mac OS X 11_7_0",
         "Macintosh; Intel Mac OS X 12_0_1",
+        "Macintosh; Intel Mac OS X 12_1_0",
+        "Macintosh; Intel Mac OS X 12_2_1",
+        "Macintosh; Intel Mac OS X 12_3_1",
+        "Macintosh; Intel Mac OS X 12_4",
+        "Macintosh; Intel Mac OS X 12_5_1",
         "Macintosh; Intel Mac OS X 12_6_0",
+        "Macintosh; Intel Mac OS X 12_6_7",
         "Macintosh; Intel Mac OS X 13_0_0",
+        "Macintosh; Intel Mac OS X 13_0_1",
         "Macintosh; Intel Mac OS X 13_1",
         "Macintosh; Intel Mac OS X 13_2_1",
+        "Macintosh; Intel Mac OS X 13_3_1",
         "Macintosh; Intel Mac OS X 13_4_1",
+        "Macintosh; Intel Mac OS X 13_5_2",
+        "Macintosh; Intel Mac OS X 13_6_0",
         "Macintosh; Intel Mac OS X 14_0",
         "Macintosh; Intel Mac OS X 14_1_1",
         "Macintosh; Intel Mac OS X 14_2_1",
-        "Macintosh; Intel Mac OS X 10_14_6",
-        "Macintosh; Intel Mac OS X 10_13_6",
+        "Macintosh; Intel Mac OS X 14_3_0",
+        "Macintosh; Intel Mac OS X 14_4_0",
+        "Macintosh; Intel Mac OS X 10_14_6",  # Mojave
+        "Macintosh; Intel Mac OS X 10_13_6",  # High Sierra
+        "Macintosh; Intel Mac OS X 10_12_6",  # Sierra
+        "Macintosh; Apple M1 Mac OS X 13_2_1",  # Apple Silicon
+        "Macintosh; Apple M2 Mac OS X 14_1_1",  # Apple Silicon M2
         
-        # Linux
+        # Linux (massively expanded)
+        "X11; Linux x86_64",
         "X11; Linux x86_64",
         "X11; Ubuntu; Linux x86_64",
+        "X11; Ubuntu; Linux x86_64",
         "X11; Fedora; Linux x86_64",
+        "X11; Debian; Linux x86_64",
+        "X11; Arch Linux; Linux x86_64",
+        "X11; Manjaro; Linux x86_64",
+        "X11; Linux x86_64; rv:109.0",
         "X11; Linux i686",
         "X11; CrOS x86_64 14541.0.0",  # ChromeOS
+        "X11; CrOS x86_64 15117.0.0",
+        "X11; CrOS aarch64 15183.0.0",
+        "X11; Linux aarch64",
         
-        # Android smartphones
+        # Android smartphones (massively expanded)
+        "Linux; Android 14; SM-S928B",  # Samsung Galaxy S24 Ultra
+        "Linux; Android 14; SM-S926B",  # Samsung Galaxy S24+
+        "Linux; Android 14; SM-S921B",  # Samsung Galaxy S24
         "Linux; Android 13; SM-S918B",  # Samsung Galaxy S23 Ultra
+        "Linux; Android 13; SM-S916B",  # Samsung Galaxy S23+
+        "Linux; Android 13; SM-S911B",  # Samsung Galaxy S23
         "Linux; Android 13; SM-G998B",  # Samsung Galaxy S21 Ultra
         "Linux; Android 12; SM-G991B",  # Samsung Galaxy S21
+        "Linux; Android 13; Pixel 8 Pro",
+        "Linux; Android 13; Pixel 8",
         "Linux; Android 13; Pixel 7 Pro",
         "Linux; Android 13; Pixel 7",
         "Linux; Android 12; Pixel 6 Pro",
         "Linux; Android 12; Pixel 6",
         "Linux; Android 11; Pixel 5",
+        "Linux; Android 11; Pixel 4a",
+        "Linux; Android 10; Pixel 3 XL",
         "Linux; Android 13; SM-A536B",  # Samsung Galaxy A53
         "Linux; Android 12; SM-A525F",  # Samsung Galaxy A52
+        "Linux; Android 13; SM-A546B",  # Samsung Galaxy A54
+        "Linux; Android 13; SM-A146B",  # Samsung Galaxy A14
         "Linux; Android 11; SM-G973F",  # Samsung Galaxy S10
         "Linux; Android 10; SM-G960F",  # Samsung Galaxy S9
         "Linux; Android 13; OnePlus KB2003",  # OnePlus 11
+        "Linux; Android 13; OnePlus CPH2449",  # OnePlus 11R
         "Linux; Android 12; OnePlus LE2123",  # OnePlus 9 Pro
+        "Linux; Android 11; OnePlus IN2023",  # OnePlus 8T
         "Linux; Android 11; ONEPLUS A6013",  # OnePlus 6T
         "Linux; Android 13; 2201123G",  # Xiaomi 12
+        "Linux; Android 13; 2211133G",  # Xiaomi 12T
+        "Linux; Android 13; 23049PCD8G",  # Xiaomi 13
         "Linux; Android 12; M2102J20SG",  # Xiaomi Mi 11
         "Linux; Android 11; Mi 10T Pro",
         "Linux; Android 10; Mi 9",
+        "Linux; Android 13; Redmi Note 12 Pro",
+        "Linux; Android 12; Redmi Note 11 Pro",
+        "Linux; Android 13; Moto G Power (2023)",
+        "Linux; Android 12; Moto G Stylus 5G",
+        "Linux; Android 11; Nokia 8.3 5G",
+        "Linux; Android 13; ASUS_AI2302",  # ASUS ROG Phone 7
+        "Linux; Android 12; ASUS_I006D",  # ASUS Zenfone 9
+        "Linux; Android 13; V2231A",  # Vivo X90 Pro
+        "Linux; Android 13; V2227A",  # Vivo Y56 5G
+        "Linux; Android 13; RMX3501",  # Realme GT 2 Pro
+        "Linux; Android 12; RMX3371",  # Realme 9 Pro+
+        "Linux; Android 13; Infinix X6833B",  # Infinix Note 30
         
-        # Android tablets
+        # Android tablets (massively expanded)
         "Linux; Android 13; SM-X906B",  # Samsung Galaxy Tab S9 Ultra
+        "Linux; Android 13; SM-X916B",  # Samsung Galaxy Tab S9+
+        "Linux; Android 13; SM-X916C",  # Samsung Galaxy Tab S9
         "Linux; Android 12; SM-X906C",  # Samsung Galaxy Tab S8 Ultra
+        "Linux; Android 12; SM-X906B",  # Samsung Galaxy Tab S8+
         "Linux; Android 11; SM-T870",  # Samsung Galaxy Tab S7
         "Linux; Android 13; Lenovo TB-X606F",  # Lenovo Tab P11
         "Linux; Android 12; Lenovo TB-J606F",  # Lenovo Tab M10
+        "Linux; Android 13; Lenovo TB-Q706F",  # Lenovo Tab P12 Pro
+        "Linux; Android 13; XiaoMi Pad 6",
+        "Linux; Android 12; XiaoMi Pad 5 Pro",
+        "Linux; Android 13; Pixel Tablet",
         
-        # iOS (iPhone)
+        # iOS (iPhone) - massively expanded
+        "iPhone; CPU iPhone OS 17_3_1 like Mac OS X",
+        "iPhone; CPU iPhone OS 17_2_1 like Mac OS X",
+        "iPhone; CPU iPhone OS 17_1_2 like Mac OS X",
+        "iPhone; CPU iPhone OS 17_1_1 like Mac OS X",
         "iPhone; CPU iPhone OS 17_1 like Mac OS X",
+        "iPhone; CPU iPhone OS 17_0_3 like Mac OS X",
+        "iPhone; CPU iPhone OS 17_0_2 like Mac OS X",
+        "iPhone; CPU iPhone OS 17_0_1 like Mac OS X",
         "iPhone; CPU iPhone OS 17_0 like Mac OS X",
+        "iPhone; CPU iPhone OS 16_7_2 like Mac OS X",
+        "iPhone; CPU iPhone OS 16_6_1 like Mac OS X",
         "iPhone; CPU iPhone OS 16_6 like Mac OS X",
+        "iPhone; CPU iPhone OS 16_5_1 like Mac OS X",
         "iPhone; CPU iPhone OS 16_5 like Mac OS X",
+        "iPhone; CPU iPhone OS 16_4_1 like Mac OS X",
         "iPhone; CPU iPhone OS 16_4 like Mac OS X",
+        "iPhone; CPU iPhone OS 16_3_1 like Mac OS X",
         "iPhone; CPU iPhone OS 16_3 like Mac OS X",
+        "iPhone; CPU iPhone OS 16_2 like Mac OS X",
+        "iPhone; CPU iPhone OS 16_1_2 like Mac OS X",
+        "iPhone; CPU iPhone OS 15_7_1 like Mac OS X",
         "iPhone; CPU iPhone OS 15_7 like Mac OS X",
+        "iPhone; CPU iPhone OS 15_6_1 like Mac OS X",
         "iPhone; CPU iPhone OS 15_6 like Mac OS X",
+        "iPhone; CPU iPhone OS 15_5 like Mac OS X",
+        "iPhone; CPU iPhone OS 14_8_1 like Mac OS X",
         "iPhone; CPU iPhone OS 14_8 like Mac OS X",
         
-        # iOS (iPad)
+        # iOS (iPad) - massively expanded
+        "iPad; CPU OS 17_3_1 like Mac OS X",
+        "iPad; CPU OS 17_2_1 like Mac OS X",
+        "iPad; CPU OS 17_1_2 like Mac OS X",
+        "iPad; CPU OS 17_1_1 like Mac OS X",
         "iPad; CPU OS 17_1 like Mac OS X",
+        "iPad; CPU OS 17_0_3 like Mac OS X",
+        "iPad; CPU OS 16_7_2 like Mac OS X",
+        "iPad; CPU OS 16_6_1 like Mac OS X",
         "iPad; CPU OS 16_6 like Mac OS X",
+        "iPad; CPU OS 16_5_1 like Mac OS X",
         "iPad; CPU OS 16_5 like Mac OS X",
+        "iPad; CPU OS 16_4_1 like Mac OS X",
+        "iPad; CPU OS 15_7_1 like Mac OS X",
         "iPad; CPU OS 15_7 like Mac OS X",
+        "iPad; CPU OS 14_8_1 like Mac OS X",
         "iPad; CPU OS 14_8 like Mac OS X",
     ]
     
-    # WebKit/AppleWebKit versions
+    # MASSIVELY EXPANDED WebKit/AppleWebKit versions
     webkit_versions = [
-        "537.36",
-        "537.35",
-        "537.34",
-        "537.33",
-        "537.32",
-        "537.31",
-        "605.1.15",
-        "605.1.16",
-        "604.1.38",
-        "604.5.6",
-        "605.1.33",
-        "606.1.36",
-        "607.1.40",
-        "608.1.49",
-        "609.1.20",
+        "537.36", "537.36", "537.36",  # Most common
+        "537.35", "537.34", "537.33", "537.32", "537.31", "537.30",
+        "605.1.15", "605.1.16", "605.1.17", "605.1.18", "605.1.19", "605.1.20",
+        "604.1.38", "604.1.39", "604.1.40", "604.1.41", "604.1.42",
+        "604.5.6", "604.5.7", "604.5.8", "604.5.9",
+        "605.1.33", "605.1.34", "605.1.35",
+        "606.1.36", "606.1.37", "606.1.38", "606.1.39",
+        "607.1.40", "607.1.41", "607.1.42", "607.1.43",
+        "608.1.49", "608.1.50", "608.1.51", "608.1.52",
+        "609.1.20", "609.1.21", "609.1.22", "609.1.23",
+        "610.1.25", "610.1.26", "610.1.27", "610.1.28",
+        "611.1.30", "611.1.31", "611.1.32",
+        "612.1.29", "612.1.30", "612.1.31",
+        "613.1.17", "613.1.18", "613.1.19",
+        "614.1.26", "614.1.27", "614.1.28",
+        "615.1.26", "615.1.27", "615.1.28", "615.1.29",
+        "616.1.27", "616.1.28", "616.1.29", "616.1.30",
+        "617.1.15", "617.1.16", "617.1.17", "617.1.18",
     ]
     
-    # Chrome versions (major.0.0.0 or major.0.build.0)
-    chrome_major_versions = [110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126]
+    # MASSIVELY EXPANDED Chrome versions (major versions and builds)
+    chrome_major_versions = [
+        109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130
+    ]
     chrome_builds = [
-        "0.0.0",
-        "0.5414.119",
-        "0.5481.177",
-        "0.5615.137",
-        "0.5735.198",
-        "0.5845.179",
-        "0.5993.117",
-        "0.6045.105",
-        "0.6045.199",
-        "0.6099.109",
-        "0.6100.88",
-        "0.6261.94",
-        "0.6312.122",
-        "0.6367.91",
-        "0.6367.201",
-        "0.6478.126",
-        "0.6563.110",
-        "0.6613.119",
+        "0.0.0", "0.0.0", "0.0.0",  # Common default
+        "0.5414.74", "0.5414.87", "0.5414.119", "0.5414.129",
+        "0.5481.77", "0.5481.100", "0.5481.177", "0.5481.192",
+        "0.5615.49", "0.5615.86", "0.5615.121", "0.5615.137", "0.5615.165",
+        "0.5735.90", "0.5735.106", "0.5735.134", "0.5735.198", "0.5735.248",
+        "0.5845.96", "0.5845.110", "0.5845.140", "0.5845.179", "0.5845.228",
+        "0.5993.70", "0.5993.88", "0.5993.117", "0.5993.159",
+        "0.6045.105", "0.6045.124", "0.6045.159", "0.6045.199",
+        "0.6099.56", "0.6099.71", "0.6099.109", "0.6099.129", "0.6099.216",
+        "0.6100.42", "0.6100.67", "0.6100.88", "0.6100.99",
+        "0.6261.57", "0.6261.69", "0.6261.94", "0.6261.111", "0.6261.128",
+        "0.6312.58", "0.6312.86", "0.6312.105", "0.6312.122", "0.6312.145",
+        "0.6367.60", "0.6367.78", "0.6367.91", "0.6367.118", "0.6367.155", "0.6367.201",
+        "0.6478.61", "0.6478.114", "0.6478.126", "0.6478.182",
+        "0.6563.64", "0.6563.110", "0.6563.156", "0.6563.187",
+        "0.6613.84", "0.6613.119", "0.6613.137", "0.6613.162",
+        "0.6723.58", "0.6723.91", "0.6723.116", "0.6723.132",
+        "0.6820.51", "0.6820.82", "0.6820.106", "0.6820.128",
     ]
     
-    # Firefox versions
-    firefox_versions = [115, 116, 117, 118, 119, 120, 121, 122, 123, 124]
+    # MASSIVELY EXPANDED Firefox versions
+    firefox_versions = [
+        110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128
+    ]
     
-    # Edge versions
-    edge_versions = [115, 116, 117, 118, 119, 120, 121, 122]
+    # MASSIVELY EXPANDED Edge versions
+    edge_versions = [
+        109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125
+    ]
     
-    # Safari versions
-    safari_versions = ["16.1", "16.2", "16.3", "16.4", "16.5", "16.6", "17.0", "17.1", "17.2"]
+    # MASSIVELY EXPANDED Safari versions
+    safari_versions = [
+        "15.0", "15.1", "15.2", "15.3", "15.4", "15.5", "15.6",
+        "16.0", "16.1", "16.2", "16.3", "16.4", "16.5", "16.6",
+        "17.0", "17.1", "17.2", "17.3", "17.4", "17.5"
+    ]
     
     # Legacy browser versions
     opera_versions = ["12.16", "12.17", "11.64", "11.62", "10.63"]
@@ -1371,6 +1497,118 @@ def generate_random_user_agent():
             ua = f"Mozilla/5.0 (compatible; MSIE {ie_ver}; {platform}; Trident/{trident_ver})"
     
     return ua
+
+def play_youtube_video(driver, browser_type):
+    """
+    Detect and play YouTube videos when encountered
+    
+    Args:
+        driver: WebDriver instance
+        browser_type: Browser name for logging
+    
+    Returns:
+        bool: True if a video was played
+    """
+    try:
+        current_url = driver.current_url
+        
+        # Check if we're on YouTube
+        if 'youtube.com' not in current_url and 'youtu.be' not in current_url:
+            return False
+        
+        print(f'  [{browser_type}] 🎥 Detected YouTube page, attempting to play video...')
+        
+        # Wait a moment for page to load
+        time.sleep(random.uniform(1, 2))
+        
+        # Try multiple methods to play the video
+        play_selectors = [
+            'button.ytp-large-play-button',  # Big play button overlay
+            'button.ytp-play-button',  # Small play button in controls
+            '.ytp-play-button',
+            'button[aria-label*="Play"]',
+            'button[title*="Play"]',
+            '.html5-video-player',  # Click anywhere on video player
+            'video.html5-main-video',  # The actual video element
+        ]
+        
+        video_played = False
+        
+        # Method 1: Try clicking play button selectors
+        for selector in play_selectors:
+            try:
+                elements = driver.find_elements(By.CSS_SELECTOR, selector)
+                for element in elements:
+                    if element.is_displayed():
+                        try:
+                            element.click()
+                            print(f'  [{browser_type}] ▶️  Clicked play button!')
+                            video_played = True
+                            time.sleep(random.uniform(0.5, 1))
+                            break
+                        except:
+                            continue
+                if video_played:
+                    break
+            except:
+                continue
+        
+        # Method 2: Use JavaScript to play the video directly
+        if not video_played:
+            try:
+                driver.execute_script('''
+                    var videos = document.querySelectorAll('video');
+                    if (videos.length > 0) {
+                        videos[0].play();
+                        return true;
+                    }
+                    return false;
+                ''')
+                print(f'  [{browser_type}] ▶️  Started video via JavaScript!')
+                video_played = True
+            except:
+                pass
+        
+        if video_played:
+            # Let video play for a realistic amount of time (5-30 seconds)
+            watch_time = random.uniform(5, 30)
+            print(f'  [{browser_type}] 📺 Watching video for {watch_time:.1f}s...')
+            time.sleep(watch_time)
+            
+            # Occasionally scroll down to comments (30% chance)
+            if random.random() < 0.3:
+                try:
+                    scroll_amount = random.randint(500, 1500)
+                    driver.execute_script(f'window.scrollBy(0, {scroll_amount});')
+                    print(f'  [{browser_type}] 💬 Scrolled to comments section')
+                    time.sleep(random.uniform(1, 3))
+                except:
+                    pass
+            
+            # Occasionally interact with video controls (pause, seek, volume)
+            if random.random() < 0.2:  # 20% chance
+                try:
+                    # Click pause button
+                    pause_button = driver.find_element(By.CSS_SELECTOR, 'button.ytp-play-button')
+                    if pause_button.is_displayed():
+                        pause_button.click()
+                        print(f'  [{browser_type}] ⏸️  Paused video')
+                        time.sleep(random.uniform(1, 3))
+                        # Play again
+                        pause_button.click()
+                        print(f'  [{browser_type}] ▶️  Resumed video')
+                        time.sleep(random.uniform(2, 5))
+                except:
+                    pass
+            
+            return True
+        else:
+            print(f'  [{browser_type}] ⚠️  Could not find play button')
+            return False
+            
+    except Exception as e:
+        print(f'  [{browser_type}] ⚠️  YouTube play error: {str(e)[:50]}')
+        return False
 
 def auto_accept_cookies(driver, browser_type, max_attempts=3):
     """Automatically detect and click cookie consent buttons - with retries and multi-step handling"""
@@ -3076,6 +3314,9 @@ def browse():
             # Auto-accept cookies
             auto_accept_cookies(driver, browser_type)
             
+            # Play YouTube videos if detected
+            play_youtube_video(driver, browser_type)
+            
             # Try to detect and click ads (60% chance)
             initial_tab_count = len(driver.window_handles)
             detect_and_click_ads(driver, browser_type, click_chance=0.6)
@@ -3252,6 +3493,12 @@ def browse():
                             # Try to accept cookies on new page (but don't wait too long)
                             try:
                                 auto_accept_cookies(driver, browser_type)
+                            except:
+                                pass
+                            
+                            # Play YouTube videos if detected
+                            try:
+                                play_youtube_video(driver, browser_type)
                             except:
                                 pass
                             
