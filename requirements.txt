@@ -1,0 +1,4 @@
+selenium==4.15.2
+numpy==1.26.2
+Faker==20.1.0
+
