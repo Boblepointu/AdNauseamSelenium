@@ -2658,6 +2658,84 @@ def create_driver(browser_type):
         try:
             driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
                 'source': f'''
+                    // ============================================
+                    // ADVANCED WEBDRIVER ARTIFACT REMOVAL
+                    // ============================================
+                    
+                    // Remove all ChromeDriver-specific artifacts
+                    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
+                    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
+                    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
+                    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Object;
+                    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Proxy;
+                    delete window.cdc_adoQpoasnfa76pfcZLmcfl_JSON;
+                    
+                    // Remove all variations using regex (cdc_, $cdc_, $wdc_, etc.)
+                    Object.keys(window).forEach(key => {{
+                        if (key.match(/^(cdc_|\\$cdc_|\\$wdc_|\\$chrome_|__webdriver|__selenium|__fxdriver|__driver)/)) {{
+                            try {{
+                                delete window[key];
+                            }} catch (e) {{}}
+                        }}
+                    }});
+                    
+                    // Remove document-level script caches
+                    delete document.__webdriver_script_fn;
+                    delete document.__selenium_unwrapped;
+                    delete document.__webdriver_unwrapped;
+                    delete document.__driver_evaluate;
+                    delete document.__webdriver_evaluate;
+                    delete document.__fxdriver_evaluate;
+                    delete document.__driver_unwrapped;
+                    delete document.__fxdriver_unwrapped;
+                    delete document.__webdriver_script_func;
+                    delete document.$cdc_asdjflasutopfhvcZLmcfl_;
+                    delete document.$chrome_asyncScriptInfo;
+                    
+                    // Override Function.prototype.toString to hide proxy behavior
+                    const originalToString = Function.prototype.toString;
+                    const originalFunctionToString = originalToString;
+                    const newToString = function() {{
+                        if (this === navigator.webdriver || 
+                            this === Navigator.prototype.webdriver) {{
+                            return 'function webdriver() {{ [native code] }}';
+                        }}
+                        // Hide proxy/bound function indicators
+                        const str = originalFunctionToString.call(this);
+                        if (str.includes('native')) {{
+                            return str;
+                        }}
+                        return str;
+                    }};
+                    
+                    // Make the override itself look native
+                    Object.defineProperty(Function.prototype, 'toString', {{
+                        value: newToString,
+                        writable: true,
+                        configurable: true,
+                        enumerable: false
+                    }});
+                    
+                    // Prevent new cdc_ properties from being added
+                    const cdcProps = [
+                        'cdc_adoQpoasnfa76pfcZLmcfl_Array',
+                        'cdc_adoQpoasnfa76pfcZLmcfl_Promise',
+                        'cdc_adoQpoasnfa76pfcZLmcfl_Symbol'
+                    ];
+                    
+                    cdcProps.forEach(prop => {{
+                        Object.defineProperty(window, prop, {{
+                            get: () => undefined,
+                            set: () => {{}},
+                            configurable: false,
+                            enumerable: false
+                        }});
+                    }});
+                    
+                    // ============================================
+                    // NAVIGATOR PROPERTY OVERRIDES
+                    // ============================================
+                    
                     // Remove webdriver property completely
                     Object.defineProperty(navigator, 'webdriver', {{
                         get: () => undefined,
@@ -3070,6 +3148,72 @@ def create_driver(browser_type):
             # Comprehensive CDP stealth for Edge
             driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
                 'source': f'''
+                    // ============================================
+                    // ADVANCED WEBDRIVER ARTIFACT REMOVAL
+                    // ============================================
+                    
+                    // Remove all ChromeDriver/EdgeDriver-specific artifacts
+                    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
+                    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
+                    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
+                    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Object;
+                    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Proxy;
+                    delete window.cdc_adoQpoasnfa76pfcZLmcfl_JSON;
+                    
+                    // Remove all variations using regex
+                    Object.keys(window).forEach(key => {{
+                        if (key.match(/^(cdc_|\\$cdc_|\\$wdc_|\\$chrome_|\\$edge_|__webdriver|__selenium|__fxdriver|__driver)/)) {{
+                            try {{
+                                delete window[key];
+                            }} catch (e) {{}}
+                        }}
+                    }});
+                    
+                    // Remove document-level script caches
+                    delete document.__webdriver_script_fn;
+                    delete document.__selenium_unwrapped;
+                    delete document.__webdriver_unwrapped;
+                    delete document.__driver_evaluate;
+                    delete document.__webdriver_evaluate;
+                    delete document.__fxdriver_evaluate;
+                    delete document.__driver_unwrapped;
+                    delete document.__fxdriver_unwrapped;
+                    delete document.__webdriver_script_func;
+                    delete document.$cdc_asdjflasutopfhvcZLmcfl_;
+                    delete document.$chrome_asyncScriptInfo;
+                    
+                    // Override Function.prototype.toString to hide proxy behavior
+                    const originalToString = Function.prototype.toString;
+                    const newToString = function() {{
+                        if (this === navigator.webdriver || 
+                            this === Navigator.prototype.webdriver) {{
+                            return 'function webdriver() {{ [native code] }}';
+                        }}
+                        const str = originalToString.call(this);
+                        return str;
+                    }};
+                    
+                    Object.defineProperty(Function.prototype, 'toString', {{
+                        value: newToString,
+                        writable: true,
+                        configurable: true,
+                        enumerable: false
+                    }});
+                    
+                    // Prevent new cdc_ properties from being added
+                    ['cdc_adoQpoasnfa76pfcZLmcfl_Array', 'cdc_adoQpoasnfa76pfcZLmcfl_Promise', 'cdc_adoQpoasnfa76pfcZLmcfl_Symbol'].forEach(prop => {{
+                        Object.defineProperty(window, prop, {{
+                            get: () => undefined,
+                            set: () => {{}},
+                            configurable: false,
+                            enumerable: false
+                        }});
+                    }});
+                    
+                    // ============================================
+                    // NAVIGATOR PROPERTY OVERRIDES
+                    // ============================================
+                    
                     // Remove webdriver property
                     Object.defineProperty(navigator, 'webdriver', {{
                         get: () => undefined
@@ -3346,6 +3490,62 @@ def create_driver(browser_type):
     elif browser_type == 'firefox':
         # For Firefox, inject comprehensive stealth script after page load
         driver._stealth_js = f'''
+            // ============================================
+            // ADVANCED WEBDRIVER ARTIFACT REMOVAL
+            // ============================================
+            
+            // Remove all Gecko/Firefox driver artifacts
+            delete window.__webdriver_evaluate;
+            delete window.__selenium_evaluate;
+            delete window.__webdriver_script_func;
+            delete window.__webdriver_script_fn;
+            delete window.__fxdriver_evaluate;
+            delete window.__driver_unwrapped;
+            delete window.__webdriver_unwrapped;
+            delete window.__fxdriver_unwrapped;
+            
+            // Remove document-level script caches
+            delete document.__webdriver_script_fn;
+            delete document.__selenium_unwrapped;
+            delete document.__webdriver_unwrapped;
+            delete document.__driver_evaluate;
+            delete document.__webdriver_evaluate;
+            delete document.__fxdriver_evaluate;
+            delete document.__driver_unwrapped;
+            delete document.__fxdriver_unwrapped;
+            delete document.__webdriver_script_func;
+            
+            // Remove all variations using regex
+            Object.keys(window).forEach(key => {{
+                if (key.match(/^(__webdriver|__selenium|__fxdriver|__driver|__gecko)/)) {{
+                    try {{
+                        delete window[key];
+                    }} catch (e) {{}}
+                }}
+            }});
+            
+            // Override Function.prototype.toString to hide proxy behavior
+            const originalToString = Function.prototype.toString;
+            const newToString = function() {{
+                if (this === navigator.webdriver || 
+                    this === Navigator.prototype.webdriver) {{
+                    return 'function webdriver() {{ [native code] }}';
+                }}
+                const str = originalToString.call(this);
+                return str;
+            }};
+            
+            Object.defineProperty(Function.prototype, 'toString', {{
+                value: newToString,
+                writable: true,
+                configurable: true,
+                enumerable: false
+            }});
+            
+            // ============================================
+            // NAVIGATOR PROPERTY OVERRIDES
+            // ============================================
+            
             // Remove webdriver property
             Object.defineProperty(navigator, 'webdriver', {{
                 get: () => undefined,
