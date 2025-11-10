@@ -53,6 +53,147 @@ def get_domain(url):
     except:
         return ''
 
+def generate_random_language():
+    """
+    Generate random European language with 80% French variants
+    
+    Quality values (q-values) indicate preference order:
+    - 1.0 (default, omitted): highest preference
+    - 0.9-0.7: secondary preferences
+    - 0.6-0.4: tertiary preferences
+    
+    Randomizing q-values makes fingerprinting harder and mimics natural browser variations.
+    """
+    
+    def randomize_q(base):
+        """Add small random variation to quality value (±0.05)"""
+        variation = random.uniform(-0.05, 0.05)
+        return max(0.1, min(1.0, base + variation))  # Keep between 0.1 and 1.0
+    
+    def build_lang_string(langs_with_q):
+        """Build language string with randomized q-values"""
+        parts = []
+        for i, (lang, base_q) in enumerate(langs_with_q):
+            if i == 0:
+                # First language typically has no q-value (implicit 1.0)
+                # But sometimes it does - 30% chance
+                if random.random() < 0.3:
+                    q = randomize_q(0.98)
+                    parts.append(f'{lang};q={q:.1f}')
+                else:
+                    parts.append(lang)
+            else:
+                q = randomize_q(base_q)
+                parts.append(f'{lang};q={q:.1f}')
+        return ','.join(parts)
+    
+    # French variants (80% weight) - defined as (language, base_quality)
+    french_language_templates = [
+        # France
+        [('fr-FR', 1.0), ('fr', 0.9), ('en', 0.8)],
+        [('fr-FR', 1.0), ('fr', 0.9), ('en-US', 0.8), ('en', 0.7)],
+        [('fr', 1.0), ('fr-FR', 0.95), ('en', 0.8)],
+        [('fr-FR', 1.0), ('en', 0.7)],
+        # Belgium
+        [('fr-BE', 1.0), ('fr', 0.9), ('nl', 0.8), ('en', 0.7)],
+        [('fr-BE', 1.0), ('fr', 0.9), ('nl-BE', 0.85), ('nl', 0.8), ('en', 0.7)],
+        # Switzerland
+        [('fr-CH', 1.0), ('fr', 0.9), ('de', 0.8), ('it', 0.7), ('en', 0.6)],
+        [('fr-CH', 1.0), ('fr', 0.95), ('de-CH', 0.85), ('de', 0.8), ('en', 0.6)],
+        # Canada
+        [('fr-CA', 1.0), ('fr', 0.9), ('en-CA', 0.8), ('en', 0.7)],
+        [('fr-CA', 1.0), ('fr', 0.95), ('en', 0.75)],
+        [('fr', 1.0), ('fr-CA', 0.95), ('en-CA', 0.8), ('en-US', 0.75), ('en', 0.7)],
+        # Luxembourg
+        [('fr-LU', 1.0), ('fr', 0.9), ('de', 0.85), ('en', 0.7)],
+        [('fr-LU', 1.0), ('fr', 0.95), ('de-LU', 0.9), ('de', 0.85), ('en', 0.7)],
+        # Monaco
+        [('fr-MC', 1.0), ('fr', 0.9), ('it', 0.8), ('en', 0.7)],
+        [('fr-MC', 1.0), ('fr', 0.95), ('en', 0.75)],
+    ]
+    
+    # Other European languages (20% weight)
+    other_language_templates = [
+        # Germany
+        [('de-DE', 1.0), ('de', 0.9), ('en', 0.8)],
+        [('de-DE', 1.0), ('de', 0.9), ('en-US', 0.8), ('en', 0.7)],
+        [('de', 1.0), ('de-DE', 0.95), ('en', 0.8)],
+        # Austria
+        [('de-AT', 1.0), ('de', 0.9), ('en', 0.8)],
+        [('de-AT', 1.0), ('de', 0.95), ('en-GB', 0.8), ('en', 0.75)],
+        # Switzerland (German)
+        [('de-CH', 1.0), ('de', 0.9), ('fr', 0.8), ('it', 0.7), ('en', 0.6)],
+        [('de-CH', 1.0), ('de', 0.95), ('fr-CH', 0.85), ('fr', 0.8), ('en', 0.6)],
+        # Spain
+        [('es-ES', 1.0), ('es', 0.9), ('ca', 0.8), ('en', 0.7)],
+        [('es-ES', 1.0), ('es', 0.95), ('en', 0.8)],
+        [('es', 1.0), ('es-ES', 0.95), ('en-US', 0.8), ('en', 0.75)],
+        # Italy
+        [('it-IT', 1.0), ('it', 0.9), ('en', 0.8)],
+        [('it', 1.0), ('it-IT', 0.95), ('en-US', 0.8), ('en', 0.75)],
+        # Switzerland (Italian)
+        [('it-CH', 1.0), ('it', 0.9), ('de', 0.8), ('fr', 0.7), ('en', 0.6)],
+        # Portugal
+        [('pt-PT', 1.0), ('pt', 0.9), ('en', 0.8)],
+        [('pt', 1.0), ('pt-PT', 0.95), ('en-GB', 0.8), ('en', 0.75)],
+        # Netherlands
+        [('nl-NL', 1.0), ('nl', 0.9), ('en', 0.85)],
+        [('nl', 1.0), ('nl-NL', 0.95), ('en-US', 0.85), ('en', 0.8)],
+        # Belgium (Flemish)
+        [('nl-BE', 1.0), ('nl', 0.9), ('fr', 0.8), ('en', 0.7)],
+        [('nl-BE', 1.0), ('nl', 0.95), ('fr-BE', 0.85), ('fr', 0.8), ('en', 0.7)],
+        # Poland
+        [('pl-PL', 1.0), ('pl', 0.9), ('en', 0.8)],
+        [('pl', 1.0), ('pl-PL', 0.95), ('en-US', 0.8), ('en', 0.75)],
+        # Sweden
+        [('sv-SE', 1.0), ('sv', 0.9), ('en', 0.85)],
+        [('sv', 1.0), ('sv-SE', 0.95), ('en-GB', 0.85), ('en', 0.8)],
+        # Denmark
+        [('da-DK', 1.0), ('da', 0.9), ('en', 0.85)],
+        [('da', 1.0), ('da-DK', 0.95), ('en-US', 0.85), ('en', 0.8)],
+        # Norway
+        [('no-NO', 1.0), ('no', 0.9), ('nb', 0.85), ('en', 0.8)],
+        [('nb-NO', 1.0), ('nb', 0.95), ('no', 0.9), ('en', 0.8)],
+        # Finland
+        [('fi-FI', 1.0), ('fi', 0.9), ('sv', 0.8), ('en', 0.75)],
+        [('fi', 1.0), ('fi-FI', 0.95), ('sv-FI', 0.85), ('sv', 0.8), ('en', 0.7)],
+        # Czech Republic
+        [('cs-CZ', 1.0), ('cs', 0.9), ('en', 0.8)],
+        [('cs', 1.0), ('cs-CZ', 0.95), ('sk', 0.85), ('en', 0.8)],
+        # Hungary
+        [('hu-HU', 1.0), ('hu', 0.9), ('en', 0.8)],
+        [('hu', 1.0), ('hu-HU', 0.95), ('en-US', 0.8), ('en', 0.75)],
+        # Romania
+        [('ro-RO', 1.0), ('ro', 0.9), ('en', 0.8)],
+        [('ro', 1.0), ('ro-RO', 0.95), ('en-GB', 0.8), ('en', 0.75)],
+        # Greece
+        [('el-GR', 1.0), ('el', 0.9), ('en', 0.8)],
+        [('el', 1.0), ('el-GR', 0.95), ('en-US', 0.8), ('en', 0.75)],
+        # Slovakia
+        [('sk-SK', 1.0), ('sk', 0.9), ('cs', 0.85), ('en', 0.75)],
+        [('sk', 1.0), ('sk-SK', 0.95), ('cs', 0.85), ('en', 0.8)],
+        # Bulgaria
+        [('bg-BG', 1.0), ('bg', 0.9), ('en', 0.8)],
+        # Croatia
+        [('hr-HR', 1.0), ('hr', 0.9), ('en', 0.8)],
+        # Slovenia
+        [('sl-SI', 1.0), ('sl', 0.9), ('en', 0.8)],
+        # Estonia
+        [('et-EE', 1.0), ('et', 0.9), ('en', 0.85)],
+        # Latvia
+        [('lv-LV', 1.0), ('lv', 0.9), ('en', 0.85)],
+        # Lithuania
+        [('lt-LT', 1.0), ('lt', 0.9), ('en', 0.85)],
+    ]
+    
+    # 80% French, 20% other European
+    if random.random() < 0.8:
+        template = random.choice(french_language_templates)
+    else:
+        template = random.choice(other_language_templates)
+    
+    return build_lang_string(template)
+
 def generate_random_user_agent():
     """Generate a random realistic user agent by combining different components"""
     
@@ -290,6 +431,35 @@ def generate_random_user_agent():
 def auto_accept_cookies(driver, browser_type):
     """Automatically detect and click cookie consent buttons"""
     try:
+        # YouTube-specific consent handling (must be first - very specific)
+        try:
+            # YouTube has a modal dialog with specific buttons
+            youtube_accept_selectors = [
+                'button[aria-label*="Accept all"]',
+                'button[aria-label*="accept all"]',
+                'ytd-button-renderer button[aria-label*="Accept"]',
+                'tp-yt-paper-dialog button[aria-label*="Accept all"]',
+                'c3-consent-bump button[aria-label*="Accept"]',
+                '[aria-label="Accept all"]',
+                '[aria-label="Accept the use of cookies"]',
+                'button:has-text("Accept all")',
+                'ytd-consent-bump-v2-lightbox button[aria-label*="Accept"]'
+            ]
+            
+            for selector in youtube_accept_selectors:
+                try:
+                    elements = driver.find_elements(By.CSS_SELECTOR, selector)
+                    for element in elements:
+                        if element.is_displayed():
+                            element.click()
+                            print(f'  [{browser_type}] 🍪 Accepted YouTube consent')
+                            time.sleep(1)
+                            return True
+                except:
+                    continue
+        except:
+            pass
+        
         # Common cookie consent button selectors and text patterns
         cookie_selectors = [
             # Common IDs
@@ -519,7 +689,12 @@ def create_driver(browser_type):
     
     # Generate a random realistic user agent (thousands of combinations possible)
     user_agent = generate_random_user_agent()
+    
+    # Generate random European language (80% French)
+    accept_language = generate_random_language()
+    
     print(f'[{browser_type}] Generated UA: {user_agent[:80]}...')
+    print(f'[{browser_type}] Language: {accept_language.split(",")[0]}')
     
     if browser_type == 'chrome':
         options = webdriver.ChromeOptions()
@@ -529,6 +704,10 @@ def create_driver(browser_type):
         options.add_argument('--disable-blink-features=AutomationControlled')
         options.add_experimental_option("excludeSwitches", ["enable-automation", "enable-logging"])
         options.add_experimental_option('useAutomationExtension', False)
+        
+        # Additional Facebook/anti-bot detection prevention
+        options.add_argument('--disable-features=IsolateOrigins,site-per-process,SitePerProcess')
+        options.add_argument('--disable-site-isolation-trials')
         
         # Additional stealth arguments from the article
         options.add_argument('--disable-popup-blocking')
@@ -540,9 +719,14 @@ def create_driver(browser_type):
         options.add_argument('--disable-setuid-sandbox')
         options.add_argument('--disable-infobars')
         options.add_argument('--window-size=1920,1080')
-        options.add_argument('--disable-web-security')
-        options.add_argument('--disable-features=IsolateOrigins,site-per-process')
-        options.add_argument('--lang=en-US,en;q=0.9')
+        options.add_argument(f'--lang={accept_language.split(",")[0].split(";")[0]}')
+        
+        # Additional anti-detection for Facebook and modern sites
+        options.add_argument('--enable-features=NetworkService,NetworkServiceInProcess')
+        options.add_argument('--disable-features=VizDisplayCompositor')
+        options.add_argument('--force-color-profile=srgb')
+        options.add_argument('--metrics-recording-only')
+        options.add_argument('--use-mock-keychain')
         
         # Additional stealth preferences
         prefs = {
@@ -566,6 +750,10 @@ def create_driver(browser_type):
         options.set_preference("dom.webdriver.enabled", False)
         options.set_preference("useAutomationExtension", False)
         options.set_preference("marionette", True)
+        
+        # Language preferences
+        options.set_preference("intl.accept_languages", accept_language)
+        options.set_preference("intl.locale.requested", accept_language.split(",")[0].split(";")[0])
         
         # Privacy & tracking preferences
         options.set_preference("privacy.trackingprotection.enabled", False)
@@ -638,7 +826,7 @@ def create_driver(browser_type):
         options.add_argument('--window-size=1920,1080')
         options.add_argument('--disable-web-security')
         options.add_argument('--disable-features=IsolateOrigins,site-per-process,VizDisplayCompositor')
-        options.add_argument('--lang=en-US,en;q=0.9')
+        options.add_argument(f'--lang={accept_language.split(",")[0].split(";")[0]}')
         options.add_argument('--disable-background-timer-throttling')
         options.add_argument('--disable-backgrounding-occluded-windows')
         options.add_argument('--disable-renderer-backgrounding')
@@ -675,7 +863,7 @@ def create_driver(browser_type):
             driver.execute_cdp_cmd('Network.setUserAgentOverride', {
                 "userAgent": user_agent,
                 "platform": "Win32",
-                "acceptLanguage": "en-US,en;q=0.9"
+                "acceptLanguage": accept_language
             })
             
             print(f'[{browser_type}] ✓ Applied CDP user agent override')
@@ -686,10 +874,14 @@ def create_driver(browser_type):
         try:
             driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
                 'source': '''
-                    // Remove webdriver property
+                    // Remove webdriver property completely
                     Object.defineProperty(navigator, 'webdriver', {
-                        get: () => undefined
+                        get: () => undefined,
+                        configurable: true
                     });
+                    
+                    // Override Automation-related properties
+                    delete navigator.__proto__.webdriver;
                     
                     // Mock plugins (realistic Chrome plugins)
                     Object.defineProperty(navigator, 'plugins', {
@@ -731,22 +923,89 @@ def create_driver(browser_type):
                     });
                     
                     // Chrome runtime with full objects
-                    window.chrome = {
-                        runtime: {},
-                        loadTimes: function() {},
-                        csi: function() {},
-                        app: {
-                            isInstalled: false,
-                            InstallState: {
-                                DISABLED: 'disabled',
-                                INSTALLED: 'installed',
-                                NOT_INSTALLED: 'not_installed'
-                            },
-                            RunningState: {
-                                CANNOT_RUN: 'cannot_run',
-                                READY_TO_RUN: 'ready_to_run',
-                                RUNNING: 'running'
-                            }
+                    if (!window.chrome) {
+                        window.chrome = {};
+                    }
+                    window.chrome.runtime = {
+                        OnInstalledReason: {
+                            CHROME_UPDATE: "chrome_update",
+                            INSTALL: "install",
+                            SHARED_MODULE_UPDATE: "shared_module_update",
+                            UPDATE: "update"
+                        },
+                        OnRestartRequiredReason: {
+                            APP_UPDATE: "app_update",
+                            OS_UPDATE: "os_update",
+                            PERIODIC: "periodic"
+                        },
+                        PlatformArch: {
+                            ARM: "arm",
+                            ARM64: "arm64",
+                            MIPS: "mips",
+                            MIPS64: "mips64",
+                            X86_32: "x86-32",
+                            X86_64: "x86-64"
+                        },
+                        PlatformNaclArch: {
+                            ARM: "arm",
+                            MIPS: "mips",
+                            MIPS64: "mips64",
+                            X86_32: "x86-32",
+                            X86_64: "x86-64"
+                        },
+                        PlatformOs: {
+                            ANDROID: "android",
+                            CROS: "cros",
+                            LINUX: "linux",
+                            MAC: "mac",
+                            OPENBSD: "openbsd",
+                            WIN: "win"
+                        },
+                        RequestUpdateCheckStatus: {
+                            NO_UPDATE: "no_update",
+                            THROTTLED: "throttled",
+                            UPDATE_AVAILABLE: "update_available"
+                        }
+                    };
+                    
+                    window.chrome.loadTimes = function() {
+                        return {
+                            commitLoadTime: performance.timing.responseStart / 1000,
+                            connectionInfo: "http/1.1",
+                            finishDocumentLoadTime: performance.timing.domContentLoadedEventEnd / 1000,
+                            finishLoadTime: performance.timing.loadEventEnd / 1000,
+                            firstPaintAfterLoadTime: 0,
+                            firstPaintTime: performance.timing.responseStart / 1000,
+                            navigationType: "Other",
+                            npnNegotiatedProtocol: "unknown",
+                            requestTime: performance.timing.navigationStart / 1000,
+                            startLoadTime: performance.timing.navigationStart / 1000,
+                            wasAlternateProtocolAvailable: false,
+                            wasFetchedViaSpdy: false,
+                            wasNpnNegotiated: false
+                        };
+                    };
+                    
+                    window.chrome.csi = function() {
+                        return {
+                            onloadT: performance.timing.loadEventEnd,
+                            pageT: Date.now() - performance.timing.navigationStart,
+                            startE: performance.timing.navigationStart,
+                            tran: 15
+                        };
+                    };
+                    
+                    window.chrome.app = {
+                        isInstalled: false,
+                        InstallState: {
+                            DISABLED: 'disabled',
+                            INSTALLED: 'installed',
+                            NOT_INSTALLED: 'not_installed'
+                        },
+                        RunningState: {
+                            CANNOT_RUN: 'cannot_run',
+                            READY_TO_RUN: 'ready_to_run',
+                            RUNNING: 'running'
                         }
                     };
                     
@@ -764,14 +1023,58 @@ def create_driver(browser_type):
                             effectiveType: '4g',
                             rtt: 100,
                             downlink: 10,
-                            saveData: false
+                            saveData: false,
+                            onchange: null
                         })
                     });
                     
-                    // Override toString to hide modifications
-                    const newProto = navigator.__proto__;
-                    delete newProto.webdriver;
-                    navigator.__proto__ = newProto;
+                    // Mock hardwareConcurrency
+                    Object.defineProperty(navigator, 'hardwareConcurrency', {
+                        get: () => 8
+                    });
+                    
+                    // Mock deviceMemory
+                    Object.defineProperty(navigator, 'deviceMemory', {
+                        get: () => 8
+                    });
+                    
+                    // Mock maxTouchPoints
+                    Object.defineProperty(navigator, 'maxTouchPoints', {
+                        get: () => 0
+                    });
+                    
+                    // Mock vendor
+                    Object.defineProperty(navigator, 'vendor', {
+                        get: () => 'Google Inc.'
+                    });
+                    
+                    // Mock platform
+                    Object.defineProperty(navigator, 'platform', {
+                        get: () => 'Win32'
+                    });
+                    
+                    // Fix chrome detection by making sure chrome object is properly defined
+                    Object.defineProperty(window, 'chrome', {
+                        get: () => ({
+                            runtime: window.chrome.runtime,
+                            loadTimes: window.chrome.loadTimes,
+                            csi: window.chrome.csi,
+                            app: window.chrome.app
+                        }),
+                        configurable: true
+                    });
+                    
+                    // Make sure toString doesn't reveal native code wrapping
+                    const getParameter = WebGLRenderingContext.prototype.getParameter;
+                    WebGLRenderingContext.prototype.getParameter = function(parameter) {
+                        if (parameter === 37445) {
+                            return 'Intel Inc.';
+                        }
+                        if (parameter === 37446) {
+                            return 'Intel Iris OpenGL Engine';
+                        }
+                        return getParameter.call(this, parameter);
+                    };
                 '''
             })
             
@@ -779,7 +1082,7 @@ def create_driver(browser_type):
             driver.execute_cdp_cmd('Network.enable', {})
             driver.execute_cdp_cmd('Network.setExtraHTTPHeaders', {
                 'headers': {
-                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Language': accept_language,
                     'Accept-Encoding': 'gzip, deflate, br',
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
                 }
@@ -795,7 +1098,7 @@ def create_driver(browser_type):
             driver.execute_cdp_cmd('Network.setUserAgentOverride', {
                 "userAgent": user_agent,
                 "platform": "Win32",
-                "acceptLanguage": "en-US,en;q=0.9"
+                "acceptLanguage": accept_language
             })
             
             # Comprehensive CDP stealth for Edge
@@ -884,7 +1187,7 @@ def create_driver(browser_type):
             driver.execute_cdp_cmd('Network.enable', {})
             driver.execute_cdp_cmd('Network.setExtraHTTPHeaders', {
                 'headers': {
-                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Language': accept_language,
                     'Accept-Encoding': 'gzip, deflate, br',
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
                 }
