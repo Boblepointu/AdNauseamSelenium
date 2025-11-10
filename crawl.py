@@ -296,26 +296,86 @@ def create_driver(browser_type):
         
     elif browser_type == 'firefox':
         options = webdriver.FirefoxOptions()
+        
+        # Comprehensive Firefox stealth preferences
         options.set_preference("general.useragent.override", user_agent)
-        # Firefox anti-detection preferences
         options.set_preference("dom.webdriver.enabled", False)
         options.set_preference("useAutomationExtension", False)
         options.set_preference("marionette", True)
+        
+        # Privacy & tracking preferences
         options.set_preference("privacy.trackingprotection.enabled", False)
+        options.set_preference("geo.enabled", False)
+        options.set_preference("geo.provider.use_corelocation", False)
+        options.set_preference("geo.prompt.testing", False)
+        options.set_preference("geo.prompt.testing.allow", False)
+        
+        # Media preferences (disable WebRTC leaks)
+        options.set_preference("media.peerconnection.enabled", False)
+        options.set_preference("media.navigator.enabled", False)
+        
+        # Disable leak detection
+        options.set_preference("network.http.sendRefererHeader", 0)
+        options.set_preference("network.http.sendSecureXSiteReferrer", False)
+        
+        # Canvas fingerprinting protection
+        options.set_preference("privacy.resistFingerprinting", True)
+        options.set_preference("privacy.trackingprotection.fingerprinting.enabled", True)
+        
+        # WebGL fingerprinting
+        options.set_preference("webgl.disabled", False)
+        options.set_preference("privacy.resistFingerprinting.block_mozAddonManager", True)
+        
+        # Notifications
+        options.set_preference("dom.webnotifications.enabled", False)
+        options.set_preference("dom.push.enabled", False)
+        
+        # Additional anti-detection
+        options.set_preference("browser.startup.page", 0)
+        options.set_preference("browser.cache.disk.enable", False)
+        options.set_preference("browser.cache.memory.enable", False)
+        options.set_preference("browser.cache.offline.enable", False)
+        options.set_preference("network.http.use-cache", False)
         
     elif browser_type == 'edge':
         options = webdriver.EdgeOptions()
+        
+        # Comprehensive Edge stealth configuration
         options.add_argument(f'user-agent={user_agent}')
         options.add_argument('--disable-blink-features=AutomationControlled')
         options.add_experimental_option("excludeSwitches", ["enable-automation", "enable-logging"])
         options.add_experimental_option('useAutomationExtension', False)
         
-        # Same additional arguments as Chrome
+        # Additional Edge-specific stealth arguments
         options.add_argument('--disable-popup-blocking')
         options.add_argument('--start-maximized')
         options.add_argument('--disable-extensions')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--disable-setuid-sandbox')
+        options.add_argument('--disable-infobars')
+        options.add_argument('--window-size=1920,1080')
+        options.add_argument('--disable-web-security')
+        options.add_argument('--disable-features=IsolateOrigins,site-per-process,VizDisplayCompositor')
+        options.add_argument('--lang=en-US,en;q=0.9')
+        options.add_argument('--disable-background-timer-throttling')
+        options.add_argument('--disable-backgrounding-occluded-windows')
+        options.add_argument('--disable-renderer-backgrounding')
+        
+        # Edge preferences (similar to Chrome)
+        prefs = {
+            "profile.default_content_setting_values.notifications": 2,
+            "credentials_enable_service": False,
+            "profile.password_manager_enabled": False,
+            "webrtc.ip_handling_policy": "disable_non_proxied_udp",
+            "webrtc.multiple_routes_enabled": False,
+            "webrtc.nonproxied_udp_enabled": False,
+            "profile.default_content_setting_values.media_stream_mic": 2,
+            "profile.default_content_setting_values.media_stream_camera": 2,
+            "profile.default_content_setting_values.geolocation": 2
+        }
+        options.add_experimental_option("prefs", prefs)
     else:
         raise ValueError(f"Unsupported browser: {browser_type}")
     
@@ -325,77 +385,234 @@ def create_driver(browser_type):
         options=options
     )
     
-    # Apply Selenium Stealth for Chrome/Edge (most effective)
-    if browser_type in ['chrome', 'edge']:
-        # Set user agent via CDP
-        driver.execute_cdp_cmd('Network.setUserAgentOverride', {
-            "userAgent": user_agent,
-            "platform": "Win32",
-            "acceptLanguage": "en-US,en;q=0.9"
-        })
-        
-        # Apply selenium-stealth
-        stealth(driver,
-            languages=["en-US", "en"],
-            vendor="Google Inc.",
-            platform="Win32",
-            webgl_vendor="Intel Inc.",
-            renderer="Intel Iris OpenGL Engine",
-            fix_hairline=True,
-        )
+    # Apply Selenium Stealth for Chrome only (it doesn't support other browsers)
+    if browser_type == 'chrome':
+        try:
+            # Set user agent via CDP
+            driver.execute_cdp_cmd('Network.setUserAgentOverride', {
+                "userAgent": user_agent,
+                "platform": "Win32",
+                "acceptLanguage": "en-US,en;q=0.9"
+            })
+            
+            # Apply selenium-stealth (only works with Chrome)
+            stealth(driver,
+                languages=["en-US", "en"],
+                vendor="Google Inc.",
+                platform="Win32",
+                webgl_vendor="Intel Inc.",
+                renderer="Intel Iris OpenGL Engine",
+                fix_hairline=True,
+            )
+            
+            print(f'[{browser_type}] ✓ Applied selenium-stealth')
+        except Exception as e:
+            print(f'[{browser_type}] ⚠ Selenium-stealth not applied: {str(e)[:50]}')
         
         # Additional CDP commands for stealth
-        driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
-            'source': '''
-                Object.defineProperty(navigator, 'webdriver', {
-                    get: () => undefined
-                });
-                
-                // Mock plugins
-                Object.defineProperty(navigator, 'plugins', {
-                    get: () => [1, 2, 3, 4, 5]
-                });
-                
-                // Mock languages
-                Object.defineProperty(navigator, 'languages', {
-                    get: () => ['en-US', 'en']
-                });
-                
-                // Chrome runtime
-                window.chrome = {
-                    runtime: {},
-                    loadTimes: function() {},
-                    csi: function() {},
-                    app: {}
-                };
-                
-                // Mock permissions
-                const originalQuery = window.navigator.permissions.query;
-                window.navigator.permissions.query = (parameters) => (
-                    parameters.name === 'notifications' ?
-                        Promise.resolve({ state: 'denied' }) :
-                        originalQuery(parameters)
-                );
-            '''
-        })
+        try:
+            driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
+                'source': '''
+                    Object.defineProperty(navigator, 'webdriver', {
+                        get: () => undefined
+                    });
+                    
+                    // Mock plugins
+                    Object.defineProperty(navigator, 'plugins', {
+                        get: () => [1, 2, 3, 4, 5]
+                    });
+                    
+                    // Mock languages
+                    Object.defineProperty(navigator, 'languages', {
+                        get: () => ['en-US', 'en']
+                    });
+                    
+                    // Chrome runtime
+                    window.chrome = {
+                        runtime: {},
+                        loadTimes: function() {},
+                        csi: function() {},
+                        app: {}
+                    };
+                    
+                    // Mock permissions
+                    const originalQuery = window.navigator.permissions.query;
+                    window.navigator.permissions.query = (parameters) => (
+                        parameters.name === 'notifications' ?
+                            Promise.resolve({ state: 'denied' }) :
+                            originalQuery(parameters)
+                    );
+                '''
+            })
+        except Exception as e:
+            print(f'[{browser_type}] ⚠ CDP commands not applied: {str(e)[:50]}')
+            
+    elif browser_type == 'edge':
+        # Edge uses CDP and is Chromium-based, apply comprehensive stealth
+        try:
+            driver.execute_cdp_cmd('Network.setUserAgentOverride', {
+                "userAgent": user_agent,
+                "platform": "Win32",
+                "acceptLanguage": "en-US,en;q=0.9"
+            })
+            
+            # Comprehensive CDP stealth for Edge
+            driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
+                'source': '''
+                    // Remove webdriver property
+                    Object.defineProperty(navigator, 'webdriver', {
+                        get: () => undefined
+                    });
+                    
+                    // Mock plugins
+                    Object.defineProperty(navigator, 'plugins', {
+                        get: () => [
+                            {
+                                0: {type: "application/x-google-chrome-pdf", suffixes: "pdf", description: "Portable Document Format", enabledPlugin: Plugin},
+                                description: "Portable Document Format",
+                                filename: "internal-pdf-viewer",
+                                length: 1,
+                                name: "Chrome PDF Plugin"
+                            },
+                            {
+                                0: {type: "application/pdf", suffixes: "pdf", description: "", enabledPlugin: Plugin},
+                                description: "",
+                                filename: "mhjfbmdgcfjbbpaeojofohoefgiehjai",
+                                length: 1,
+                                name: "Chrome PDF Viewer"
+                            },
+                            {
+                                description: "Native Client Executable",
+                                filename: "internal-nacl-plugin",
+                                length: 2,
+                                name: "Native Client"
+                            }
+                        ]
+                    });
+                    
+                    // Mock mimeTypes
+                    Object.defineProperty(navigator, 'mimeTypes', {
+                        get: () => [
+                            {type: "application/pdf", suffixes: "pdf", description: "", enabledPlugin: Plugin},
+                            {type: "application/x-google-chrome-pdf", suffixes: "pdf", description: "Portable Document Format", enabledPlugin: Plugin}
+                        ]
+                    });
+                    
+                    // Mock languages
+                    Object.defineProperty(navigator, 'languages', {
+                        get: () => ['en-US', 'en']
+                    });
+                    
+                    // Chrome runtime
+                    window.chrome = {
+                        runtime: {},
+                        loadTimes: function() {},
+                        csi: function() {},
+                        app: {
+                            isInstalled: false,
+                            InstallState: {
+                                DISABLED: 'disabled',
+                                INSTALLED: 'installed',
+                                NOT_INSTALLED: 'not_installed'
+                            },
+                            RunningState: {
+                                CANNOT_RUN: 'cannot_run',
+                                READY_TO_RUN: 'ready_to_run',
+                                RUNNING: 'running'
+                            }
+                        }
+                    };
+                    
+                    // Mock permissions
+                    const originalQuery = window.navigator.permissions.query;
+                    window.navigator.permissions.query = (parameters) => (
+                        parameters.name === 'notifications' ?
+                            Promise.resolve({ state: 'denied' }) :
+                            originalQuery(parameters)
+                    );
+                    
+                    // Override toString
+                    const newProto = navigator.__proto__;
+                    delete newProto.webdriver;
+                    navigator.__proto__ = newProto;
+                '''
+            })
+            
+            # Additional Edge-specific stealth
+            driver.execute_cdp_cmd('Network.enable', {})
+            driver.execute_cdp_cmd('Network.setExtraHTTPHeaders', {
+                'headers': {
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+                }
+            })
+            
+            print(f'[{browser_type}] ✓ Applied comprehensive CDP stealth (Edge)')
+        except Exception as e:
+            print(f'[{browser_type}] ⚠ CDP stealth partially applied: {str(e)[:50]}')
+            
     elif browser_type == 'firefox':
-        # For Firefox, inject stealth script after page load
+        # For Firefox, inject comprehensive stealth script after page load
         driver._stealth_js = '''
+            // Remove webdriver property
             Object.defineProperty(navigator, 'webdriver', {
                 get: () => undefined,
                 configurable: true
             });
             
+            // Mock plugins
             Object.defineProperty(navigator, 'plugins', {
-                get: () => [1, 2, 3, 4, 5],
+                get: () => [
+                    {
+                        0: {type: "application/x-test", suffixes: "test", description: "Test Plugin"},
+                        description: "Test Plugin",
+                        filename: "test-plugin",
+                        length: 1,
+                        name: "Test Plugin"
+                    }
+                ],
                 configurable: true
             });
             
+            // Mock mimeTypes  
+            Object.defineProperty(navigator, 'mimeTypes', {
+                get: () => [
+                    {type: "application/pdf", suffixes: "pdf", description: "Portable Document Format"}
+                ],
+                configurable: true
+            });
+            
+            // Mock languages
             Object.defineProperty(navigator, 'languages', {
                 get: () => ['en-US', 'en'],
                 configurable: true
             });
+            
+            // Mock hardwareConcurrency
+            Object.defineProperty(navigator, 'hardwareConcurrency', {
+                get: () => 8,
+                configurable: true
+            });
+            
+            // Mock deviceMemory
+            Object.defineProperty(navigator, 'deviceMemory', {
+                get: () => 8,
+                configurable: true
+            });
+            
+            // Mock permissions
+            if (navigator.permissions) {
+                const originalQuery = navigator.permissions.query;
+                navigator.permissions.query = function(parameters) {
+                    if (parameters.name === 'notifications') {
+                        return Promise.resolve({ state: 'denied' });
+                    }
+                    return originalQuery(parameters);
+                };
+            }
         '''
+        print(f'[{browser_type}] ✓ Prepared comprehensive stealth script (will inject on page load)')
     
     driver.set_page_load_timeout(30)
     driver.set_window_size(1920, 1080)
