@@ -796,87 +796,243 @@ def generate_random_plugins():
     
     return '[' + ','.join(js_plugins) + ']'
 
+def generate_random_webrtc():
+    """
+    Generate randomized WebRTC local IP addresses for fingerprinting diversity
+    
+    Returns a dict with realistic local IPs
+    """
+    # Common private IP ranges
+    ip_patterns = [
+        # 192.168.x.x (most common home networks)
+        lambda: f"192.168.{random.randint(0, 255)}.{random.randint(2, 254)}",
+        lambda: f"192.168.1.{random.randint(2, 254)}",
+        lambda: f"192.168.0.{random.randint(2, 254)}",
+        # 10.x.x.x (large networks, VPNs)
+        lambda: f"10.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(2, 254)}",
+        lambda: f"10.0.{random.randint(0, 255)}.{random.randint(2, 254)}",
+        # 172.16-31.x.x (corporate networks)
+        lambda: f"172.{random.randint(16, 31)}.{random.randint(0, 255)}.{random.randint(2, 254)}",
+    ]
+    
+    # Generate 1-3 local IPs (most devices have 1-2)
+    num_ips = random.choice([1, 1, 1, 2, 2, 3])
+    local_ips = []
+    for _ in range(num_ips):
+        ip_gen = random.choice(ip_patterns)
+        local_ips.append(ip_gen())
+    
+    # IPv6 addresses (some systems have these)
+    has_ipv6 = random.random() < 0.3  # 30% have IPv6
+    if has_ipv6:
+        # Generate realistic link-local IPv6 (fe80::)
+        ipv6_parts = [f"{random.randint(0, 65535):04x}" for _ in range(4)]
+        local_ips.append(f"fe80::{':'.join(ipv6_parts)}")
+    
+    return {
+        'localIPs': local_ips,
+        'publicIP': f"{random.randint(1, 223)}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(1, 254)}"
+    }
+
 def generate_random_gpu():
     """
     Generate random GPU vendor and renderer strings for WebGL fingerprinting
+    Supports multi-GPU configurations (integrated + discrete)
     
     Returns a dict with:
     - vendor: GPU vendor string (parameter 37445)
     - renderer: GPU renderer string (parameter 37446)
+    - isMultiGPU: whether this is a multi-GPU system
     """
     
-    # Common real GPU configurations (vendor, renderer)
+    # Massively expanded GPU configurations (vendor, renderer, is_discrete, weight)
     gpu_configs = [
-        # Intel integrated graphics (most common)
-        ("Intel Inc.", "Intel Iris OpenGL Engine"),
-        ("Intel Inc.", "Intel(R) UHD Graphics 630"),
-        ("Intel Inc.", "Intel(R) HD Graphics 620"),
-        ("Intel Inc.", "Intel(R) HD Graphics 530"),
-        ("Intel Inc.", "Intel(R) Iris(R) Plus Graphics 640"),
-        ("Intel Inc.", "Intel(R) Iris(R) Plus Graphics 655"),
-        ("Intel Inc.", "Intel(R) Iris(R) Xe Graphics"),
-        ("Intel Inc.", "Mesa Intel(R) UHD Graphics 620 (KBL GT2)"),
-        ("Intel Inc.", "Mesa Intel(R) HD Graphics 630 (KBL GT2)"),
-        ("Intel", "Intel(R) HD Graphics 4000"),
-        ("Intel", "Intel(R) HD Graphics 5500"),
+        # Intel integrated graphics (most common) - HIGH WEIGHT
+        ("Intel Inc.", "Intel Iris OpenGL Engine", False, 15),
+        ("Intel Inc.", "Intel(R) UHD Graphics 630", False, 20),
+        ("Intel Inc.", "Intel(R) UHD Graphics 620", False, 18),
+        ("Intel Inc.", "Intel(R) HD Graphics 620", False, 15),
+        ("Intel Inc.", "Intel(R) HD Graphics 630", False, 12),
+        ("Intel Inc.", "Intel(R) HD Graphics 530", False, 10),
+        ("Intel Inc.", "Intel(R) HD Graphics 520", False, 8),
+        ("Intel Inc.", "Intel(R) Iris(R) Plus Graphics 640", False, 8),
+        ("Intel Inc.", "Intel(R) Iris(R) Plus Graphics 655", False, 8),
+        ("Intel Inc.", "Intel(R) Iris(R) Xe Graphics", False, 12),
+        ("Intel Inc.", "Intel(R) UHD Graphics 770", False, 10),
+        ("Intel Inc.", "Intel(R) UHD Graphics 730", False, 8),
+        ("Intel Inc.", "Intel(R) Arc(TM) A770 Graphics", False, 3),
+        ("Intel Inc.", "Intel(R) Arc(TM) A750 Graphics", False, 2),
+        ("Intel Inc.", "Mesa Intel(R) UHD Graphics 620 (KBL GT2)", False, 8),
+        ("Intel Inc.", "Mesa Intel(R) HD Graphics 630 (KBL GT2)", False, 8),
+        ("Intel Inc.", "Mesa Intel(R) UHD Graphics (CML GT2)", False, 6),
+        ("Intel", "Intel(R) HD Graphics 4000", False, 5),
+        ("Intel", "Intel(R) HD Graphics 5500", False, 6),
+        ("Intel", "Intel(R) HD Graphics 4600", False, 5),
+        ("Intel", "Intel(R) HD Graphics 3000", False, 3),
+        ("Intel", "Intel(R) Iris(TM) Graphics 5100", False, 4),
+        ("Intel", "Intel(R) Iris(TM) Graphics 6100", False, 4),
         
-        # NVIDIA (gaming/professional)
-        ("NVIDIA Corporation", "NVIDIA GeForce GTX 1050/PCIe/SSE2"),
-        ("NVIDIA Corporation", "NVIDIA GeForce GTX 1060/PCIe/SSE2"),
-        ("NVIDIA Corporation", "NVIDIA GeForce GTX 1650/PCIe/SSE2"),
-        ("NVIDIA Corporation", "NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2"),
-        ("NVIDIA Corporation", "NVIDIA GeForce RTX 2060/PCIe/SSE2"),
-        ("NVIDIA Corporation", "NVIDIA GeForce RTX 2070/PCIe/SSE2"),
-        ("NVIDIA Corporation", "NVIDIA GeForce RTX 3060/PCIe/SSE2"),
-        ("NVIDIA Corporation", "NVIDIA GeForce RTX 3070/PCIe/SSE2"),
-        ("NVIDIA Corporation", "NVIDIA GeForce RTX 4060/PCIe/SSE2"),
-        ("NVIDIA Corporation", "GeForce GTX 960/PCIe/SSE2"),
-        ("NVIDIA Corporation", "GeForce GTX 970/PCIe/SSE2"),
-        ("NVIDIA Corporation", "GeForce MX150/PCIe/SSE2"),
-        ("NVIDIA Corporation", "GeForce MX250/PCIe/SSE2"),
-        ("NVIDIA Corporation", "NVIDIA GeForce GTX 1080/PCIe/SSE2"),
+        # NVIDIA (gaming/professional) - MEDIUM-HIGH WEIGHT
+        ("NVIDIA Corporation", "NVIDIA GeForce GTX 1650/PCIe/SSE2", True, 12),
+        ("NVIDIA Corporation", "NVIDIA GeForce GTX 1050/PCIe/SSE2", True, 10),
+        ("NVIDIA Corporation", "NVIDIA GeForce GTX 1050 Ti/PCIe/SSE2", True, 10),
+        ("NVIDIA Corporation", "NVIDIA GeForce GTX 1060/PCIe/SSE2", True, 12),
+        ("NVIDIA Corporation", "NVIDIA GeForce GTX 1660/PCIe/SSE2", True, 10),
+        ("NVIDIA Corporation", "NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2", True, 12),
+        ("NVIDIA Corporation", "NVIDIA GeForce GTX 1660 SUPER/PCIe/SSE2", True, 8),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 2060/PCIe/SSE2", True, 10),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 2070/PCIe/SSE2", True, 8),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 2080/PCIe/SSE2", True, 6),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 3050/PCIe/SSE2", True, 10),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 3060/PCIe/SSE2", True, 12),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 3060 Ti/PCIe/SSE2", True, 10),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 3070/PCIe/SSE2", True, 10),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 3070 Ti/PCIe/SSE2", True, 6),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 3080/PCIe/SSE2", True, 6),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 4060/PCIe/SSE2", True, 8),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 4060 Ti/PCIe/SSE2", True, 6),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 4070/PCIe/SSE2", True, 6),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 4080/PCIe/SSE2", True, 4),
+        ("NVIDIA Corporation", "NVIDIA GeForce RTX 4090/PCIe/SSE2", True, 3),
+        ("NVIDIA Corporation", "GeForce GTX 960/PCIe/SSE2", True, 6),
+        ("NVIDIA Corporation", "GeForce GTX 970/PCIe/SSE2", True, 6),
+        ("NVIDIA Corporation", "GeForce GTX 980/PCIe/SSE2", True, 4),
+        ("NVIDIA Corporation", "GeForce GTX 1070/PCIe/SSE2", True, 8),
+        ("NVIDIA Corporation", "GeForce GTX 1080/PCIe/SSE2", True, 6),
+        ("NVIDIA Corporation", "GeForce GTX 1080 Ti/PCIe/SSE2", True, 5),
+        ("NVIDIA Corporation", "GeForce MX150/PCIe/SSE2", True, 8),
+        ("NVIDIA Corporation", "GeForce MX250/PCIe/SSE2", True, 8),
+        ("NVIDIA Corporation", "GeForce MX350/PCIe/SSE2", True, 6),
+        ("NVIDIA Corporation", "GeForce MX450/PCIe/SSE2", True, 6),
+        ("NVIDIA Corporation", "GeForce GT 1030/PCIe/SSE2", True, 5),
+        ("NVIDIA Corporation", "GeForce GT 730/PCIe/SSE2", True, 4),
+        ("NVIDIA Corporation", "NVIDIA GeForce GTX 750 Ti/PCIe/SSE2", True, 4),
+        ("NVIDIA Corporation", "NVIDIA GeForce GTX 950/PCIe/SSE2", True, 4),
+        ("NVIDIA Corporation", "NVIDIA T400/PCIe/SSE2", True, 3),
+        ("NVIDIA Corporation", "NVIDIA T1000/PCIe/SSE2", True, 3),
+        ("NVIDIA Corporation", "Quadro P1000/PCIe/SSE2", True, 3),
+        ("NVIDIA Corporation", "Quadro P2000/PCIe/SSE2", True, 2),
         
-        # AMD
-        ("AMD", "AMD Radeon(TM) Graphics"),
-        ("AMD", "AMD Radeon RX 580 Series"),
-        ("AMD", "AMD Radeon RX 5700"),
-        ("AMD", "AMD Radeon RX 6700 XT"),
-        ("AMD", "AMD Radeon(TM) Vega 8 Graphics"),
-        ("AMD", "AMD Radeon(TM) RX Vega 10 Graphics"),
-        ("ATI Technologies Inc.", "AMD Radeon HD 7900 Series"),
-        ("ATI Technologies Inc.", "AMD Radeon R9 200 Series"),
+        # AMD Radeon - MEDIUM WEIGHT
+        ("AMD", "AMD Radeon(TM) Graphics", False, 15),
+        ("AMD", "AMD Radeon(TM) Vega 8 Graphics", False, 12),
+        ("AMD", "AMD Radeon(TM) Vega 10 Graphics", False, 10),
+        ("AMD", "AMD Radeon(TM) Vega 11 Graphics", False, 8),
+        ("AMD", "AMD Radeon(TM) RX Vega 10 Graphics", False, 8),
+        ("AMD", "AMD Radeon RX 580 Series", True, 10),
+        ("AMD", "AMD Radeon RX 570 Series", True, 8),
+        ("AMD", "AMD Radeon RX 5500 XT", True, 8),
+        ("AMD", "AMD Radeon RX 5600 XT", True, 8),
+        ("AMD", "AMD Radeon RX 5700", True, 8),
+        ("AMD", "AMD Radeon RX 5700 XT", True, 8),
+        ("AMD", "AMD Radeon RX 6600", True, 8),
+        ("AMD", "AMD Radeon RX 6600 XT", True, 8),
+        ("AMD", "AMD Radeon RX 6700 XT", True, 8),
+        ("AMD", "AMD Radeon RX 6800", True, 6),
+        ("AMD", "AMD Radeon RX 6800 XT", True, 5),
+        ("AMD", "AMD Radeon RX 6900 XT", True, 4),
+        ("AMD", "AMD Radeon RX 7600", True, 6),
+        ("AMD", "AMD Radeon RX 7700 XT", True, 5),
+        ("AMD", "AMD Radeon RX 7800 XT", True, 4),
+        ("AMD", "AMD Radeon RX 7900 XT", True, 3),
+        ("AMD", "AMD Radeon RX 7900 XTX", True, 3),
+        ("AMD", "AMD Radeon RX 480", True, 6),
+        ("AMD", "AMD Radeon RX 470", True, 5),
+        ("AMD", "AMD Radeon(TM) 780M", False, 6),
+        ("AMD", "AMD Radeon(TM) 680M", False, 5),
+        ("AMD", "AMD Radeon(TM) 660M", False, 5),
+        ("ATI Technologies Inc.", "AMD Radeon HD 7900 Series", True, 3),
+        ("ATI Technologies Inc.", "AMD Radeon R9 200 Series", True, 3),
+        ("ATI Technologies Inc.", "AMD Radeon R9 380 Series", True, 3),
+        ("ATI Technologies Inc.", "AMD Radeon HD 7700 Series", True, 2),
         
-        # Apple (Mac)
-        ("Apple", "Apple M1"),
-        ("Apple", "Apple M2"),
-        ("Apple", "Apple M1 Pro"),
-        ("Apple", "Apple M1 Max"),
-        ("Apple", "AMD Radeon Pro 5500M"),
-        ("Apple", "AMD Radeon Pro 560X"),
+        # Apple Silicon (Mac) - MEDIUM WEIGHT
+        ("Apple", "Apple M1", False, 12),
+        ("Apple", "Apple M2", False, 10),
+        ("Apple", "Apple M3", False, 8),
+        ("Apple", "Apple M1 Pro", False, 8),
+        ("Apple", "Apple M1 Max", False, 6),
+        ("Apple", "Apple M1 Ultra", False, 3),
+        ("Apple", "Apple M2 Pro", False, 6),
+        ("Apple", "Apple M2 Max", False, 5),
+        ("Apple", "Apple M2 Ultra", False, 2),
+        ("Apple", "Apple M3 Pro", False, 5),
+        ("Apple", "Apple M3 Max", False, 4),
+        ("Apple", "AMD Radeon Pro 5500M", True, 4),
+        ("Apple", "AMD Radeon Pro 560X", True, 3),
+        ("Apple", "AMD Radeon Pro 5300M", True, 3),
+        ("Apple", "AMD Radeon Pro 5600M", True, 3),
+        ("Apple", "AMD Radeon Pro Vega 20", True, 2),
         
-        # Generic/Angle (Chrome on Windows)
-        ("Google Inc. (Intel)", "ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)"),
-        ("Google Inc. (Intel)", "ANGLE (Intel, Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)"),
-        ("Google Inc. (NVIDIA)", "ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 Ti Direct3D11 vs_5_0 ps_5_0)"),
-        ("Google Inc. (NVIDIA)", "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0)"),
-        ("Google Inc. (AMD)", "ANGLE (AMD, AMD Radeon(TM) Graphics Direct3D11 vs_5_0 ps_5_0)"),
+        # Generic/ANGLE (Chrome on Windows) - HIGH WEIGHT
+        ("Google Inc. (Intel)", "ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", False, 15),
+        ("Google Inc. (Intel)", "ANGLE (Intel, Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", False, 12),
+        ("Google Inc. (Intel)", "ANGLE (Intel, Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", False, 12),
+        ("Google Inc. (Intel)", "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics Direct3D11 vs_5_0 ps_5_0)", False, 10),
+        ("Google Inc. (NVIDIA)", "ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 Ti Direct3D11 vs_5_0 ps_5_0)", True, 10),
+        ("Google Inc. (NVIDIA)", "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0)", True, 10),
+        ("Google Inc. (NVIDIA)", "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 Direct3D11 vs_5_0 ps_5_0)", True, 8),
+        ("Google Inc. (NVIDIA)", "ANGLE (NVIDIA, NVIDIA GeForce GTX 1650 Direct3D11 vs_5_0 ps_5_0)", True, 10),
+        ("Google Inc. (NVIDIA)", "ANGLE (NVIDIA, NVIDIA GeForce GTX 1050 Ti Direct3D11 vs_5_0 ps_5_0)", True, 8),
+        ("Google Inc. (AMD)", "ANGLE (AMD, AMD Radeon(TM) Graphics Direct3D11 vs_5_0 ps_5_0)", False, 12),
+        ("Google Inc. (AMD)", "ANGLE (AMD, AMD Radeon RX 580 Series Direct3D11 vs_5_0 ps_5_0)", True, 8),
+        ("Google Inc. (AMD)", "ANGLE (AMD, AMD Radeon RX 6700 XT Direct3D11 vs_5_0 ps_5_0)", True, 6),
         
-        # Mesa (Linux)
-        ("Mesa/X.org", "Mesa DRI Intel(R) HD Graphics 620 (KBL GT2)"),
-        ("Mesa/X.org", "Mesa DRI Intel(R) UHD Graphics 630 (KBL GT2)"),
-        ("X.Org", "AMD Radeon RX 580 Series (polaris10, LLVM 15.0.0, DRM 3.42, 5.15.0)"),
+        # Mesa (Linux) - MEDIUM WEIGHT
+        ("Mesa/X.org", "Mesa DRI Intel(R) HD Graphics 620 (KBL GT2)", False, 8),
+        ("Mesa/X.org", "Mesa DRI Intel(R) UHD Graphics 630 (KBL GT2)", False, 8),
+        ("Mesa/X.org", "Mesa DRI Intel(R) Iris(R) Xe Graphics (TGL GT2)", False, 6),
+        ("X.Org", "AMD Radeon RX 580 Series (polaris10, LLVM 15.0.0, DRM 3.42, 5.15.0)", True, 6),
+        ("X.Org", "AMD Radeon RX 5700 (navi10, LLVM 15.0.0, DRM 3.42, 5.15.0)", True, 5),
+        ("X.Org", "AMD Radeon RX 6700 XT (navi22, LLVM 15.0.0, DRM 3.42, 5.15.0)", True, 4),
+        ("Mesa", "Mesa Intel(R) UHD Graphics (CML GT2)", False, 6),
+        ("Mesa", "Mesa Intel(R) Graphics (RPL-S)", False, 5),
+        ("nouveau", "NV138", True, 3),
+        ("nouveau", "NV137", True, 2),
         
-        # Qualcomm (mobile/ARM laptops)
-        ("Qualcomm", "Adreno (TM) 640"),
-        ("Qualcomm", "Adreno (TM) 650"),
-        ("Qualcomm", "Adreno (TM) 730"),
+        # Qualcomm (mobile/ARM laptops) - LOW WEIGHT
+        ("Qualcomm", "Adreno (TM) 640", False, 3),
+        ("Qualcomm", "Adreno (TM) 650", False, 3),
+        ("Qualcomm", "Adreno (TM) 730", False, 4),
+        ("Qualcomm", "Adreno (TM) 740", False, 3),
+        ("Qualcomm", "Adreno (TM) 680", False, 3),
     ]
     
-    vendor, renderer = random.choice(gpu_configs)
+    # Weighted random selection for primary GPU
+    total_weight = sum(w for _, _, _, w in gpu_configs)
+    rand_val = random.uniform(0, total_weight)
+    cumulative = 0
+    
+    for vendor, renderer, is_discrete, weight in gpu_configs:
+        cumulative += weight
+        if rand_val <= cumulative:
+            primary_vendor = vendor
+            primary_renderer = renderer
+            primary_is_discrete = is_discrete
+            break
+    
+    # Multi-GPU: If discrete GPU selected, maybe add integrated GPU (30% chance)
+    # This simulates laptop/desktop with both integrated + discrete graphics
+    is_multi_gpu = False
+    if primary_is_discrete and random.random() < 0.3:
+        is_multi_gpu = True
+        # Add an integrated GPU to the mix
+        integrated_gpus = [gpu for gpu in gpu_configs if not gpu[2]]  # Filter integrated only
+        if integrated_gpus:
+            total_int_weight = sum(w for _, _, _, w in integrated_gpus)
+            rand_int = random.uniform(0, total_int_weight)
+            cumulative = 0
+            for vendor, renderer, _, weight in integrated_gpus:
+                cumulative += weight
+                if rand_int <= cumulative:
+                    # Return the discrete as primary (what WebGL typically reports)
+                    # but note it's multi-GPU in metadata
+                    break
     
     return {
-        'vendor': vendor,
-        'renderer': renderer
+        'vendor': primary_vendor,
+        'renderer': primary_renderer,
+        'isMultiGPU': is_multi_gpu
     }
 
 def generate_random_screen():
@@ -1538,7 +1694,7 @@ def create_driver(browser_type):
     # Generate random screen properties
     screen = generate_random_screen()
     
-    # Generate random GPU info for WebGL fingerprinting
+    # Generate random GPU info for WebGL fingerprinting (with multi-GPU support)
     gpu = generate_random_gpu()
     
     # Generate random hardware specs (CPU, RAM, touch)
@@ -1562,14 +1718,18 @@ def create_driver(browser_type):
     # Generate random plugins with heavy PDF randomization
     plugins_js = generate_random_plugins()
     
+    # Generate random WebRTC local IPs
+    webrtc = generate_random_webrtc()
+    
     print(f'[{browser_type}] Generated UA: {user_agent[:80]}...')
     print(f'[{browser_type}] Language: {accept_language.split(",")[0]}')
     print(f'[{browser_type}] Screen: {screen["width"]}x{screen["height"]} @ {screen["devicePixelRatio"]}x DPR')
-    print(f'[{browser_type}] GPU: {gpu["vendor"]} / {gpu["renderer"][:50]}...')
+    print(f'[{browser_type}] GPU: {gpu["vendor"]} / {gpu["renderer"][:50]}{"... [Multi-GPU]" if gpu["isMultiGPU"] else ""}')
     print(f'[{browser_type}] Hardware: {hardware["hardwareConcurrency"]} cores, {hardware["deviceMemory"]}GB RAM, {hardware["maxTouchPoints"]} touch')
     print(f'[{browser_type}] Connection: {connection["effectiveType"]}, {connection["rtt"]}ms RTT, {connection["downlink"]}Mbps')
     print(f'[{browser_type}] Timezone: UTC{timezone_offset/60:+.0f}')
     print(f'[{browser_type}] Battery: {"Charging" if battery["charging"] else "Discharging"} at {int(battery["level"]*100)}%')
+    print(f'[{browser_type}] WebRTC: {len(webrtc["localIPs"])} local IPs')
     print(f'[{browser_type}] Media: {len(media_devices)} devices, Fonts: {len(fonts)} installed, Plugins: randomized')
     
     if browser_type == 'chrome':
@@ -2101,6 +2261,38 @@ def create_driver(browser_type):
                             return getParameter2.call(this, parameter);
                         }};
                     }}
+                    
+                    // WebRTC IP randomization (enable but with random local IPs per session)
+                    const randomLocalIPs = {str(webrtc["localIPs"])};
+                    const OriginalRTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection;
+                    if (OriginalRTCPeerConnection) {{
+                        window.RTCPeerConnection = function(...args) {{
+                            const pc = new OriginalRTCPeerConnection(...args);
+                            const originalCreateOffer = pc.createOffer;
+                            const originalCreateAnswer = pc.createAnswer;
+                            
+                            // Inject random IPs into SDP
+                            const injectRandomIPs = (sdp) => {{
+                                if (sdp && sdp.sdp && randomLocalIPs.length > 0) {{
+                                    const randomIP = randomLocalIPs[Math.floor(Math.random() * randomLocalIPs.length)];
+                                    // Replace candidate IPs with our random ones
+                                    sdp.sdp = sdp.sdp.replace(/([0-9]{{1,3}}\\.){{3}}[0-9]{{1,3}}/g, randomIP);
+                                }}
+                                return sdp;
+                            }};
+                            
+                            pc.createOffer = function(...args2) {{
+                                return originalCreateOffer.apply(this, args2).then(injectRandomIPs);
+                            }};
+                            
+                            pc.createAnswer = function(...args2) {{
+                                return originalCreateAnswer.apply(this, args2).then(injectRandomIPs);
+                            }};
+                            
+                            return pc;
+                        }};
+                        window.RTCPeerConnection.prototype = OriginalRTCPeerConnection.prototype;
+                    }}
                 '''
             })
             
@@ -2353,6 +2545,38 @@ def create_driver(browser_type):
                             }}
                             return getParameter2.call(this, parameter);
                         }};
+                    }}
+                    
+                    // WebRTC IP randomization (enable but with random local IPs per session)
+                    const randomLocalIPsEdge = {str(webrtc["localIPs"])};
+                    const OriginalRTCPeerConnectionEdge = window.RTCPeerConnection || window.webkitRTCPeerConnection;
+                    if (OriginalRTCPeerConnectionEdge) {{
+                        window.RTCPeerConnection = function(...args) {{
+                            const pc = new OriginalRTCPeerConnectionEdge(...args);
+                            const originalCreateOffer = pc.createOffer;
+                            const originalCreateAnswer = pc.createAnswer;
+                            
+                            // Inject random IPs into SDP
+                            const injectRandomIPs = (sdp) => {{
+                                if (sdp && sdp.sdp && randomLocalIPsEdge.length > 0) {{
+                                    const randomIP = randomLocalIPsEdge[Math.floor(Math.random() * randomLocalIPsEdge.length)];
+                                    // Replace candidate IPs with our random ones
+                                    sdp.sdp = sdp.sdp.replace(/([0-9]{{1,3}}\\.){{3}}[0-9]{{1,3}}/g, randomIP);
+                                }}
+                                return sdp;
+                            }};
+                            
+                            pc.createOffer = function(...args2) {{
+                                return originalCreateOffer.apply(this, args2).then(injectRandomIPs);
+                            }};
+                            
+                            pc.createAnswer = function(...args2) {{
+                                return originalCreateAnswer.apply(this, args2).then(injectRandomIPs);
+                            }};
+                            
+                            return pc;
+                        }};
+                        window.RTCPeerConnection.prototype = OriginalRTCPeerConnectionEdge.prototype;
                     }}
                 '''
             })
@@ -2618,6 +2842,41 @@ def create_driver(browser_type):
                     }}
                     return getParameter2.call(this, parameter);
                 }};
+            }}
+            
+            // WebRTC IP randomization (enable but with random local IPs per session)
+            const randomLocalIPsFF = {str(webrtc["localIPs"])};
+            const OriginalRTCPeerConnectionFF = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
+            if (OriginalRTCPeerConnectionFF) {{
+                window.RTCPeerConnection = function(...args) {{
+                    const pc = new OriginalRTCPeerConnectionFF(...args);
+                    const originalCreateOffer = pc.createOffer;
+                    const originalCreateAnswer = pc.createAnswer;
+                    
+                    // Inject random IPs into SDP
+                    const injectRandomIPs = (sdp) => {{
+                        if (sdp && sdp.sdp && randomLocalIPsFF.length > 0) {{
+                            const randomIP = randomLocalIPsFF[Math.floor(Math.random() * randomLocalIPsFF.length)];
+                            // Replace candidate IPs with our random ones
+                            sdp.sdp = sdp.sdp.replace(/([0-9]{{1,3}}\\.){{3}}[0-9]{{1,3}}/g, randomIP);
+                        }}
+                        return sdp;
+                    }};
+                    
+                    pc.createOffer = function(...args2) {{
+                        return originalCreateOffer.apply(this, args2).then(injectRandomIPs);
+                    }};
+                    
+                    pc.createAnswer = function(...args2) {{
+                        return originalCreateAnswer.apply(this, args2).then(injectRandomIPs);
+                    }};
+                    
+                    return pc;
+                }};
+                window.RTCPeerConnection.prototype = OriginalRTCPeerConnectionFF.prototype;
+                if (window.mozRTCPeerConnection) {{
+                    window.mozRTCPeerConnection = window.RTCPeerConnection;
+                }}
             }}
             
             // Mock permissions
