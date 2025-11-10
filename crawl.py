@@ -656,11 +656,14 @@ def simulate_right_click(driver, browser_type):
     """
     if random.random() < 0.05:  # 5% chance per page
         try:
+            # Set a short timeout for this operation
+            driver.set_page_load_timeout(5)
+            
             # Find clickable elements (links, images)
             elements = driver.find_elements(By.CSS_SELECTOR, 'a, img, button')
             if elements:
                 # Pick a random visible element
-                visible_elements = [e for e in elements[:30] if e.is_displayed()]
+                visible_elements = [e for e in elements[:30] if e.is_displayed() and e.is_enabled()]
                 if visible_elements:
                     element = random.choice(visible_elements)
                     
@@ -670,23 +673,29 @@ def simulate_right_click(driver, browser_type):
                     
                     print(f'  [{browser_type}] 🖱️  Right-clicked element')
                     
-                    # Wait a moment (user reading context menu)
-                    time.sleep(random.uniform(0.5, 1.5))
+                    # Wait briefly (user reading context menu)
+                    time.sleep(random.uniform(0.3, 0.8))
                     
                     # Close context menu with Escape
                     actions = ActionChains(driver)
                     actions.send_keys(Keys.ESCAPE).perform()
                     
-                    time.sleep(random.uniform(0.2, 0.5))
+                    time.sleep(random.uniform(0.1, 0.3))
         except:
             pass
+        finally:
+            # Restore normal timeout
+            try:
+                driver.set_page_load_timeout(30)
+            except:
+                pass
 
 
 def simulate_keyboard_shortcuts(driver, browser_type):
     """
     Simulate keyboard shortcuts that real users use
     """
-    if random.random() < 0.08:  # 8% chance per page
+    if random.random() < 0.05:  # Reduced to 5% (was 8%)
         try:
             shortcuts = [
                 (Keys.SPACE, 'Scroll with Space'),
@@ -702,7 +711,7 @@ def simulate_keyboard_shortcuts(driver, browser_type):
             actions.send_keys(key).perform()
             
             print(f'  [{browser_type}] ⌨️  Pressed keyboard shortcut: {description}')
-            time.sleep(random.uniform(0.3, 0.8))
+            time.sleep(random.uniform(0.2, 0.5))
         except:
             pass
 
@@ -777,10 +786,17 @@ def simulate_typing_and_forms(driver, browser_type):
     - Handles frontend validation
     - Occasionally submits forms (carefully)
     """
-    if random.random() > 0.15:  # Only 15% chance to interact with forms
+    if random.random() > 0.10:  # Reduced to 10% (was 15%) to avoid timeouts
         return False
     
     try:
+        # Set a shorter timeout for this operation
+        original_timeout = 30
+        try:
+            driver.set_page_load_timeout(10)
+        except:
+            pass
+        
         # Find all input fields (visible and not password)
         inputs = driver.find_elements(By.CSS_SELECTOR, 
             'input[type="text"], input[type="email"], input[type="tel"], input[type="search"], '
@@ -792,8 +808,8 @@ def simulate_typing_and_forms(driver, browser_type):
         if not visible_inputs:
             return False
         
-        # Limit to first 5 inputs to avoid overwhelming the page
-        visible_inputs = visible_inputs[:5]
+        # Limit to first 3 inputs (was 5) to avoid overwhelming
+        visible_inputs = visible_inputs[:3]
         
         # Generate fake data for this session
         fake_data = generate_fake_data()
@@ -959,6 +975,12 @@ def simulate_typing_and_forms(driver, browser_type):
         
     except Exception:
         return False
+    finally:
+        # Restore normal timeout
+        try:
+            driver.set_page_load_timeout(30)
+        except:
+            pass
 
 
 # ============================================
