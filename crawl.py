@@ -654,33 +654,52 @@ def simulate_right_click(driver, browser_type):
     Simulate right-click (context menu) behavior
     Real users occasionally right-click on links/images
     """
-    if random.random() < 0.05:  # 5% chance per page
+    if random.random() < 0.03:  # Reduced to 3% to minimize errors
         try:
             # Set a short timeout for this operation
             driver.set_page_load_timeout(5)
             
             # Find clickable elements (links, images)
             elements = driver.find_elements(By.CSS_SELECTOR, 'a, img, button')
-            if elements:
-                # Pick a random visible element
-                visible_elements = [e for e in elements[:30] if e.is_displayed() and e.is_enabled()]
-                if visible_elements:
-                    element = random.choice(visible_elements)
-                    
-                    # Right-click with ActionChains
-                    actions = ActionChains(driver)
-                    actions.context_click(element).perform()
-                    
-                    print(f'  [{browser_type}] 🖱️  Right-clicked element')
-                    
-                    # Wait briefly (user reading context menu)
-                    time.sleep(random.uniform(0.3, 0.8))
-                    
-                    # Close context menu with Escape
+            if not elements:
+                return
+            
+            # Pick a random visible element
+            visible_elements = []
+            for e in elements[:30]:
+                try:
+                    if e.is_displayed() and e.is_enabled():
+                        visible_elements.append(e)
+                except:
+                    continue
+            
+            if not visible_elements:
+                return
+            
+            element = random.choice(visible_elements)
+            
+            # Right-click with ActionChains (with explicit error handling)
+            try:
+                actions = ActionChains(driver)
+                actions.context_click(element).perform()
+                
+                print(f'  [{browser_type}] 🖱️  Right-clicked element')
+                
+                # Wait briefly (user reading context menu)
+                time.sleep(random.uniform(0.3, 0.8))
+                
+                # Close context menu with Escape
+                try:
                     actions = ActionChains(driver)
                     actions.send_keys(Keys.ESCAPE).perform()
-                    
-                    time.sleep(random.uniform(0.1, 0.3))
+                except:
+                    # If escape fails, just continue
+                    pass
+                
+                time.sleep(random.uniform(0.1, 0.3))
+            except Exception as e:
+                # Element became stale or context menu didn't work - just continue
+                pass
         except:
             pass
         finally:
