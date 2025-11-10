@@ -9,7 +9,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
-from selenium_stealth import stealth
 import time
 import random
 from urllib.parse import urlparse
@@ -385,7 +384,7 @@ def create_driver(browser_type):
         options=options
     )
     
-    # Apply Selenium Stealth for Chrome only (it doesn't support other browsers)
+    # Apply comprehensive CDP stealth for Chrome (RemoteWebDriver compatible)
     if browser_type == 'chrome':
         try:
             # Set user agent via CDP
@@ -395,31 +394,51 @@ def create_driver(browser_type):
                 "acceptLanguage": "en-US,en;q=0.9"
             })
             
-            # Apply selenium-stealth (only works with Chrome)
-            stealth(driver,
-                languages=["en-US", "en"],
-                vendor="Google Inc.",
-                platform="Win32",
-                webgl_vendor="Intel Inc.",
-                renderer="Intel Iris OpenGL Engine",
-                fix_hairline=True,
-            )
-            
-            print(f'[{browser_type}] ✓ Applied selenium-stealth')
+            print(f'[{browser_type}] ✓ Applied CDP user agent override')
         except Exception as e:
-            print(f'[{browser_type}] ⚠ Selenium-stealth not applied: {str(e)[:50]}')
+            print(f'[{browser_type}] ⚠ CDP user agent not applied: {str(e)[:50]}')
         
-        # Additional CDP commands for stealth
+        # Comprehensive CDP stealth commands
         try:
             driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
                 'source': '''
+                    // Remove webdriver property
                     Object.defineProperty(navigator, 'webdriver', {
                         get: () => undefined
                     });
                     
-                    // Mock plugins
+                    // Mock plugins (realistic Chrome plugins)
                     Object.defineProperty(navigator, 'plugins', {
-                        get: () => [1, 2, 3, 4, 5]
+                        get: () => [
+                            {
+                                0: {type: "application/x-google-chrome-pdf", suffixes: "pdf", description: "Portable Document Format", enabledPlugin: Plugin},
+                                description: "Portable Document Format",
+                                filename: "internal-pdf-viewer",
+                                length: 1,
+                                name: "Chrome PDF Plugin"
+                            },
+                            {
+                                0: {type: "application/pdf", suffixes: "pdf", description: "", enabledPlugin: Plugin},
+                                description: "",
+                                filename: "mhjfbmdgcfjbbpaeojofohoefgiehjai",
+                                length: 1,
+                                name: "Chrome PDF Viewer"
+                            },
+                            {
+                                description: "Native Client Executable",
+                                filename: "internal-nacl-plugin",
+                                length: 2,
+                                name: "Native Client"
+                            }
+                        ]
+                    });
+                    
+                    // Mock mimeTypes
+                    Object.defineProperty(navigator, 'mimeTypes', {
+                        get: () => [
+                            {type: "application/pdf", suffixes: "pdf", description: "", enabledPlugin: Plugin},
+                            {type: "application/x-google-chrome-pdf", suffixes: "pdf", description: "Portable Document Format", enabledPlugin: Plugin}
+                        ]
                     });
                     
                     // Mock languages
@@ -427,12 +446,24 @@ def create_driver(browser_type):
                         get: () => ['en-US', 'en']
                     });
                     
-                    // Chrome runtime
+                    // Chrome runtime with full objects
                     window.chrome = {
                         runtime: {},
                         loadTimes: function() {},
                         csi: function() {},
-                        app: {}
+                        app: {
+                            isInstalled: false,
+                            InstallState: {
+                                DISABLED: 'disabled',
+                                INSTALLED: 'installed',
+                                NOT_INSTALLED: 'not_installed'
+                            },
+                            RunningState: {
+                                CANNOT_RUN: 'cannot_run',
+                                READY_TO_RUN: 'ready_to_run',
+                                RUNNING: 'running'
+                            }
+                        }
                     };
                     
                     // Mock permissions
@@ -442,8 +473,35 @@ def create_driver(browser_type):
                             Promise.resolve({ state: 'denied' }) :
                             originalQuery(parameters)
                     );
+                    
+                    // Mock connection (for Network Information API)
+                    Object.defineProperty(navigator, 'connection', {
+                        get: () => ({
+                            effectiveType: '4g',
+                            rtt: 100,
+                            downlink: 10,
+                            saveData: false
+                        })
+                    });
+                    
+                    // Override toString to hide modifications
+                    const newProto = navigator.__proto__;
+                    delete newProto.webdriver;
+                    navigator.__proto__ = newProto;
                 '''
             })
+            
+            # Additional stealth headers
+            driver.execute_cdp_cmd('Network.enable', {})
+            driver.execute_cdp_cmd('Network.setExtraHTTPHeaders', {
+                'headers': {
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
+                }
+            })
+            
+            print(f'[{browser_type}] ✓ Applied comprehensive CDP stealth')
         except Exception as e:
             print(f'[{browser_type}] ⚠ CDP commands not applied: {str(e)[:50]}')
             
@@ -685,16 +743,28 @@ def browse():
                             driver.execute_script(f'window.scrollBy(0, -{random.randint(50, 200)});')
                             time.sleep(random.uniform(0.3, 0.8))
                     
-                    # Find clickable links
+                    # Find clickable links - be more lenient
                     links = driver.find_elements(By.TAG_NAME, 'a')
                     if not links:
                         print(f'  [{browser_type}] No links found at depth {current_depth}, restarting journey')
                         break
                     
-                    clickable = [l for l in links[:50] if l.is_displayed()]
+                    # Get more links and filter less strictly
+                    clickable = []
+                    for link in links[:200]:  # Check more links
+                        try:
+                            if link.is_displayed() and link.is_enabled():
+                                href = link.get_attribute('href')
+                                if href and (href.startswith('http://') or href.startswith('https://')):
+                                    clickable.append(link)
+                        except:
+                            continue
+                    
                     if not clickable:
                         print(f'  [{browser_type}] No clickable links at depth {current_depth}, restarting journey')
                         break
+                    
+                    print(f'  [{browser_type}] Found {len(clickable)} clickable links')
                     
                     # Separate internal and external links
                     internal_links = []
@@ -703,21 +773,28 @@ def browse():
                     for link in clickable:
                         try:
                             href = link.get_attribute('href')
-                            if href and href.startswith('http'):
+                            if href:
                                 link_domain = get_domain(href)
-                                if link_domain == start_domain:
+                                # More lenient domain matching (including subdomains)
+                                if link_domain == start_domain or start_domain in link_domain or link_domain in start_domain:
                                     internal_links.append(link)
                                 else:
                                     external_links.append(link)
                         except:
                             continue
                     
-                    # Choose link strategy
+                    print(f'  [{browser_type}] Internal: {len(internal_links)}, External: {len(external_links)}')
+                    
+                    # Choose link strategy - more flexible
                     chosen_link = None
                     if current_depth == 0:
-                        # Stay internal on first click
+                        # At depth 0, try internal first, but accept external if no internal
                         if internal_links:
                             chosen_link = random.choice(internal_links)
+                            print(f'  [{browser_type}] Depth {current_depth}: Choosing internal link')
+                        elif external_links:
+                            chosen_link = random.choice(external_links)
+                            print(f'  [{browser_type}] Depth {current_depth}: No internal links, choosing external')
                     elif current_depth >= 1:
                         # Prefer external links (70% chance)
                         if external_links and random.random() < 0.7:
@@ -728,6 +805,11 @@ def browse():
                             print(f'  [{browser_type}] Depth {current_depth}: → Internal link')
                         elif external_links:
                             chosen_link = random.choice(external_links)
+                            print(f'  [{browser_type}] Depth {current_depth}: → External link (fallback)')
+                        elif clickable:
+                            # Last resort: pick any clickable link
+                            chosen_link = random.choice(clickable)
+                            print(f'  [{browser_type}] Depth {current_depth}: → Any link (fallback)')
                     
                     if chosen_link:
                         try:
