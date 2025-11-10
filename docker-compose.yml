@@ -5,7 +5,7 @@ volumes:
     driver: local
 
 services:
-  # Selenium Hub
+  # Selenium Hub with increased capacity
   selenium-hub:
     image: selenium/hub:4.15.0
     ports:
@@ -13,9 +13,14 @@ services:
     environment:
       - SE_SESSION_REQUEST_TIMEOUT=300
       - SE_NODE_SESSION_TIMEOUT=300
+      - SE_NODE_MAX_SESSIONS=25
+      - SE_SESSION_TIMEOUT=300
 
-  # Chrome browser node
-  chrome:
+  # ============================================
+  # CHROME NODES (Multiple versions for TLS/HTTP/CSS diversity)
+  # ============================================
+  
+  chrome-latest:
     image: selenium/node-chrome:4.15.0
     depends_on:
       - selenium-hub
@@ -23,23 +28,175 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
     shm_size: 2gb
 
-  # Firefox browser node
-  firefox:
-    image: selenium/node-firefox:4.15.0
+  chrome-beta:
+    image: selenium/node-chrome:beta
     depends_on:
       - selenium-hub
-    ports:
-      - "7900:7900"  # VNC port for viewing the browser
     environment:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
     shm_size: 2gb
 
-  # Edge browser node
-  edge:
+  chrome-dev:
+    image: selenium/node-chrome:dev
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  chrome-114:
+    image: selenium/node-chrome:114.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  chrome-115:
+    image: selenium/node-chrome:115.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  chrome-116:
+    image: selenium/node-chrome:116.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  chrome-117:
+    image: selenium/node-chrome:117.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  # ============================================
+  # FIREFOX NODES (Multiple versions)
+  # ============================================
+
+  firefox-latest:
+    image: selenium/node-firefox:4.15.0
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7900:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  firefox-beta:
+    image: selenium/node-firefox:beta
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7901:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  firefox-dev:
+    image: selenium/node-firefox:dev
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7902:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  firefox-esr:
+    image: selenium/node-firefox:esr
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7903:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  firefox-115:
+    image: selenium/node-firefox:115.0
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7904:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  firefox-116:
+    image: selenium/node-firefox:116.0
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7905:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  firefox-117:
+    image: selenium/node-firefox:117.0
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7906:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  # ============================================
+  # EDGE NODES (Multiple versions)
+  # ============================================
+
+  edge-latest:
     image: selenium/node-edge:4.15.0
     depends_on:
       - selenium-hub
@@ -47,47 +204,121 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
     shm_size: 2gb
 
-  # Browser automation instance 1
+  edge-beta:
+    image: selenium/node-edge:beta
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  edge-dev:
+    image: selenium/node-edge:dev
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  edge-114:
+    image: selenium/node-edge:114.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  edge-115:
+    image: selenium/node-edge:115.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  edge-116:
+    image: selenium/node-edge:116.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  # ============================================
+  # CHROMIUM NODES (Open-source variants)
+  # ============================================
+
+  chromium-latest:
+    image: selenium/node-chromium:4.15.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  chromium-beta:
+    image: selenium/node-chromium:beta
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  chromium-dev:
+    image: selenium/node-chromium:dev
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  # ============================================
+  # BROWSER AUTOMATION INSTANCES
+  # ============================================
+
+  # Instance 1 - Chrome variants
   browser-automation-1:
     image: python:3.11-slim
     depends_on:
       - selenium-hub
-      - chrome
-      - firefox
-      - edge
+      - chrome-latest
+      - chrome-beta
+      - chrome-dev
+      - chrome-114
+      - chrome-115
     volumes:
       - ./crawl.py:/app/crawl.py:ro
       - ./persona_manager.py:/app/persona_manager.py:ro
       - ./setup.sh:/app/setup.sh:ro
       - ./websites.txt:/app/websites.txt:ro
-      - personas-data:/app/data/personas  # Persistent persona storage
-    environment:
-      - PERSONA_ROTATION_STRATEGY=weighted  # Options: weighted, random, round-robin, new
-      - PERSONA_MAX_AGE_DAYS=30
-      - PERSONA_MAX_USES=100
-    command:
-      - /bin/bash
-      - -c
-      - |
-        apt-get update -qq && apt-get install -y curl -qq
-        bash /app/setup.sh
-
-  # Browser automation instance 2
-  browser-automation-2:
-    image: python:3.11-slim
-    depends_on:
-      - selenium-hub
-      - chrome
-      - firefox
-      - edge
-    volumes:
-      - ./crawl.py:/app/crawl.py:ro
-      - ./persona_manager.py:/app/persona_manager.py:ro
-      - ./setup.sh:/app/setup.sh:ro
-      - ./websites.txt:/app/websites.txt:ro
-      - personas-data:/app/data/personas  # Shared persona storage
+      - personas-data:/app/data/personas
     environment:
       - PERSONA_ROTATION_STRATEGY=weighted
       - PERSONA_MAX_AGE_DAYS=30
@@ -99,20 +330,102 @@ services:
         apt-get update -qq && apt-get install -y curl -qq
         bash /app/setup.sh
 
-  # Browser automation instance 3
-  browser-automation-3:
+  # Instance 2 - Firefox variants
+  browser-automation-2:
     image: python:3.11-slim
     depends_on:
       - selenium-hub
-      - chrome
-      - firefox
-      - edge
+      - firefox-latest
+      - firefox-beta
+      - firefox-dev
+      - firefox-esr
+      - firefox-115
     volumes:
       - ./crawl.py:/app/crawl.py:ro
       - ./persona_manager.py:/app/persona_manager.py:ro
       - ./setup.sh:/app/setup.sh:ro
       - ./websites.txt:/app/websites.txt:ro
-      - personas-data:/app/data/personas  # Shared persona storage
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 3 - Edge variants
+  browser-automation-3:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - edge-latest
+      - edge-beta
+      - edge-dev
+      - edge-114
+      - edge-115
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 4 - Chromium variants
+  browser-automation-4:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - chromium-latest
+      - chromium-beta
+      - chromium-dev
+      - chrome-116
+      - chrome-117
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
+    environment:
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh
+
+  # Instance 5 - Mixed older versions
+  browser-automation-5:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - firefox-116
+      - firefox-117
+      - edge-116
+      - chromium-latest
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./persona_manager.py:/app/persona_manager.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+      - ./websites.txt:/app/websites.txt:ro
+      - personas-data:/app/data/personas
     environment:
       - PERSONA_ROTATION_STRATEGY=weighted
       - PERSONA_MAX_AGE_DAYS=30

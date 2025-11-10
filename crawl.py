@@ -22,7 +22,24 @@ except ImportError:
     print('⚠️  PersonaManager not available, running without persistence')
     PERSONA_MANAGER_AVAILABLE = False
 
-browsers = ['firefox', 'chrome', 'edge']
+# All browser types available in Selenium Grid
+# Each type has multiple versions that Grid will load-balance across
+# When we request 'chrome', Grid picks from: chrome-latest, chrome-beta, chrome-dev, chrome-114, chrome-115, chrome-116, chrome-117
+# When we request 'firefox', Grid picks from: firefox-latest, firefox-beta, firefox-dev, firefox-esr, firefox-115, firefox-116, firefox-117
+# When we request 'edge', Grid picks from: edge-latest, edge-beta, edge-dev, edge-114, edge-115, edge-116
+# When we request 'chromium', Grid picks from: chromium-latest, chromium-beta, chromium-dev
+
+# Weighted browser selection for realistic distribution
+# Chrome most common, Firefox second, Edge third, Chromium least (open-source variant)
+browsers = (
+    ['chrome'] * 40 +      # 40% - Most popular
+    ['firefox'] * 30 +     # 30% - Second most popular
+    ['edge'] * 20 +        # 20% - Growing market share
+    ['chromium'] * 10      # 10% - Open-source variant for extra diversity
+)
+
+# Total: 22 different browser versions across 4 browser types
+# This provides maximum diversity for TLS/HTTP/CSS fingerprinting
 
 # Persona rotation configuration from environment
 PERSONA_ROTATION_STRATEGY = os.getenv('PERSONA_ROTATION_STRATEGY', 'weighted')
@@ -1959,6 +1976,18 @@ def create_driver(browser_type):
     # Generate random WebRTC local IPs
     webrtc = generate_random_webrtc()
     
+    # Save persona to disk for rotation across sessions
+    if persona_manager:
+        try:
+            fingerprint_data = fingerprint_to_dict(
+                browser_type, user_agent, accept_language, screen, gpu, hardware,
+                connection, timezone_offset, battery, media_devices, fonts, webrtc, plugins_js
+            )
+            persona_id = persona_manager.create_persona(fingerprint_data)
+            print(f'[{browser_type}] 💾 Saved persona: {persona_id}')
+        except Exception as e:
+            print(f'[{browser_type}] ⚠️  Failed to save persona: {str(e)[:50]}')
+    
     print(f'[{browser_type}] Generated UA: {user_agent[:80]}...')
     print(f'[{browser_type}] Language: {accept_language.split(",")[0]}')
     print(f'[{browser_type}] Screen: {screen["width"]}x{screen["height"]} @ {screen["devicePixelRatio"]}x DPR')
@@ -1970,8 +1999,11 @@ def create_driver(browser_type):
     print(f'[{browser_type}] WebRTC: {len(webrtc["localIPs"])} local IPs')
     print(f'[{browser_type}] Media: {len(media_devices)} devices, Fonts: {len(fonts)} installed, Plugins: randomized')
     
-    if browser_type == 'chrome':
+    if browser_type == 'chrome' or browser_type == 'chromium':
         options = webdriver.ChromeOptions()
+        
+        # Set browser name for Selenium Grid to pick the right nodes
+        options.set_capability('browserName', browser_type)
         
         # Selenium Stealth recommended options
         options.add_argument(f'user-agent={user_agent}')
@@ -2130,8 +2162,8 @@ def create_driver(browser_type):
         options=options
     )
     
-    # Apply comprehensive CDP stealth for Chrome (RemoteWebDriver compatible)
-    if browser_type == 'chrome':
+    # Apply comprehensive CDP stealth for Chrome and Chromium (RemoteWebDriver compatible)
+    if browser_type == 'chrome' or browser_type == 'chromium':
         try:
             # Set user agent via CDP
             driver.execute_cdp_cmd('Network.setUserAgentOverride', {

@@ -214,19 +214,21 @@ class PersonaManager:
         }
 
 
-def fingerprint_to_dict(user_agent, accept_language, screen, gpu, hardware, 
+def fingerprint_to_dict(browser_type, user_agent, accept_language, screen, gpu, hardware, 
                         connection, timezone_offset, battery, media_devices, 
                         fonts, webrtc, plugins_js):
     """
     Convert all fingerprint parameters to a serializable dictionary
     
     Args:
-        All fingerprint generation function returns
+        browser_type: Browser type used (chrome/firefox/edge)
+        All other fingerprint generation function returns
         
     Returns:
-        dict: Complete fingerprint data
+        dict: Complete fingerprint data including browser info
     """
     return {
+        'browser_type': browser_type,
         'user_agent': user_agent,
         'accept_language': accept_language,
         'screen': screen,
