@@ -50,8 +50,8 @@ HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
 
 # Expose no ports (this is a client, not a server)
 
-# Volume for persona persistence
-VOLUME ["/app/data/personas"]
+# VOLUME REMOVED: Personas are generated in-memory per container
+# No volume persistence needed - prevents mount thrashing in swarm mode
 
 # Run the automation
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

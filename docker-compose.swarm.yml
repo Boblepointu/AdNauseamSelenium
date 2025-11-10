@@ -79,7 +79,7 @@ services:
       - SE_ENABLE_TRACING=false
     shm_size: 2gb
     deploy:
-      replicas: 5
+      replicas: 2
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -105,7 +105,7 @@ services:
       - SE_ENABLE_TRACING=false
     shm_size: 2gb
     deploy:
-      replicas: 5
+      replicas: 2
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -131,7 +131,7 @@ services:
       - SE_ENABLE_TRACING=false
     shm_size: 2gb
     deploy:
-      replicas: 10
+      replicas: 2
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -157,7 +157,7 @@ services:
       - SE_ENABLE_TRACING=false
     shm_size: 2gb
     deploy:
-      replicas: 10
+      replicas: 2
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -183,7 +183,7 @@ services:
       - SE_ENABLE_TRACING=false
     shm_size: 2gb
     deploy:
-      replicas: 10
+      replicas: 2
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -209,7 +209,7 @@ services:
       - SE_ENABLE_TRACING=false
     shm_size: 2gb
     deploy:
-      replicas: 5
+      replicas: 2
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -261,7 +261,7 @@ services:
       - SE_ENABLE_TRACING=false
     shm_size: 2gb
     deploy:
-      replicas: 3
+      replicas: 2
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -446,7 +446,7 @@ services:
       - SE_ENABLE_TRACING=false
     shm_size: 2gb
     deploy:
-      replicas: 1
+      replicas: 2
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -472,7 +472,7 @@ services:
       - SE_ENABLE_TRACING=false
     shm_size: 2gb
     deploy:
-      replicas: 1
+      replicas: 2
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -631,7 +631,7 @@ services:
       - SE_ENABLE_TRACING=false
     shm_size: 2gb
     deploy:
-      replicas: 1
+      replicas: 2
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -657,7 +657,7 @@ services:
       - SE_ENABLE_TRACING=false
     shm_size: 2gb
     deploy:
-      replicas: 1
+      replicas: 2
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -698,193 +698,46 @@ services:
           memory: 2G
 
   # ============================================
-  # CHROME NODES - SLAVE NODE
-  # ============================================
-  chrome-slave:
-    image: selenium/node-chrome:latest
-    networks:
-      - selenium-network
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
-      - SE_NODE_SESSION_TIMEOUT=300
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-      - SE_OTEL_TRACES_EXPORTER=none
-      - SE_ENABLE_TRACING=false
-    shm_size: 2gb
-    deploy:
-      replicas: 3
-      placement:
-        constraints:
-          - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        reservations:
-          memory: 2G
-
-  # ============================================
-  # FIREFOX NODES - SLAVE NODE
-  # ============================================
-  firefox-slave:
-    image: selenium/node-firefox:latest
-    networks:
-      - selenium-network
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
-      - SE_NODE_SESSION_TIMEOUT=300
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-      - SE_OTEL_TRACES_EXPORTER=none
-      - SE_ENABLE_TRACING=false
-    shm_size: 2gb
-    deploy:
-      replicas: 3
-      placement:
-        constraints:
-          - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        reservations:
-          memory: 2G
-
-  # ============================================
-  # EDGE NODES - SLAVE NODE
-  # ============================================
-  edge-slave:
-    image: selenium/node-edge:latest
-    networks:
-      - selenium-network
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
-      - SE_NODE_SESSION_TIMEOUT=300
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-      - SE_OTEL_TRACES_EXPORTER=none
-      - SE_ENABLE_TRACING=false
-    shm_size: 2gb
-    deploy:
-      replicas: 6
-      placement:
-        constraints:
-          - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        reservations:
-          memory: 2G
-
-  # ============================================
-  # BROWSER AUTOMATION - MAIN NODE
+  # BROWSER AUTOMATION - CONSOLIDATED SERVICE
   # Using pre-built GHCR image with all dependencies included
+  # FIXED: Removed shared volume to prevent mount thrashing
+  # Each container generates its own personas independently
   # ============================================
-  browser-automation-main:
+  browser-automation:
     image: ghcr.io/boblepointu/adnauseamselenium:latest
     networks:
       - selenium-network
+    # Override VOLUME directive with tmpfs to prevent mount thrashing
     volumes:
-      - personas-data:/app/data/personas
+      - type: tmpfs
+        target: /app/data/personas
+        tmpfs:
+          size: 100M
     environment:
       - SELENIUM_HUB=selenium-hub:4444
       - PERSONA_ROTATION_STRATEGY=weighted
       - PERSONA_MAX_AGE_DAYS=30
       - PERSONA_MAX_USES=100
     deploy:
-      replicas: 10
+      replicas: 2
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
-        delay: 10s
-        max_attempts: 10
+        delay: 15s
+        max_attempts: 5
       resources:
         limits:
-          memory: 512M
+          memory: 768M
+          cpus: '0.5'
         reservations:
-          memory: 256M
+          memory: 384M
       update_config:
-        parallelism: 2
-        delay: 10s
+        parallelism: 1
+        delay: 15s
         order: start-first
-
-  # ============================================
-  # BROWSER AUTOMATION - SLAVE NODE
-  # Using pre-built GHCR image with all dependencies included
-  # ============================================
-  browser-automation-slave:
-    image: ghcr.io/boblepointu/adnauseamselenium:latest
-    networks:
-      - selenium-network
-    volumes:
-      - personas-data:/app/data/personas
-    environment:
-      - SELENIUM_HUB=selenium-hub:4444
-      - PERSONA_ROTATION_STRATEGY=random
-      - PERSONA_MAX_AGE_DAYS=30
-      - PERSONA_MAX_USES=100
-    deploy:
-      replicas: 20
-      placement:
-        constraints:
-          - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-        max_attempts: 10
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 256M
-      update_config:
-        parallelism: 5
-        delay: 10s
-        order: start-first
-
-  # ============================================
-  # BROWSER AUTOMATION - ROUND-ROBIN STRATEGY
-  # Using pre-built GHCR image with all dependencies included
-  # ============================================
-  browser-automation-roundrobin:
-    image: ghcr.io/boblepointu/adnauseamselenium:latest
-    networks:
-      - selenium-network
-    volumes:
-      - personas-data:/app/data/personas
-    environment:
-      - SELENIUM_HUB=selenium-hub:4444
-      - PERSONA_ROTATION_STRATEGY=round-robin
-      - PERSONA_MAX_AGE_DAYS=30
-      - PERSONA_MAX_USES=100
-    deploy:
-      replicas: 10
-      placement:
-        constraints:
-          - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-        max_attempts: 10
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 256M
-      update_config:
-        parallelism: 3
-        delay: 10s
-        order: start-first
+        failure_action: rollback
 
 networks:
   traefik-public:
@@ -892,7 +745,3 @@ networks:
   selenium-network:
     driver: overlay
     attachable: true
-
-volumes:
-  personas-data:
-    driver: local
