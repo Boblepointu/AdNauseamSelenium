@@ -96,742 +96,742 @@ services:
           memory: 1G
         reservations:
           memory: 768M
-  chrome-110:
-    image: selenium/node-chrome:110.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  chrome-120:
-    image: selenium/node-chrome:120.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  chrome-125:
-    image: selenium/node-chrome:125.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  chrome-130:
-    image: selenium/node-chrome:130.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  chrome-latest:
-    image: selenium/node-chrome:latest
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  chrome-beta:
-    image: selenium/node-chrome:beta
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  chrome-dev:
-    image: selenium/node-chrome:dev
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  firefox-98:
-    image: selenium/node-firefox:98.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  firefox-110:
-    image: selenium/node-firefox:110.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  firefox-120:
-    image: selenium/node-firefox:120.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  firefox-130:
-    image: selenium/node-firefox:130.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  firefox-140:
-    image: selenium/node-firefox:140.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  firefox-latest:
-    image: selenium/node-firefox:latest
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  firefox-beta:
-    image: selenium/node-firefox:beta
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  firefox-dev:
-    image: selenium/node-firefox:dev
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  edge-114:
-    image: selenium/node-edge:114.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  edge-120:
-    image: selenium/node-edge:120.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  edge-125:
-    image: selenium/node-edge:125.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  edge-130:
-    image: selenium/node-edge:130.0
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  edge-latest:
-    image: selenium/node-edge:latest
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  edge-beta:
-    image: selenium/node-edge:beta
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  edge-dev:
-    image: selenium/node-edge:dev
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
-  chromium-latest:
-    image: selenium/node-chromium:latest
-    networks:
-    - selenium-network
-    environment:
-    - SE_EVENT_BUS_HOST=selenium-hub
-    - SE_EVENT_BUS_PUBLISH_PORT=4442
-    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    - SE_NODE_MAX_SESSIONS=2
-    - SE_NODE_SESSION_TIMEOUT=300
-    - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    - SE_OTEL_TRACES_EXPORTER=none
-    - SE_ENABLE_TRACING=false
-    shm_size: 1gb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-        - node.hostname == testnetslaveportainer
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 768M
-    volumes:
-    - type: tmpfs
-      target: /home/seluser/Downloads
-      tmpfs:
-        size: 52428800
+  # chrome-110:
+  #   image: selenium/node-chrome:110.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # chrome-120:
+  #   image: selenium/node-chrome:120.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # chrome-125:
+  #   image: selenium/node-chrome:125.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # chrome-130:
+  #   image: selenium/node-chrome:130.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # chrome-latest:
+  #   image: selenium/node-chrome:latest
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # chrome-beta:
+  #   image: selenium/node-chrome:beta
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # chrome-dev:
+  #   image: selenium/node-chrome:dev
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # firefox-98:
+  #   image: selenium/node-firefox:98.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # firefox-110:
+  #   image: selenium/node-firefox:110.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # firefox-120:
+  #   image: selenium/node-firefox:120.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # firefox-130:
+  #   image: selenium/node-firefox:130.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # firefox-140:
+  #   image: selenium/node-firefox:140.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # firefox-latest:
+  #   image: selenium/node-firefox:latest
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # firefox-beta:
+  #   image: selenium/node-firefox:beta
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # firefox-dev:
+  #   image: selenium/node-firefox:dev
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # edge-114:
+  #   image: selenium/node-edge:114.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # edge-120:
+  #   image: selenium/node-edge:120.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # edge-125:
+  #   image: selenium/node-edge:125.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # edge-130:
+  #   image: selenium/node-edge:130.0
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # edge-latest:
+  #   image: selenium/node-edge:latest
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # edge-beta:
+  #   image: selenium/node-edge:beta
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # edge-dev:
+  #   image: selenium/node-edge:dev
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
+  # chromium-latest:
+  #   image: selenium/node-chromium:latest
+  #   networks:
+  #   - selenium-network
+  #   environment:
+  #   - SE_EVENT_BUS_HOST=selenium-hub
+  #   - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #   - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #   - SE_NODE_MAX_SESSIONS=2
+  #   - SE_NODE_SESSION_TIMEOUT=300
+  #   - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #   - SE_OTEL_TRACES_EXPORTER=none
+  #   - SE_ENABLE_TRACING=false
+  #   shm_size: 1gb
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #       - node.hostname == testnetslaveportainer
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 10s
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #       reservations:
+  #         memory: 768M
+  #   volumes:
+  #   - type: tmpfs
+  #     target: /home/seluser/Downloads
+  #     tmpfs:
+  #       size: 52428800
   browser-automation:
     image: ghcr.io/boblepointu/adnauseamselenium:latest
     networks:
@@ -847,7 +847,7 @@ services:
     - PERSONA_MAX_AGE_DAYS=30
     - PERSONA_MAX_USES=100
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
         - node.hostname == testnetslaveportainer

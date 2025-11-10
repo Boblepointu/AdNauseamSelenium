@@ -737,10 +737,10 @@ services:
         max_attempts: 5
       resources:
         limits:
-          memory: 768M
-          cpus: '0.5'
+          memory: 1536M  # Increased from 768M - CDP + stealth needs more memory
+          cpus: '1.0'    # Increased from 0.5 - more CPU for CDP operations
         reservations:
-          memory: 384M
+          memory: 768M   # Increased from 384M
       update_config:
         parallelism: 1
         delay: 15s
