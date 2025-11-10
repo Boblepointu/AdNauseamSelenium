@@ -6,6 +6,7 @@ Automates browsing across multiple sites with persistent persona management
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
@@ -17,6 +18,7 @@ import math
 import numpy as np
 from datetime import datetime
 from urllib.parse import urlparse
+from faker import Faker
 
 # Import persona manager for persistent fingerprint rotation
 try:
@@ -463,6 +465,500 @@ def realistic_delay(base_seconds, variance=0.3, apply_fatigue=True):
         delay *= fatigue
     
     return delay
+
+
+# ============================================
+# REALISTIC USER BEHAVIORS
+# ============================================
+
+def inject_realistic_errors(driver):
+    """
+    Inject realistic console errors and warnings with high variability
+    Real users see JS errors occasionally - too clean = suspicious
+    """
+    if random.random() < 0.12:  # 12% of page loads
+        try:
+            # Common error types with realistic URLs and line numbers
+            error_templates = [
+                # Cookie/Consent errors
+                "console.warn('[Cookie] Consent not provided for {domain}');",
+                "console.error('[GDPR] Failed to load consent framework from {cdn}');",
+                "console.warn('[Privacy] Third-party cookie blocked: {cookie_name}');",
+                
+                # Analytics/Tracking errors
+                "console.error('[Analytics] Failed to load script from {analytics_domain}');",
+                "console.warn('[Tracking] Google Analytics: gtag is not defined');",
+                "console.error('[GTM] Failed to initialize Google Tag Manager');",
+                "console.log('[FB Pixel] Facebook pixel failed to load - connection timeout');",
+                "console.warn('[Hotjar] Recording script blocked by ad blocker');",
+                
+                # Ad-related errors
+                "console.warn('[Ads] Unable to load advertisement from {ad_network}');",
+                "console.error('[AdBlock] Failed to display ad unit: {ad_id}');",
+                "console.log('[AdSense] adsbygoogle.js load timeout after {timeout}ms');",
+                "console.warn('[Prebid] Bid adapter failed: {adapter_name}');",
+                
+                # Service Worker errors
+                "console.log('[SW] ServiceWorker registration failed: SecurityError');",
+                "console.error('[SW] Failed to update service worker: NetworkError');",
+                "console.warn('[SW] Service worker: fetch event handler error');",
+                
+                # Resource loading errors
+                "console.error('[Resource] Failed to load resource: {resource_url}');",
+                "console.warn('[CSS] Failed to load stylesheet from {cdn}');",
+                "console.error('[Font] Failed to load font: {font_name}');",
+                "console.log('[Image] Image failed to load: {image_url}');",
+                
+                # CORS errors
+                "console.error('[CORS] Cross-origin request blocked: {origin}');",
+                "console.warn('[Security] Mixed content blocked: {url}');",
+                "console.error('[XHR] XMLHttpRequest error: CORS policy');",
+                
+                # JavaScript errors
+                "console.error('[JS] Uncaught TypeError: Cannot read property \\'{prop}\\' of undefined');",
+                "console.error('[JS] Uncaught ReferenceError: {var_name} is not defined');",
+                "console.warn('[Deprecation] {api_name} is deprecated and will be removed');",
+                
+                # Network errors
+                "console.error('[Network] Failed to fetch: NetworkError when attempting to fetch resource');",
+                "console.warn('[API] Request timeout after {timeout}ms: {api_endpoint}');",
+                "console.error('[WebSocket] WebSocket connection failed: {ws_url}');",
+                
+                # Browser warnings
+                "console.warn('[Performance] Long task detected: {duration}ms');",
+                "console.warn('[Memory] Heap snapshot size exceeds threshold');",
+                "console.log('[Browser] Slow network detected, reducing quality');",
+            ]
+            
+            # Random data for templates
+            domains = ['example.com', 'analytics.google.com', 'doubleclick.net', 'facebook.com', 
+                      'ads.yahoo.com', 'googlesyndication.com', 'adnxs.com', 'criteo.com']
+            cdns = ['cdn.cookielaw.org', 'cdn.jsdelivr.net', 'unpkg.com', 'cdnjs.cloudflare.com']
+            cookie_names = ['_ga', '_gid', '_fbp', '__utma', '__utmz', 'fr', 'datr', 'sb']
+            analytics_domains = ['www.google-analytics.com', 'analytics.google.com', 'stats.g.doubleclick.net']
+            ad_networks = ['googlesyndication.com', 'doubleclick.net', 'adnxs.com', 'casalemedia.com']
+            ad_ids = [f'ad-{random.randint(1000, 9999)}', f'banner-{random.randint(100, 999)}', 
+                     f'slot-{random.randint(1, 20)}']
+            adapters = ['rubicon', 'appnexus', 'pubmatic', 'openx', 'sovrn']
+            resources = ['/assets/main.js', '/static/bundle.js', '/dist/vendor.js', '/js/app.min.js']
+            fonts = ['Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Source Sans Pro']
+            images = ['/images/banner.jpg', '/assets/hero.png', '/media/thumbnail.webp']
+            props = ['innerHTML', 'classList', 'parentNode', 'addEventListener', 'dataset']
+            var_names = ['jQuery', '$', 'ga', 'gtag', 'fbq', 'dataLayer']
+            apis = ['document.write', 'synchronous XMLHttpRequest', 'unload event', 'webkitRequestAnimationFrame']
+            api_endpoints = ['/api/v1/user', '/graphql', '/rest/data', '/api/products']
+            ws_urls = ['wss://live.example.com', 'ws://stream.example.com:8080']
+            
+            # Select random error and fill in template
+            error_template = random.choice(error_templates)
+            error = error_template.format(
+                domain=random.choice(domains),
+                cdn=random.choice(cdns),
+                cookie_name=random.choice(cookie_names),
+                analytics_domain=random.choice(analytics_domains),
+                ad_network=random.choice(ad_networks),
+                ad_id=random.choice(ad_ids),
+                timeout=random.choice([3000, 5000, 10000, 15000]),
+                adapter_name=random.choice(adapters),
+                resource_url=random.choice(resources),
+                font_name=random.choice(fonts),
+                image_url=random.choice(images),
+                origin=random.choice(domains),
+                url=f'https://{random.choice(domains)}{random.choice(resources)}',
+                prop=random.choice(props),
+                var_name=random.choice(var_names),
+                api_name=random.choice(apis),
+                api_endpoint=random.choice(api_endpoints),
+                ws_url=random.choice(ws_urls),
+                duration=random.randint(200, 2000)
+            )
+            
+            # Add line numbers and file references occasionally
+            if random.random() < 0.4:
+                file_name = random.choice(['bundle.js', 'app.js', 'vendor.js', 'main.js', 'analytics.js'])
+                line_num = random.randint(1, 9999)
+                col_num = random.randint(1, 120)
+                error = f"{error} at {file_name}:{line_num}:{col_num}"
+            
+            driver.execute_script(error)
+            
+            # Sometimes inject multiple errors (2-3 errors in a row)
+            if random.random() < 0.15:
+                time.sleep(random.uniform(0.05, 0.2))
+                driver.execute_script(random.choice(error_templates).format(
+                    domain=random.choice(domains),
+                    cdn=random.choice(cdns),
+                    cookie_name=random.choice(cookie_names),
+                    analytics_domain=random.choice(analytics_domains),
+                    ad_network=random.choice(ad_networks),
+                    ad_id=random.choice(ad_ids),
+                    timeout=random.choice([3000, 5000, 10000]),
+                    adapter_name=random.choice(adapters),
+                    resource_url=random.choice(resources),
+                    font_name=random.choice(fonts),
+                    image_url=random.choice(images),
+                    origin=random.choice(domains),
+                    url=f'https://{random.choice(domains)}',
+                    prop=random.choice(props),
+                    var_name=random.choice(var_names),
+                    api_name=random.choice(apis),
+                    api_endpoint=random.choice(api_endpoints),
+                    ws_url=random.choice(ws_urls),
+                    duration=random.randint(200, 2000)
+                ))
+        except:
+            pass
+
+
+def simulate_copy_paste(driver):
+    """
+    Simulate occasional copy/paste behavior
+    Real users copy text from pages - clipboard API should be accessed
+    """
+    if random.random() < 0.05:  # 5% chance per page
+        try:
+            driver.execute_script('''
+                try {
+                    const elements = document.querySelectorAll('p, h1, h2, h3, span, a, div');
+                    if (elements.length > 0) {
+                        const randomElement = elements[Math.floor(Math.random() * Math.min(elements.length, 50))];
+                        const text = randomElement.innerText || randomElement.textContent;
+                        
+                        if (text && text.trim().length > 10) {
+                            // Select the text
+                            const range = document.createRange();
+                            range.selectNodeContents(randomElement);
+                            const selection = window.getSelection();
+                            selection.removeAllRanges();
+                            selection.addRange(range);
+                            
+                            // Copy to clipboard
+                            document.execCommand('copy');
+                            
+                            // Clear selection after a moment
+                            setTimeout(() => {
+                                selection.removeAllRanges();
+                            }, 100);
+                        }
+                    }
+                } catch (e) {
+                    // Silently fail
+                }
+            ''')
+        except:
+            pass
+
+
+def simulate_right_click(driver, browser_type):
+    """
+    Simulate right-click (context menu) behavior
+    Real users occasionally right-click on links/images
+    """
+    if random.random() < 0.05:  # 5% chance per page
+        try:
+            # Find clickable elements (links, images)
+            elements = driver.find_elements(By.CSS_SELECTOR, 'a, img, button')
+            if elements:
+                # Pick a random visible element
+                visible_elements = [e for e in elements[:30] if e.is_displayed()]
+                if visible_elements:
+                    element = random.choice(visible_elements)
+                    
+                    # Right-click with ActionChains
+                    actions = ActionChains(driver)
+                    actions.context_click(element).perform()
+                    
+                    print(f'  [{browser_type}] 🖱️  Right-clicked element')
+                    
+                    # Wait a moment (user reading context menu)
+                    time.sleep(random.uniform(0.5, 1.5))
+                    
+                    # Close context menu with Escape
+                    actions = ActionChains(driver)
+                    actions.send_keys(Keys.ESCAPE).perform()
+                    
+                    time.sleep(random.uniform(0.2, 0.5))
+        except:
+            pass
+
+
+def simulate_keyboard_shortcuts(driver, browser_type):
+    """
+    Simulate keyboard shortcuts that real users use
+    """
+    if random.random() < 0.08:  # 8% chance per page
+        try:
+            shortcuts = [
+                (Keys.SPACE, 'Scroll with Space'),
+                (Keys.PAGE_DOWN, 'Page Down'),
+                (Keys.HOME, 'Home key'),
+                (Keys.END, 'End key'),
+            ]
+            
+            # Select random shortcut
+            key, description = random.choice(shortcuts)
+            
+            actions = ActionChains(driver)
+            actions.send_keys(key).perform()
+            
+            print(f'  [{browser_type}] ⌨️  Pressed keyboard shortcut: {description}')
+            time.sleep(random.uniform(0.3, 0.8))
+        except:
+            pass
+
+
+def generate_fake_data():
+    """Generate realistic fake data for form fields using Faker"""
+    # Initialize Faker with random locale for diversity
+    locales = ['en_US', 'en_GB', 'en_CA', 'fr_FR', 'de_DE', 'es_ES', 'it_IT']
+    fake = Faker(random.choice(locales))
+    
+    # Generate realistic data
+    first_name = fake.first_name()
+    last_name = fake.last_name()
+    
+    # Email variations
+    email_formats = [
+        f"{first_name.lower()}.{last_name.lower()}{random.randint(1, 999)}@{fake.free_email_domain()}",
+        f"{first_name.lower()}{last_name.lower()}@{fake.free_email_domain()}",
+        f"{first_name[0].lower()}{last_name.lower()}{random.randint(1, 99)}@{fake.free_email_domain()}",
+        f"{first_name.lower()}_{last_name.lower()}@{fake.free_email_domain()}",
+        f"{first_name.lower()}{random.randint(100, 999)}@{fake.free_email_domain()}",
+    ]
+    
+    # Search query variations (much more diverse)
+    search_queries = [
+        fake.catch_phrase(),  # Random business phrases
+        fake.bs(),  # Random business speak
+        fake.word(),  # Random word
+        f"how to {fake.word()}",
+        f"{fake.word()} {fake.word()}",
+        f"{fake.city()} {random.choice(['weather', 'news', 'restaurants', 'hotels'])}",
+        f"best {fake.word()}",
+        random.choice(['news', 'weather', 'sports', 'recipes', 'movies', 'music', 'games', 'shopping']),
+        '',  # Empty search sometimes
+    ]
+    
+    # Message variations
+    messages = [
+        fake.sentence(nb_words=random.randint(3, 10)),
+        fake.text(max_nb_chars=random.randint(20, 100)),
+        random.choice(['Hello', 'Hi', 'Thanks', 'Great site', 'Interesting', 'Love it', 'Nice', '']),
+    ]
+    
+    return {
+        'email': random.choice(email_formats),
+        'name': f"{first_name} {last_name}",
+        'first_name': first_name,
+        'last_name': last_name,
+        'phone': fake.phone_number(),
+        'zipcode': fake.postcode(),
+        'address': fake.street_address(),
+        'city': fake.city(),
+        'state': fake.state_abbr() if random.random() < 0.5 else fake.state(),
+        'country': fake.country(),
+        'age': str(random.randint(18, 75)),
+        'number': str(random.randint(1, 100)),
+        'date': fake.date(),
+        'username': fake.user_name(),
+        'company': fake.company(),
+        'job_title': fake.job(),
+        'search': random.choice(search_queries),
+        'message': random.choice(messages),
+        'url': fake.url(),
+    }
+
+
+def simulate_typing_and_forms(driver, browser_type):
+    """
+    Simulate typing in forms with proper data validation
+    - Detects email, name, phone, etc. fields
+    - Types realistic data
+    - Handles frontend validation
+    - Occasionally submits forms (carefully)
+    """
+    if random.random() > 0.15:  # Only 15% chance to interact with forms
+        return False
+    
+    try:
+        # Find all input fields (visible and not password)
+        inputs = driver.find_elements(By.CSS_SELECTOR, 
+            'input[type="text"], input[type="email"], input[type="tel"], input[type="search"], '
+            'input[type="number"], input:not([type]), textarea')
+        
+        # Filter to visible, enabled inputs
+        visible_inputs = [inp for inp in inputs if inp.is_displayed() and inp.is_enabled()]
+        
+        if not visible_inputs:
+            return False
+        
+        # Limit to first 5 inputs to avoid overwhelming the page
+        visible_inputs = visible_inputs[:5]
+        
+        # Generate fake data for this session
+        fake_data = generate_fake_data()
+        
+        filled_count = 0
+        
+        for input_field in visible_inputs:
+            try:
+                # Initialize search field flag
+                is_search_field = False
+                
+                # Get field attributes to determine type
+                field_type = input_field.get_attribute('type') or 'text'
+                field_name = (input_field.get_attribute('name') or '').lower()
+                field_id = (input_field.get_attribute('id') or '').lower()
+                field_placeholder = (input_field.get_attribute('placeholder') or '').lower()
+                field_aria_label = (input_field.get_attribute('aria-label') or '').lower()
+                
+                # Combine all attributes to detect field purpose
+                field_text = f"{field_name} {field_id} {field_placeholder} {field_aria_label}"
+                
+                # Determine what data to type based on field indicators
+                value_to_type = None
+                
+                if field_type == 'email' or any(word in field_text for word in ['email', 'e-mail', 'mail']):
+                    value_to_type = fake_data['email']
+                
+                elif field_type == 'tel' or any(word in field_text for word in ['phone', 'tel', 'mobile', 'cellular']):
+                    value_to_type = fake_data['phone']
+                
+                elif any(word in field_text for word in ['firstname', 'first_name', 'first name', 'fname', 'prenom']):
+                    value_to_type = fake_data['first_name']
+                
+                elif any(word in field_text for word in ['lastname', 'last_name', 'last name', 'lname', 'nom', 'surname']):
+                    value_to_type = fake_data['last_name']
+                
+                elif any(word in field_text for word in ['name', 'fullname', 'full_name', 'your name']):
+                    value_to_type = fake_data['name']
+                
+                elif field_type == 'number' or any(word in field_text for word in ['age', 'quantity', 'amount']):
+                    value_to_type = fake_data['number']
+                
+                elif any(word in field_text for word in ['zip', 'postal', 'postcode', 'zipcode']):
+                    value_to_type = fake_data['zipcode']
+                
+                elif field_type == 'search' or any(word in field_text for word in ['search', 'query', 'find', 'recherche', 'buscar', 'q']):
+                    value_to_type = fake_data['search']
+                    # Mark this as a search field for later submission
+                    is_search_field = True
+                
+                elif any(word in field_text for word in ['address', 'street', 'addr']):
+                    value_to_type = fake_data['address']
+                
+                elif any(word in field_text for word in ['city', 'ville']):
+                    value_to_type = fake_data['city']
+                
+                elif any(word in field_text for word in ['state', 'province', 'region']):
+                    value_to_type = fake_data['state']
+                
+                elif any(word in field_text for word in ['country', 'pays']):
+                    value_to_type = fake_data['country']
+                
+                elif any(word in field_text for word in ['username', 'user', 'login']):
+                    value_to_type = fake_data['username']
+                
+                elif any(word in field_text for word in ['company', 'organization', 'organisation']):
+                    value_to_type = fake_data['company']
+                
+                elif any(word in field_text for word in ['job', 'title', 'position']):
+                    value_to_type = fake_data['job_title']
+                
+                elif any(word in field_text for word in ['url', 'website', 'link']):
+                    value_to_type = fake_data['url']
+                
+                elif any(word in field_text for word in ['date', 'birthday', 'dob']):
+                    value_to_type = fake_data['date']
+                
+                elif input_field.tag_name == 'textarea' or any(word in field_text for word in ['message', 'comment', 'feedback']):
+                    value_to_type = fake_data['message']
+                
+                else:
+                    # Generic text field - use search term or skip
+                    if random.random() < 0.5:
+                        value_to_type = fake_data['search']
+                
+                # Type the value if we determined what it should be
+                if value_to_type:
+                    # Clear field first
+                    input_field.clear()
+                    time.sleep(random.uniform(0.1, 0.3))
+                    
+                    # Type with realistic timing
+                    for char in value_to_type:
+                        input_field.send_keys(char)
+                        time.sleep(random.uniform(0.08, 0.25))
+                    
+                    # Occasional typo and correction
+                    if random.random() < 0.15 and len(value_to_type) > 3:
+                        time.sleep(random.uniform(0.2, 0.5))
+                        input_field.send_keys(Keys.BACK_SPACE)
+                        time.sleep(random.uniform(0.1, 0.3))
+                        input_field.send_keys(value_to_type[-1])
+                    
+                    filled_count += 1
+                    
+                    # If this is a search field, submit search immediately (50% chance)
+                    if 'is_search_field' in locals() and is_search_field and random.random() < 0.5:
+                        time.sleep(random.uniform(0.3, 0.8))
+                        try:
+                            # Try pressing Enter
+                            input_field.send_keys(Keys.ENTER)
+                            print(f'  [{browser_type}] 🔍 Performed search: "{value_to_type[:40]}"')
+                            time.sleep(random.uniform(1.5, 3.0))
+                            return True  # Search performed, exit function
+                        except:
+                            pass
+                    
+                    # Pause between fields
+                    time.sleep(random.uniform(0.5, 1.5))
+                    
+                    # Reset search field flag
+                    is_search_field = False
+            
+            except Exception:
+                continue
+        
+        if filled_count > 0:
+            print(f'  [{browser_type}] ⌨️  Typed in {filled_count} form field(s)')
+            
+            # Small chance to submit form (10% of forms filled)
+            if random.random() < 0.1:
+                try:
+                    # Look for submit button
+                    submit_buttons = driver.find_elements(By.CSS_SELECTOR, 
+                        'button[type="submit"], input[type="submit"], '
+                        'button:not([type="button"]):not([type="reset"])')
+                    
+                    for button in submit_buttons:
+                        if button.is_displayed() and button.is_enabled():
+                            button_text = button.text.lower() if button.text else ''
+                            
+                            # Only click safe submit buttons (avoid logout, delete, etc.)
+                            safe_keywords = ['search', 'find', 'go', 'submit', 'send', 'subscribe', 
+                                           'sign up', 'newsletter', 'rechercher', 'envoyer']
+                            unsafe_keywords = ['delete', 'remove', 'logout', 'log out', 'signout', 
+                                             'unsubscribe', 'cancel', 'supprimer', 'deconnecter']
+                            
+                            is_safe = any(keyword in button_text for keyword in safe_keywords)
+                            is_unsafe = any(keyword in button_text for keyword in unsafe_keywords)
+                            
+                            if is_safe and not is_unsafe:
+                                time.sleep(random.uniform(0.5, 1.5))
+                                button.click()
+                                print(f'  [{browser_type}] 📨 Submitted form')
+                                time.sleep(random.uniform(1.0, 2.0))
+                                break
+                except Exception:
+                    pass
+            
+            return True
+        
+        return False
+        
+    except Exception:
+        return False
 
 
 # ============================================
@@ -2236,12 +2732,85 @@ def auto_accept_cookies(driver, browser_type, max_attempts=3):
             except:
                 pass
             
-            # Step 3: Common "Accept All" / "Agree to all" buttons
+            # Step 3: Toggle cookie category switches (Usercentrics, accessiBe, etc.)
+            try:
+                # Find toggle switches/checkboxes for cookie categories
+                toggle_selectors = [
+                    # Usercentrics / accessiBe toggles
+                    'input[type="checkbox"][role="switch"]',
+                    '.switch input[type="checkbox"]',
+                    'input[aria-label*="Cookies"]',
+                    'input[aria-label*="cookie"]',
+                    # Generic toggles with cookie-related parents
+                    '[class*="cookie"] input[type="checkbox"]',
+                    '[id*="cookie"] input[type="checkbox"]',
+                    '[class*="consent"] input[type="checkbox"]',
+                    '[id*="consent"] input[type="checkbox"]',
+                    # Toggle switches (not just checkboxes)
+                    '[role="switch"]',
+                    '.toggle-switch input',
+                ]
+                
+                toggled_count = 0
+                for selector in toggle_selectors:
+                    try:
+                        toggles = driver.find_elements(By.CSS_SELECTOR, selector)
+                        for toggle in toggles:
+                            try:
+                                # Check if toggle is visible and not already checked
+                                if toggle.is_displayed() and toggle.is_enabled():
+                                    # Get labels to avoid toggling "Essential" (always on)
+                                    parent_text = ''
+                                    try:
+                                        parent = toggle.find_element(By.XPATH, './ancestor::*[1]')
+                                        parent_text = parent.text.lower() if parent else ''
+                                    except:
+                                        pass
+                                    
+                                    # Skip "Essential" toggles (they're always on and read-only)
+                                    if 'essential' not in parent_text and 'essent' not in parent_text:
+                                        # Check if already checked
+                                        is_checked = toggle.is_selected() or toggle.get_attribute('checked') == 'true' or toggle.get_attribute('aria-checked') == 'true'
+                                        
+                                        if not is_checked:
+                                            # Click to enable this cookie category
+                                            try:
+                                                # Try clicking the toggle itself
+                                                toggle.click()
+                                                toggled_count += 1
+                                                time.sleep(random.uniform(0.2, 0.4))
+                                            except:
+                                                # If direct click fails, try clicking parent label
+                                                try:
+                                                    parent = toggle.find_element(By.XPATH, './ancestor::label[1]')
+                                                    parent.click()
+                                                    toggled_count += 1
+                                                    time.sleep(random.uniform(0.2, 0.4))
+                                                except:
+                                                    pass
+                            except:
+                                continue
+                    except:
+                        continue
+                
+                if toggled_count > 0:
+                    print(f'  [{browser_type}] 🍪 Toggled {toggled_count} cookie category switch(es)')
+                    time.sleep(random.uniform(0.3, 0.6))
+            except:
+                pass
+            
+            # Step 4: Common "Accept All" / "Agree to all" buttons
             accept_all_selectors = [
                 # DIDOMI "Agree to all" button
                 'button[aria-label="Agree to all"]',
                 'button.didomi-button-highlight',
                 '#didomi-notice-agree-button',
+                
+                # Usercentrics / accessiBe
+                'button:has-text("Accept All")',
+                '[data-testid="uc-accept-all-button"]',
+                '#uc-btn-accept-banner',
+                'button[aria-label="Accept All"]',
                 
                 # Utiq / ConsentHub / Reworld Media
                 'button:contains("Accepter"):not(:contains("Rejeter"))',
@@ -4482,8 +5051,23 @@ def browse():
             # Auto-accept cookies
             auto_accept_cookies(driver, browser_type)
             
+            # Inject realistic console errors (10% chance)
+            inject_realistic_errors(driver)
+            
             # Play YouTube videos if detected
             play_youtube_video(driver, browser_type)
+            
+            # Simulate copy/paste behavior (5% chance)
+            simulate_copy_paste(driver)
+            
+            # Simulate right-click behavior (5% chance)
+            simulate_right_click(driver, browser_type)
+            
+            # Simulate keyboard shortcuts (8% chance)
+            simulate_keyboard_shortcuts(driver, browser_type)
+            
+            # Try typing in forms with proper data (15% chance)
+            simulate_typing_and_forms(driver, browser_type)
             
             # Try to detect and click ads (60% chance)
             initial_tab_count = len(driver.window_handles)
