@@ -5167,8 +5167,15 @@ def manage_tabs(driver, browser_type, current_browsing_tab, max_tabs=8):
         return current_browsing_tab, False
         
     except Exception as e:
-        print(f'  [{browser_type}] ⚠ Tab management error: {str(e)[:50]}')
-        # Try to recover
+        error_msg = str(e)
+        print(f'  [{browser_type}] ⚠ Tab management error: {error_msg[:50]}')
+        
+        # Check if session is lost - re-raise to trigger session recreation in main loop
+        if 'Cannot find session' in error_msg or 'invalid session id' in error_msg.lower():
+            print(f'  [{browser_type}] 💥 Session lost in tab management - propagating error...')
+            raise  # Re-raise to be caught by main loop's WebDriverException handler
+        
+        # Try to recover from other errors
         try:
             if driver.window_handles:
                 if current_browsing_tab in driver.window_handles:
@@ -5796,9 +5803,32 @@ def browse():
             print(f'[{browser_type}] ⏱ Timeout, moving to next website')
             websites_visited += 1
         except WebDriverException as e:
-            print(f'[{browser_type}] ⚠ WebDriver error: {str(e)[:80]}')
-            print(f'[{browser_type}] Trying to continue with same session...')
-            time.sleep(2)
+            error_msg = str(e)
+            print(f'[{browser_type}] ⚠ WebDriver error: {error_msg[:80]}')
+            
+            # Check if session is lost - needs recreation
+            if 'Cannot find session' in error_msg or 'invalid session id' in error_msg.lower():
+                print(f'[{browser_type}] 🔄 Session lost! Creating new session...')
+                try:
+                    driver.quit()
+                except:
+                    pass
+                
+                # Create new driver and reset state
+                try:
+                    driver = create_driver(browser_type)
+                    current_browsing_tab = driver.current_window_handle
+                    max_tabs = random.randint(5, 10)
+                    print(f'[{browser_type}] ✅ New session created successfully')
+                    print(f'[{browser_type}] 📍 New tab: {current_browsing_tab[:8]}... (max {max_tabs} tabs)')
+                except Exception as create_error:
+                    print(f'[{browser_type}] ❌ Failed to create new session: {str(create_error)[:80]}')
+                    print(f'[{browser_type}] Exiting to restart container...')
+                    break
+            else:
+                # Other WebDriver errors - try to continue
+                print(f'[{browser_type}] Trying to continue with same session...')
+                time.sleep(2)
         except Exception as e:
             print(f'[{browser_type}] ⚠ Error: {str(e)[:80]}')
     
