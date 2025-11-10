@@ -3872,6 +3872,14 @@ def create_driver(browser_type):
     
     # Apply comprehensive CDP stealth for Chrome and Chromium (RemoteWebDriver compatible)
     if (browser_type == 'chrome' or browser_type == 'chromium') and cdp_client:
+        # First, enable the necessary CDP domains
+        try:
+            driver.execute_cdp_cmd('Network.enable', {})
+            driver.execute_cdp_cmd('Page.enable', {})
+            print(f'[{browser_type}] ✓ CDP domains enabled')
+        except Exception as e:
+            print(f'[{browser_type}] ⚠ CDP domain enable failed: {str(e)[:80]}')
+        
         try:
             # Set user agent via CDP
             driver.execute_cdp_cmd('Network.setUserAgentOverride', {
@@ -3882,7 +3890,7 @@ def create_driver(browser_type):
             
             print(f'[{browser_type}] ✓ Applied CDP user agent override')
         except Exception as e:
-            print(f'[{browser_type}] ⚠ CDP user agent not applied: {str(e)[:50]}')
+            print(f'[{browser_type}] ⚠ CDP user agent not applied: {str(e)[:80]}')
         
         # Comprehensive CDP stealth commands
         try:
@@ -4465,10 +4473,18 @@ def create_driver(browser_type):
             
             print(f'[{browser_type}] ✓ Applied comprehensive CDP stealth')
         except Exception as e:
-            print(f'[{browser_type}] ⚠ CDP commands not applied: {str(e)[:50]}')
+            print(f'[{browser_type}] ⚠ CDP commands not applied: {str(e)[:80]}')
             
     elif browser_type == 'edge' and cdp_client:
         # Edge uses CDP and is Chromium-based, apply comprehensive stealth
+        # First, enable the necessary CDP domains
+        try:
+            driver.execute_cdp_cmd('Network.enable', {})
+            driver.execute_cdp_cmd('Page.enable', {})
+            print(f'[{browser_type}] ✓ CDP domains enabled')
+        except Exception as e:
+            print(f'[{browser_type}] ⚠ CDP domain enable failed: {str(e)[:80]}')
+        
         try:
             driver.execute_cdp_cmd('Network.setUserAgentOverride', {
                 "userAgent": user_agent,
