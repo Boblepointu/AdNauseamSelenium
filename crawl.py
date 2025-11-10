@@ -3842,12 +3842,14 @@ def create_driver(browser_type):
             
             # Get the browser node info from Selenium Grid to find CDP endpoint
             import requests
+            cdp_url = None
+            
             try:
                 # Query Selenium Grid for session info
                 grid_status = requests.get(f'http://selenium-hub:4444/status', timeout=5).json()
+                print(f'[{browser_type}] 🔍 Querying Grid for node info...')
                 
                 # Find the node running our session
-                node_url = None
                 for node in grid_status.get('value', {}).get('nodes', []):
                     for slot in node.get('slots', []):
                         if slot.get('session', {}).get('sessionId') == session_id:
@@ -3858,9 +3860,28 @@ def create_driver(browser_type):
                                 match = re.search(r'http://([^:]+):', node_uri)
                                 if match:
                                     node_hostname = match.group(1)
-                                    # Connect directly to browser's debugging port
-                                    cdp_url = f"ws://{node_hostname}:9222/devtools/browser"
-                                    print(f'[{browser_type}] Found node: {node_hostname}')
+                                    print(f'[{browser_type}] ✓ Found node: {node_hostname}')
+                                    
+                                    # Get the WebSocket debugger URL from Chrome's /json endpoint
+                                    try:
+                                        json_url = f'http://{node_hostname}:9222/json'
+                                        browser_info = requests.get(json_url, timeout=3).json()
+                                        
+                                        # Find the first page/tab
+                                        for page in browser_info:
+                                            if page.get('type') == 'page':
+                                                ws_url = page.get('webSocketDebuggerUrl')
+                                                if ws_url:
+                                                    cdp_url = ws_url
+                                                    print(f'[{browser_type}] ✓ Got CDP WebSocket from browser')
+                                                    break
+                                    except Exception as e:
+                                        print(f'[{browser_type}] ⚠ Could not query browser /json: {str(e)[:50]}')
+                                    
+                                    # If /json didn't work, try direct connection
+                                    if not cdp_url:
+                                        cdp_url = f"ws://{node_hostname}:9222/devtools/browser"
+                                        print(f'[{browser_type}] Using direct CDP connection')
                                     break
                     if cdp_url:
                         break
@@ -3868,17 +3889,17 @@ def create_driver(browser_type):
                 if not cdp_url:
                     # Fallback to Grid's CDP endpoint (limited functionality)
                     cdp_url = f"ws://selenium-hub:4444/session/{session_id}/se/cdp"
-                    print(f'[{browser_type}] Using Grid CDP endpoint (limited)')
+                    print(f'[{browser_type}] ⚠ Node not found, using Grid CDP (limited)')
             except Exception as e:
                 # Fallback to Grid's CDP endpoint
                 cdp_url = f"ws://selenium-hub:4444/session/{session_id}/se/cdp"
-                print(f'[{browser_type}] Could not query Grid, using fallback: {str(e)[:50]}')
+                print(f'[{browser_type}] ⚠ Grid query failed: {str(e)[:60]}')
             
-            print(f'[{browser_type}] Connecting to CDP WebSocket...')
+            print(f'[{browser_type}] Connecting to CDP...')
             cdp_client = CDPWebSocketClient(cdp_url)
             
             if cdp_client.connect():
-                print(f'[{browser_type}] ✓ CDP WebSocket connected successfully')
+                print(f'[{browser_type}] ✓ CDP WebSocket connected')
                 
                 # Add execute_cdp_cmd method that uses WebSocket
                 def execute_cdp_cmd(self, cmd, cmd_args):
@@ -3896,14 +3917,14 @@ def create_driver(browser_type):
                 # Test CDP connection
                 try:
                     version = driver.execute_cdp_cmd('Browser.getVersion', {})
-                    print(f'[{browser_type}] ✓ CDP active - Browser: {version.get("product", "unknown")}')
+                    print(f'[{browser_type}] ✓ CDP active - {version.get("product", "unknown")}')
                 except Exception as e:
                     print(f'[{browser_type}] ⚠ CDP test failed: {str(e)[:50]}')
             else:
-                print(f'[{browser_type}] ⚠ CDP WebSocket connection failed, stealth features limited')
+                print(f'[{browser_type}] ⚠ CDP connection failed, stealth limited')
                 cdp_client = None
         except Exception as e:
-            print(f'[{browser_type}] ⚠ CDP initialization failed: {str(e)[:80]}')
+            print(f'[{browser_type}] ⚠ CDP init failed: {str(e)[:80]}')
             if cdp_client:
                 cdp_client.close()
             cdp_client = None
