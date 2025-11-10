@@ -3667,6 +3667,10 @@ def create_driver(browser_type):
         # Set browser name for Selenium Grid to pick the right nodes
         options.set_capability('browserName', browser_type)
         
+        # Enable remote debugging for full CDP support
+        options.add_argument('--remote-debugging-port=9222')
+        options.add_argument('--remote-debugging-address=0.0.0.0')
+        
         # Selenium Stealth recommended options
         options.add_argument(f'user-agent={user_agent}')
         options.add_argument('--disable-blink-features=AutomationControlled')
@@ -3776,6 +3780,10 @@ def create_driver(browser_type):
     elif browser_type == 'edge':
         options = webdriver.EdgeOptions()
         
+        # Enable remote debugging for full CDP support
+        options.add_argument('--remote-debugging-port=9222')
+        options.add_argument('--remote-debugging-address=0.0.0.0')
+        
         # Comprehensive Edge stealth configuration
         options.add_argument(f'user-agent={user_agent}')
         options.add_argument('--disable-blink-features=AutomationControlled')
@@ -3829,14 +3837,44 @@ def create_driver(browser_type):
     cdp_client = None
     if browser_type in ['chrome', 'chromium', 'edge']:
         try:
-            # Get session ID and construct CDP WebSocket URL
+            # Get session ID
             session_id = driver.session_id
             
-            # Try to get CDP endpoint from the Selenium node
-            # Format: ws://selenium-hub:4444/session/{session_id}/se/cdp
-            cdp_url = f"ws://selenium-hub:4444/session/{session_id}/se/cdp"
+            # Get the browser node info from Selenium Grid to find CDP endpoint
+            import requests
+            try:
+                # Query Selenium Grid for session info
+                grid_status = requests.get(f'http://selenium-hub:4444/status', timeout=5).json()
+                
+                # Find the node running our session
+                node_url = None
+                for node in grid_status.get('value', {}).get('nodes', []):
+                    for slot in node.get('slots', []):
+                        if slot.get('session', {}).get('sessionId') == session_id:
+                            node_uri = node.get('uri')
+                            if node_uri:
+                                # Extract hostname from uri (http://hostname:port)
+                                import re
+                                match = re.search(r'http://([^:]+):', node_uri)
+                                if match:
+                                    node_hostname = match.group(1)
+                                    # Connect directly to browser's debugging port
+                                    cdp_url = f"ws://{node_hostname}:9222/devtools/browser"
+                                    print(f'[{browser_type}] Found node: {node_hostname}')
+                                    break
+                    if cdp_url:
+                        break
+                
+                if not cdp_url:
+                    # Fallback to Grid's CDP endpoint (limited functionality)
+                    cdp_url = f"ws://selenium-hub:4444/session/{session_id}/se/cdp"
+                    print(f'[{browser_type}] Using Grid CDP endpoint (limited)')
+            except Exception as e:
+                # Fallback to Grid's CDP endpoint
+                cdp_url = f"ws://selenium-hub:4444/session/{session_id}/se/cdp"
+                print(f'[{browser_type}] Could not query Grid, using fallback: {str(e)[:50]}')
             
-            print(f'[{browser_type}] Connecting to CDP WebSocket at {cdp_url}...')
+            print(f'[{browser_type}] Connecting to CDP WebSocket...')
             cdp_client = CDPWebSocketClient(cdp_url)
             
             if cdp_client.connect():
