@@ -1,0 +1,168 @@
+version: '3.8'
+
+# Production Docker Compose using GitHub Container Registry images
+# This file demonstrates how to use the pre-built images from GHCR
+
+volumes:
+  personas-data:
+    driver: local
+
+services:
+  # Selenium Hub
+  selenium-hub:
+    image: selenium/hub:latest
+    ports:
+      - "4444:4444"
+    environment:
+      - SE_SESSION_REQUEST_TIMEOUT=300
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_NODE_MAX_SESSIONS=25
+      - SE_OTEL_TRACES_EXPORTER=none
+      - SE_ENABLE_TRACING=false
+      - SE_SESSION_TIMEOUT=300
+
+  # Chrome Nodes
+  chrome-latest:
+    image: selenium/node-chrome:latest
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+      - SE_OTEL_TRACES_EXPORTER=none
+      - SE_ENABLE_TRACING=false
+    shm_size: 2gb
+
+  chrome-120:
+    image: selenium/node-chrome:120.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+      - SE_OTEL_TRACES_EXPORTER=none
+      - SE_ENABLE_TRACING=false
+    shm_size: 2gb
+
+  # Firefox Nodes
+  firefox-latest:
+    image: selenium/node-firefox:latest
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+      - SE_OTEL_TRACES_EXPORTER=none
+      - SE_ENABLE_TRACING=false
+    shm_size: 2gb
+
+  firefox-120:
+    image: selenium/node-firefox:120.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+      - SE_OTEL_TRACES_EXPORTER=none
+      - SE_ENABLE_TRACING=false
+    shm_size: 2gb
+
+  # Edge Nodes
+  edge-latest:
+    image: selenium/node-edge:latest
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+      - SE_OTEL_TRACES_EXPORTER=none
+      - SE_ENABLE_TRACING=false
+    shm_size: 2gb
+
+  # Browser Automation Instances (using GHCR image)
+  browser-automation-1:
+    image: ghcr.io/boblepointu/adnauseamselenium:latest
+    depends_on:
+      - selenium-hub
+      - chrome-latest
+      - firefox-latest
+    volumes:
+      - personas-data:/app/data/personas
+    environment:
+      - SELENIUM_HUB=selenium-hub:4444
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    restart: unless-stopped
+
+  browser-automation-2:
+    image: ghcr.io/boblepointu/adnauseamselenium:latest
+    depends_on:
+      - selenium-hub
+      - chrome-120
+      - firefox-120
+    volumes:
+      - personas-data:/app/data/personas
+    environment:
+      - SELENIUM_HUB=selenium-hub:4444
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    restart: unless-stopped
+
+  browser-automation-3:
+    image: ghcr.io/boblepointu/adnauseamselenium:latest
+    depends_on:
+      - selenium-hub
+      - edge-latest
+      - chrome-latest
+    volumes:
+      - personas-data:/app/data/personas
+    environment:
+      - SELENIUM_HUB=selenium-hub:4444
+      - PERSONA_ROTATION_STRATEGY=random
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    restart: unless-stopped
+
+  browser-automation-4:
+    image: ghcr.io/boblepointu/adnauseamselenium:latest
+    depends_on:
+      - selenium-hub
+      - firefox-latest
+      - edge-latest
+    volumes:
+      - personas-data:/app/data/personas
+    environment:
+      - SELENIUM_HUB=selenium-hub:4444
+      - PERSONA_ROTATION_STRATEGY=weighted
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    restart: unless-stopped
+
+  browser-automation-5:
+    image: ghcr.io/boblepointu/adnauseamselenium:latest
+    depends_on:
+      - selenium-hub
+      - chrome-120
+      - firefox-120
+      - edge-latest
+    volumes:
+      - personas-data:/app/data/personas
+    environment:
+      - SELENIUM_HUB=selenium-hub:4444
+      - PERSONA_ROTATION_STRATEGY=round-robin
+      - PERSONA_MAX_AGE_DAYS=30
+      - PERSONA_MAX_USES=100
+    restart: unless-stopped
+
