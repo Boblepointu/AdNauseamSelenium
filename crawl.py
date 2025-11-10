@@ -139,6 +139,113 @@ def get_domain(url):
     except:
         return ''
 
+def auto_accept_cookies(driver, browser_type):
+    """Automatically detect and click cookie consent buttons"""
+    try:
+        # Common cookie consent button selectors and text patterns
+        cookie_selectors = [
+            # Common IDs
+            '#accept-cookies', '#acceptCookies', '#cookie-accept', '#cookieAccept',
+            '#accept-all', '#acceptAll', '#cookie-consent-accept', '#onetrust-accept-btn-handler',
+            '#acceptAllButton', '#accept_all_cookies', '#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll',
+            
+            # Common Classes
+            '.accept-cookies', '.acceptCookies', '.cookie-accept', '.cookieAccept',
+            '.accept-all', '.acceptAll', '.cookie-consent-accept', '.accept-button',
+            '.cookie-accept-button', '.js-accept-cookies', '.cookie-banner-accept',
+            
+            # Data attributes
+            '[data-action="accept"]', '[data-cookie="accept"]', '[data-consent="accept"]',
+            '[data-testid="cookie-accept"]', '[data-testid="accept-all"]',
+            
+            # Common button names
+            'button[name="accept"]', 'button[name="accept-all"]', 'button[name="agree"]',
+            
+            # Generic buttons (will match by text)
+            'button', 'a.button', '.btn', '[role="button"]', 'div[onclick]'
+        ]
+        
+        # Common text patterns for accept buttons (case insensitive)
+        accept_text_patterns = [
+            'accept all', 'accept cookies', 'i accept', 'allow all', 'allow cookies',
+            'agree', 'got it', 'ok', 'continue', 'agree and close', 'accept & close',
+            'accept and continue', 'accepter', 'aceptar', 'akzeptieren', 'accetto',
+            'aceitar', 'acceptera', 'ja, accepteren', 'zgadzam się', 'souhlasím',
+            'συμφωνώ', 'принимаю', 'kabul ediyorum', 'موافق'
+        ]
+        
+        # Try specific selectors first (faster and more reliable)
+        for selector in cookie_selectors[:15]:  # Try the most specific ones first
+            try:
+                elements = driver.find_elements(By.CSS_SELECTOR, selector)
+                for element in elements:
+                    if element.is_displayed():
+                        element.click()
+                        print(f'  [{browser_type}] 🍪 Accepted cookies via selector: {selector}')
+                        time.sleep(0.5)
+                        return True
+            except:
+                continue
+        
+        # Try finding buttons by text content
+        try:
+            all_buttons = driver.find_elements(By.TAG_NAME, 'button')
+            all_buttons += driver.find_elements(By.CSS_SELECTOR, 'a.button, .btn, [role="button"]')
+            
+            for button in all_buttons:
+                try:
+                    if not button.is_displayed():
+                        continue
+                    
+                    button_text = button.text.lower().strip()
+                    
+                    # Check if button text matches any accept pattern
+                    for pattern in accept_text_patterns:
+                        if pattern in button_text or button_text == pattern.replace(' ', ''):
+                            button.click()
+                            print(f'  [{browser_type}] 🍪 Accepted cookies via text: "{button.text[:30]}"')
+                            time.sleep(0.5)
+                            return True
+                except:
+                    continue
+        except:
+            pass
+        
+        # Try iframe-based cookie consent (some use iframes)
+        try:
+            iframes = driver.find_elements(By.TAG_NAME, 'iframe')
+            for iframe in iframes:
+                try:
+                    iframe_name = iframe.get_attribute('name') or iframe.get_attribute('id') or ''
+                    if any(keyword in iframe_name.lower() for keyword in ['cookie', 'consent', 'gdpr', 'privacy']):
+                        driver.switch_to.frame(iframe)
+                        
+                        # Try to find accept button in iframe
+                        for selector in cookie_selectors[:10]:
+                            try:
+                                element = driver.find_element(By.CSS_SELECTOR, selector)
+                                if element.is_displayed():
+                                    element.click()
+                                    driver.switch_to.default_content()
+                                    print(f'  [{browser_type}] 🍪 Accepted cookies in iframe')
+                                    time.sleep(0.5)
+                                    return True
+                            except:
+                                continue
+                        
+                        driver.switch_to.default_content()
+                except:
+                    driver.switch_to.default_content()
+                    continue
+        except:
+            pass
+        
+        return False
+        
+    except Exception as e:
+        # Don't let cookie handling break the automation
+        return False
+
 def create_driver(browser_type):
     """Create a Selenium WebDriver for automated browsing with anti-detection"""
     
@@ -324,6 +431,9 @@ def browse():
             # Random human-like delay
             time.sleep(random.uniform(2, 5))
             
+            # Auto-accept cookies
+            auto_accept_cookies(driver, browser_type)
+            
             # Simulate human reading/scrolling behavior on first page
             for _ in range(random.randint(1, 2)):
                 scroll_amount = random.randint(200, 500)
@@ -415,6 +525,13 @@ def browse():
                             
                             # Variable delay after click (humans don't click instantly)
                             time.sleep(random.uniform(2, 5))
+                            
+                            # Try to accept cookies on new page (but don't wait too long)
+                            try:
+                                auto_accept_cookies(driver, browser_type)
+                            except:
+                                pass
+                            
                             current_depth += 1
                             
                             if link_domain != start_domain:
