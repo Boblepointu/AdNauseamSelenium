@@ -57,29 +57,36 @@ print_success "Dependencies installed"
 echo ""
 
 # ============================================================
-# STEP 2: Download crawl.py
+# STEP 2: Setup crawl.py
 # ============================================================
-echo "📥 Downloading crawl.py from GitHub..."
-print_info "Repository: ${GITHUB_REPO}"
-print_info "Branch: ${GITHUB_BRANCH}"
-print_info "URL: ${CRAWL_SCRIPT_URL}"
-echo ""
-
-if curl -fsSL "${CRAWL_SCRIPT_URL}" -o /tmp/crawl.py; then
-    print_success "crawl.py downloaded successfully"
-    
-    # Validate Python script
-    if head -1 /tmp/crawl.py | grep -q "python"; then
-        print_success "Script validated (Python shebang found)"
-    else
-        print_warning "Script may not have Python shebang"
-    fi
-    
+echo "📥 Setting up crawl.py..."
+if [ -f "/app/crawl.py" ]; then
+    print_info "Using local crawl.py from /app/crawl.py"
+    cp /app/crawl.py /tmp/crawl.py
     chmod +x /tmp/crawl.py
+    print_success "crawl.py ready"
 else
-    print_error "Failed to download crawl.py"
-    print_error "URL: ${CRAWL_SCRIPT_URL}"
-    exit 1
+    print_info "Local crawl.py not found, downloading from GitHub..."
+    print_info "Repository: ${GITHUB_REPO}"
+    print_info "Branch: ${GITHUB_BRANCH}"
+    print_info "URL: ${CRAWL_SCRIPT_URL}"
+    
+    if curl -fsSL "${CRAWL_SCRIPT_URL}" -o /tmp/crawl.py; then
+        print_success "crawl.py downloaded successfully"
+        
+        # Validate Python script
+        if head -1 /tmp/crawl.py | grep -q "python"; then
+            print_success "Script validated (Python shebang found)"
+        else
+            print_warning "Script may not have Python shebang"
+        fi
+        
+        chmod +x /tmp/crawl.py
+    else
+        print_error "Failed to download crawl.py"
+        print_error "URL: ${CRAWL_SCRIPT_URL}"
+        exit 1
+    fi
 fi
 echo ""
 
@@ -350,4 +357,4 @@ echo ""
 # ============================================================
 # STEP 7: Run the automation
 # ============================================================
-exec python /tmp/crawl.py
+exec python3 -u /tmp/crawl.py

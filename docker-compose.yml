@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Selenium Hub
+  selenium-hub:
+    image: selenium/hub:4.15.0
+    ports:
+      - "4444:4444"
+    environment:
+      - SE_SESSION_REQUEST_TIMEOUT=300
+      - SE_NODE_SESSION_TIMEOUT=300
+
+  # Chrome browser node
+  chrome:
+    image: selenium/node-chrome:4.15.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    shm_size: 2gb
+
+  # Firefox browser node
+  firefox:
+    image: selenium/node-firefox:4.15.0
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7900:7900"  # VNC port for viewing the browser
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    shm_size: 2gb
+
+  # Edge browser node
+  edge:
+    image: selenium/node-edge:4.15.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    shm_size: 2gb
+
+  # Browser automation
+  browser-automation:
+    image: python:3.11-slim
+    depends_on:
+      - selenium-hub
+      - chrome
+      - firefox
+      - edge
+    volumes:
+      - ./crawl.py:/app/crawl.py:ro
+      - ./setup.sh:/app/setup.sh:ro
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && apt-get install -y curl -qq
+        bash /app/setup.sh 

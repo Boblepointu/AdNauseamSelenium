@@ -122,7 +122,7 @@ EXTENSION_PATHS = {
     'edge': '/extensions/adnauseam-chrome'
 }
 
-browsers = ['chrome', 'firefox', 'edge']
+browsers = ['firefox']  # Temporarily using only Firefox for debugging
 
 def get_domain(url):
     """Extract domain from URL"""
@@ -189,12 +189,23 @@ def create_driver(browser_type):
             
     elif browser_type == 'firefox':
         options = webdriver.FirefoxOptions()
-        # Set preferences to allow unsigned extensions
+        # Set preferences to allow unsigned extensions - multiple approaches
         options.set_preference("xpinstall.signatures.required", False)
-        options.set_preference("extensions.langpacks.signatures.required", False)
-        options.set_preference("extensions.webextensions.uuids", '{"adnauseam@rednoise.org": "{12345678-1234-1234-1234-123456789012}"}')
+        options.set_preference("extensions.install.requireBuiltInCerts", False)
+        options.set_preference("extensions.install.requireSecureOrigin", False)
+        
+        # For Firefox with Remote WebDriver, we need to add the extension to the profile
         if os.path.exists(EXTENSION_PATHS['firefox']):
-            print(f'[{browser_type}] ✓ Will install AdNauseam extension after driver creation')
+            # Note: For remote Firefox, extensions must be added via profile or base64 encoded
+            # Since we're using Remote WebDriver, we'll need to handle this differently
+            print(f'[{browser_type}] Adding extension to Firefox profile...')
+            # Read the .xpi file and base64 encode it
+            import base64
+            with open(EXTENSION_PATHS['firefox'], 'rb') as f:
+                extension_data = base64.b64encode(f.read()).decode('utf-8')
+            # Store it to install after driver creation
+            options._extension_data = extension_data
+            print(f'[{browser_type}] ✓ Extension data prepared')
         else:
             print(f'[{browser_type}] ⚠ AdNauseam extension not found at {EXTENSION_PATHS["firefox"]}')
         
@@ -222,14 +233,23 @@ def create_driver(browser_type):
         options=options
     )
     
-    # For Firefox, install extension after driver creation
-    if browser_type == 'firefox' and os.path.exists(EXTENSION_PATHS['firefox']):
+    # For Firefox, install extension after driver creation using Remote WebDriver commands
+    if browser_type == 'firefox' and hasattr(options, '_extension_data'):
         try:
-            driver.install_addon(EXTENSION_PATHS['firefox'], temporary=False)
-            print(f'[{browser_type}] ✓ Installed AdNauseam extension (permanent)')
-            time.sleep(2)  # Give extension time to initialize
+            print(f'[{browser_type}] Installing extension via Remote WebDriver...')
+            # Use the Firefox-specific remote command to install an extension
+            # Use 'temporary': True to allow unsigned extensions
+            addon_id = driver.execute('INSTALL_ADDON', {'addon': options._extension_data, 'temporary': True})['value']
+            print(f'[{browser_type}] ✓ Installed AdNauseam extension (temporary)')
+            print(f'[{browser_type}] Extension ID: {addon_id}')
+            time.sleep(3)  # Give extension time to initialize
         except Exception as e:
-            print(f'[{browser_type}] Failed to install extension: {str(e)[:100]}')
+            print(f'[{browser_type}] ❌ Failed to install extension:')
+            print(f'[{browser_type}] Error type: {type(e).__name__}')
+            print(f'[{browser_type}] Error message: {str(e)}')
+            import traceback
+            print(f'[{browser_type}] Traceback:')
+            traceback.print_exc()
     
     driver.set_page_load_timeout(30)
     
