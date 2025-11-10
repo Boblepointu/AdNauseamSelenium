@@ -50,7 +50,7 @@ print_header "Browser Chaos Generator"
 echo "📦 Installing dependencies..."
 apt-get update -qq > /dev/null 2>&1
 apt-get install -y curl -qq > /dev/null 2>&1
-pip install selenium numpy faker --quiet
+pip install selenium numpy faker requests websocket-client --quiet
 print_success "Dependencies installed (Selenium + NumPy + Faker for realistic data)"
 echo ""
 
