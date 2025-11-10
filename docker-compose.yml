@@ -7,7 +7,7 @@ volumes:
 services:
   # Selenium Hub with increased capacity
   selenium-hub:
-    image: selenium/hub:4.15.0
+    image: selenium/hub:latest
     ports:
       - "4444:4444"
     environment:
@@ -17,11 +17,66 @@ services:
       - SE_SESSION_TIMEOUT=300
 
   # ============================================
-  # CHROME NODES (Multiple versions for TLS/HTTP/CSS diversity)
+  # CHROME NODES (Diverse versions for maximum TLS/HTTP/CSS diversity)
   # ============================================
   
+  chrome-95:
+    image: selenium/node-chrome:95.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  chrome-110:
+    image: selenium/node-chrome:110.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  chrome-120:
+    image: selenium/node-chrome:120.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  chrome-125:
+    image: selenium/node-chrome:125.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  chrome-130:
+    image: selenium/node-chrome:130.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
   chrome-latest:
-    image: selenium/node-chrome:4.15.0
+    image: selenium/node-chrome:latest
     depends_on:
       - selenium-hub
     environment:
@@ -53,60 +108,81 @@ services:
       - SE_NODE_MAX_SESSIONS=2
     shm_size: 2gb
 
-  chrome-114:
-    image: selenium/node-chrome:114.0
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
-
-  chrome-115:
-    image: selenium/node-chrome:115.0
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
-
-  chrome-116:
-    image: selenium/node-chrome:116.0
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
-
-  chrome-117:
-    image: selenium/node-chrome:117.0
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
-
   # ============================================
-  # FIREFOX NODES (Multiple versions)
+  # FIREFOX NODES (Diverse versions)
   # ============================================
 
-  firefox-latest:
-    image: selenium/node-firefox:4.15.0
+  firefox-98:
+    image: selenium/node-firefox:98.0
     depends_on:
       - selenium-hub
     ports:
       - "7900:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  firefox-110:
+    image: selenium/node-firefox:110.0
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7901:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  firefox-120:
+    image: selenium/node-firefox:120.0
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7902:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  firefox-130:
+    image: selenium/node-firefox:130.0
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7903:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  firefox-140:
+    image: selenium/node-firefox:140.0
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7904:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  firefox-latest:
+    image: selenium/node-firefox:latest
+    depends_on:
+      - selenium-hub
+    ports:
+      - "7905:7900"
     environment:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
@@ -119,7 +195,7 @@ services:
     depends_on:
       - selenium-hub
     ports:
-      - "7901:7900"
+      - "7906:7900"
     environment:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
@@ -132,59 +208,7 @@ services:
     depends_on:
       - selenium-hub
     ports:
-      - "7902:7900"
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
-
-  firefox-esr:
-    image: selenium/node-firefox:esr
-    depends_on:
-      - selenium-hub
-    ports:
-      - "7903:7900"
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
-
-  firefox-115:
-    image: selenium/node-firefox:115.0
-    depends_on:
-      - selenium-hub
-    ports:
-      - "7904:7900"
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
-
-  firefox-116:
-    image: selenium/node-firefox:116.0
-    depends_on:
-      - selenium-hub
-    ports:
-      - "7905:7900"
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
-
-  firefox-117:
-    image: selenium/node-firefox:117.0
-    depends_on:
-      - selenium-hub
-    ports:
-      - "7906:7900"
+      - "7907:7900"
     environment:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
@@ -193,11 +217,55 @@ services:
     shm_size: 2gb
 
   # ============================================
-  # EDGE NODES (Multiple versions)
+  # EDGE NODES (Diverse versions)
   # ============================================
+
+  edge-114:
+    image: selenium/node-edge:114.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  edge-120:
+    image: selenium/node-edge:120.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  edge-125:
+    image: selenium/node-edge:125.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
+
+  edge-130:
+    image: selenium/node-edge:130.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: 2gb
 
   edge-latest:
-    image: selenium/node-edge:4.15.0
+    image: selenium/node-edge:latest
     depends_on:
       - selenium-hub
     environment:
@@ -229,45 +297,12 @@ services:
       - SE_NODE_MAX_SESSIONS=2
     shm_size: 2gb
 
-  edge-114:
-    image: selenium/node-edge:114.0
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
-
-  edge-115:
-    image: selenium/node-edge:115.0
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
-
-  edge-116:
-    image: selenium/node-edge:116.0
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
-
   # ============================================
-  # CHROMIUM NODES (Open-source variants)
+  # CHROMIUM NODES (Only 'latest' actually exists!)
   # ============================================
 
   chromium-latest:
-    image: selenium/node-chromium:4.15.0
+    image: selenium/node-chromium:latest
     depends_on:
       - selenium-hub
     environment:
@@ -277,30 +312,11 @@ services:
       - SE_NODE_MAX_SESSIONS=2
     shm_size: 2gb
 
-  chromium-beta:
-    image: selenium/node-chromium:beta
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
-
-  chromium-dev:
-    image: selenium/node-chromium:dev
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-    shm_size: 2gb
+  # REMOVED: chromium-beta and chromium-dev (they don't exist!)
+  # If you need more Chromium diversity, just add more Chrome versions instead
 
   # ============================================
-  # BROWSER AUTOMATION INSTANCES
+  # BROWSER AUTOMATION INSTANCES (5 instances)
   # ============================================
 
   # Instance 1 - Chrome variants
@@ -308,11 +324,11 @@ services:
     image: python:3.11-slim
     depends_on:
       - selenium-hub
+      - chrome-95
+      - chrome-110
+      - chrome-120
       - chrome-latest
-      - chrome-beta
-      - chrome-dev
-      - chrome-114
-      - chrome-115
+      - firefox-98
     volumes:
       - ./crawl.py:/app/crawl.py:ro
       - ./persona_manager.py:/app/persona_manager.py:ro
@@ -335,11 +351,11 @@ services:
     image: python:3.11-slim
     depends_on:
       - selenium-hub
+      - firefox-110
+      - firefox-120
+      - firefox-130
+      - firefox-140
       - firefox-latest
-      - firefox-beta
-      - firefox-dev
-      - firefox-esr
-      - firefox-115
     volumes:
       - ./crawl.py:/app/crawl.py:ro
       - ./persona_manager.py:/app/persona_manager.py:ro
@@ -362,11 +378,11 @@ services:
     image: python:3.11-slim
     depends_on:
       - selenium-hub
-      - edge-latest
-      - edge-beta
-      - edge-dev
       - edge-114
-      - edge-115
+      - edge-120
+      - edge-125
+      - edge-130
+      - edge-latest
     volumes:
       - ./crawl.py:/app/crawl.py:ro
       - ./persona_manager.py:/app/persona_manager.py:ro
@@ -384,16 +400,16 @@ services:
         apt-get update -qq && apt-get install -y curl -qq
         bash /app/setup.sh
 
-  # Instance 4 - Chromium variants
+  # Instance 4 - Chromium and Beta/Dev channels (FIXED: removed chromium beta/dev)
   browser-automation-4:
     image: python:3.11-slim
     depends_on:
       - selenium-hub
       - chromium-latest
-      - chromium-beta
-      - chromium-dev
-      - chrome-116
-      - chrome-117
+      - chrome-beta
+      - chrome-dev
+      - firefox-beta
+      - firefox-dev
     volumes:
       - ./crawl.py:/app/crawl.py:ro
       - ./persona_manager.py:/app/persona_manager.py:ro
@@ -411,15 +427,15 @@ services:
         apt-get update -qq && apt-get install -y curl -qq
         bash /app/setup.sh
 
-  # Instance 5 - Mixed older versions
+  # Instance 5 - Mixed browsers (all types)
   browser-automation-5:
     image: python:3.11-slim
     depends_on:
       - selenium-hub
-      - firefox-116
-      - firefox-117
-      - edge-116
-      - chromium-latest
+      - chrome-125
+      - chrome-130
+      - edge-beta
+      - edge-dev
     volumes:
       - ./crawl.py:/app/crawl.py:ro
       - ./persona_manager.py:/app/persona_manager.py:ro
@@ -435,4 +451,4 @@ services:
       - -c
       - |
         apt-get update -qq && apt-get install -y curl -qq
-        bash /app/setup.sh 
+        bash /app/setup.sh

@@ -23,23 +23,54 @@ except ImportError:
     PERSONA_MANAGER_AVAILABLE = False
 
 # All browser types available in Selenium Grid
-# Each type has multiple versions that Grid will load-balance across
-# When we request 'chrome', Grid picks from: chrome-latest, chrome-beta, chrome-dev, chrome-114, chrome-115, chrome-116, chrome-117
-# When we request 'firefox', Grid picks from: firefox-latest, firefox-beta, firefox-dev, firefox-esr, firefox-115, firefox-116, firefox-117
-# When we request 'edge', Grid picks from: edge-latest, edge-beta, edge-dev, edge-114, edge-115, edge-116
-# When we request 'chromium', Grid picks from: chromium-latest, chromium-beta, chromium-dev
+# We run multiple versions of each browser type for maximum TLS/HTTP/CSS diversity
+# Selenium Grid automatically load-balances requests across available nodes
+# 
+# Available browser nodes (26 total versions):
+# 
+# CHROME (8 versions):
+#   - chrome-95, chrome-110, chrome-120, chrome-125, chrome-130
+#   - chrome-latest (v131+), chrome-beta, chrome-dev
+# 
+# FIREFOX (8 versions):
+#   - firefox-98, firefox-110, firefox-120, firefox-130, firefox-140
+#   - firefox-latest (v144), firefox-beta, firefox-dev
+# 
+# EDGE (7 versions):
+#   - edge-114, edge-120, edge-125, edge-130
+#   - edge-latest, edge-beta, edge-dev
+# 
+# CHROMIUM (3 versions):
+#   - chromium-latest, chromium-beta, chromium-dev
+#
+# Each browser version has unique characteristics:
+# - TLS/SSL fingerprints (JA3/JA4 - cipher order, extensions, curves)
+# - HTTP/2 stream prioritization and header compression
+# - CSS feature support (implementation differences across versions)
+# - JavaScript engine variations and performance characteristics
+# - WebGL implementation differences
+# - Default fonts and rendering engine versions
+# 
+# Combined with extensive fingerprint randomization:
+# - 150+ GPU configurations (multi-GPU support)
+# - 180+ platform/OS combinations
+# - 400+ fonts (Windows/macOS/Linux)
+# - 30+ media devices (cameras/mics/speakers)
+# - 50+ WebKit versions
+# - 80+ browser build numbers
+# - Canvas/Audio noise injection
+# - WebRTC randomization
+# - Battery API randomization
+#
+# = BILLIONS OF UNIQUE BROWSER FINGERPRINTS =
 
 # Weighted browser selection for realistic distribution
-# Chrome most common, Firefox second, Edge third, Chromium least (open-source variant)
 browsers = (
-    ['chrome'] * 40 +      # 40% - Most popular
+    ['chrome'] * 40 +      # 40% - Most popular browser
     ['firefox'] * 30 +     # 30% - Second most popular
     ['edge'] * 20 +        # 20% - Growing market share
     ['chromium'] * 10      # 10% - Open-source variant for extra diversity
 )
-
-# Total: 22 different browser versions across 4 browser types
-# This provides maximum diversity for TLS/HTTP/CSS fingerprinting
 
 # Persona rotation configuration from environment
 PERSONA_ROTATION_STRATEGY = os.getenv('PERSONA_ROTATION_STRATEGY', 'weighted')
