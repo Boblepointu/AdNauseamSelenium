@@ -19,6 +19,9 @@ import numpy as np
 from datetime import datetime
 from urllib.parse import urlparse
 from faker import Faker
+import json
+import websocket
+import threading
 
 # Import persona manager for persistent fingerprint rotation
 try:
@@ -27,6 +30,72 @@ try:
 except ImportError:
     print('⚠️  PersonaManager not available, running without persistence')
     PERSONA_MANAGER_AVAILABLE = False
+
+# ============================================
+# CDP WEBSOCKET CLIENT FOR REMOTEWEBDRIVER
+# ============================================
+
+class CDPWebSocketClient:
+    """
+    Chrome DevTools Protocol WebSocket client for RemoteWebDriver
+    Enables full CDP functionality over WebSocket connection
+    """
+    def __init__(self, websocket_url):
+        self.websocket_url = websocket_url
+        self.ws = None
+        self.command_id = 0
+        self.responses = {}
+        self.lock = threading.Lock()
+        self.connected = False
+        
+    def connect(self):
+        """Establish WebSocket connection to CDP"""
+        try:
+            self.ws = websocket.create_connection(self.websocket_url, timeout=10)
+            self.connected = True
+            return True
+        except Exception as e:
+            print(f"Failed to connect to CDP WebSocket: {e}")
+            self.connected = False
+            return False
+    
+    def execute(self, method, params=None):
+        """Execute a CDP command"""
+        if not self.connected:
+            raise RuntimeError("CDP WebSocket not connected")
+        
+        with self.lock:
+            self.command_id += 1
+            command = {
+                "id": self.command_id,
+                "method": method,
+                "params": params or {}
+            }
+            
+            try:
+                # Send command
+                self.ws.send(json.dumps(command))
+                
+                # Wait for response
+                response_text = self.ws.recv()
+                response = json.loads(response_text)
+                
+                # Check for errors
+                if "error" in response:
+                    raise RuntimeError(f"CDP Error: {response['error']}")
+                
+                return response.get("result", {})
+            except Exception as e:
+                raise RuntimeError(f"CDP command failed: {e}")
+    
+    def close(self):
+        """Close WebSocket connection"""
+        if self.ws:
+            try:
+                self.ws.close()
+            except:
+                pass
+            self.connected = False
 
 # ============================================
 # HUMAN-LIKE MOUSE MOVEMENT FUNCTIONS
@@ -3755,26 +3824,54 @@ def create_driver(browser_type):
         options=options
     )
     
-    # Add CDP support to RemoteWebDriver for Chrome/Chromium/Edge
+    # Add CDP support to RemoteWebDriver for Chrome/Chromium/Edge via WebSocket
     # RemoteWebDriver doesn't have execute_cdp_cmd by default in Selenium 4.15.2
+    cdp_client = None
     if browser_type in ['chrome', 'chromium', 'edge']:
-        if not hasattr(driver, 'execute_cdp_cmd'):
-            def execute_cdp_cmd(self, cmd, cmd_args):
-                """
-                Execute Chrome Devtools Protocol command via Selenium
-                This adds CDP support to RemoteWebDriver
-                """
-                return self.execute('executeCdpCommand', {
-                    'cmd': cmd,
-                    'params': cmd_args
-                })
+        try:
+            # Get session ID and construct CDP WebSocket URL
+            session_id = driver.session_id
             
-            # Bind the method to the driver instance
-            import types
-            driver.execute_cdp_cmd = types.MethodType(execute_cdp_cmd, driver)
+            # Try to get CDP endpoint from the Selenium node
+            # Format: ws://selenium-hub:4444/session/{session_id}/se/cdp
+            cdp_url = f"ws://selenium-hub:4444/session/{session_id}/se/cdp"
+            
+            print(f'[{browser_type}] Connecting to CDP WebSocket at {cdp_url}...')
+            cdp_client = CDPWebSocketClient(cdp_url)
+            
+            if cdp_client.connect():
+                print(f'[{browser_type}] ✓ CDP WebSocket connected successfully')
+                
+                # Add execute_cdp_cmd method that uses WebSocket
+                def execute_cdp_cmd(self, cmd, cmd_args):
+                    """
+                    Execute Chrome Devtools Protocol command via WebSocket
+                    This adds full CDP support to RemoteWebDriver
+                    """
+                    return self._cdp_client.execute(cmd, cmd_args)
+                
+                # Bind the CDP client and method to the driver instance
+                import types
+                driver._cdp_client = cdp_client
+                driver.execute_cdp_cmd = types.MethodType(execute_cdp_cmd, driver)
+                
+                # Test CDP connection
+                try:
+                    version = driver.execute_cdp_cmd('Browser.getVersion', {})
+                    print(f'[{browser_type}] ✓ CDP active - Browser: {version.get("product", "unknown")}')
+                except Exception as e:
+                    print(f'[{browser_type}] ⚠ CDP test failed: {str(e)[:50]}')
+            else:
+                print(f'[{browser_type}] ⚠ CDP WebSocket connection failed, stealth features limited')
+                cdp_client = None
+        except Exception as e:
+            print(f'[{browser_type}] ⚠ CDP initialization failed: {str(e)[:80]}')
+            if cdp_client:
+                cdp_client.close()
+            cdp_client = None
     
     # Apply comprehensive CDP stealth for Chrome and Chromium (RemoteWebDriver compatible)
-    if browser_type == 'chrome' or browser_type == 'chromium':
+    if (browser_type == 'chrome' or browser_type == 'chromium') and cdp_client:
         try:
             # Set user agent via CDP
             driver.execute_cdp_cmd('Network.setUserAgentOverride', {
@@ -4370,7 +4467,7 @@ def create_driver(browser_type):
         except Exception as e:
             print(f'[{browser_type}] ⚠ CDP commands not applied: {str(e)[:50]}')
             
-    elif browser_type == 'edge':
+    elif browser_type == 'edge' and cdp_client:
         # Edge uses CDP and is Chromium-based, apply comprehensive stealth
         try:
             driver.execute_cdp_cmd('Network.setUserAgentOverride', {
@@ -5828,6 +5925,9 @@ def browse():
             if 'Cannot find session' in error_msg or 'invalid session id' in error_msg.lower():
                 print(f'[{browser_type}] 🔄 Session lost! Creating new session...')
                 try:
+                    # Close CDP WebSocket if it exists
+                    if hasattr(driver, '_cdp_client') and driver._cdp_client:
+                        driver._cdp_client.close()
                     driver.quit()
                 except:
                     pass
@@ -5854,6 +5954,9 @@ def browse():
     print(f'\n[{browser_type}] ✅ Session complete! Visited {websites_visited} websites.')
     print(f'[{browser_type}] Closing browser and starting new session...')
     try:
+        # Close CDP WebSocket if it exists
+        if hasattr(driver, '_cdp_client') and driver._cdp_client:
+            driver._cdp_client.close()
         driver.quit()
     except:
         pass
