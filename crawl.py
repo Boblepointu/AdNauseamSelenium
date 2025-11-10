@@ -9,6 +9,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
+from selenium_stealth import stealth
 import time
 import random
 from urllib.parse import urlparse
@@ -139,36 +140,160 @@ def get_domain(url):
         return ''
 
 def create_driver(browser_type):
-    """Create a Selenium WebDriver for automated browsing"""
+    """Create a Selenium WebDriver for automated browsing with anti-detection"""
+    
+    # Realistic user agents (updated for 2025)
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    ]
+    user_agent = random.choice(user_agents)
     
     if browser_type == 'chrome':
         options = webdriver.ChromeOptions()
+        
+        # Selenium Stealth recommended options
+        options.add_argument(f'user-agent={user_agent}')
+        options.add_argument('--disable-blink-features=AutomationControlled')
+        options.add_experimental_option("excludeSwitches", ["enable-automation", "enable-logging"])
+        options.add_experimental_option('useAutomationExtension', False)
+        
+        # Additional stealth arguments from the article
+        options.add_argument('--disable-popup-blocking')
+        options.add_argument('--start-maximized')
+        options.add_argument('--disable-extensions')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--disable-setuid-sandbox')
+        options.add_argument('--disable-infobars')
+        options.add_argument('--window-size=1920,1080')
+        options.add_argument('--disable-web-security')
+        options.add_argument('--disable-features=IsolateOrigins,site-per-process')
+        options.add_argument('--lang=en-US,en;q=0.9')
+        
+        # Additional stealth preferences
+        prefs = {
+            "profile.default_content_setting_values.notifications": 2,
+            "credentials_enable_service": False,
+            "profile.password_manager_enabled": False,
+            "webrtc.ip_handling_policy": "disable_non_proxied_udp",
+            "webrtc.multiple_routes_enabled": False,
+            "webrtc.nonproxied_udp_enabled": False
+        }
+        options.add_experimental_option("prefs", prefs)
+        
     elif browser_type == 'firefox':
         options = webdriver.FirefoxOptions()
+        options.set_preference("general.useragent.override", user_agent)
+        # Firefox anti-detection preferences
+        options.set_preference("dom.webdriver.enabled", False)
+        options.set_preference("useAutomationExtension", False)
+        options.set_preference("marionette", True)
+        options.set_preference("privacy.trackingprotection.enabled", False)
+        
     elif browser_type == 'edge':
         options = webdriver.EdgeOptions()
+        options.add_argument(f'user-agent={user_agent}')
+        options.add_argument('--disable-blink-features=AutomationControlled')
+        options.add_experimental_option("excludeSwitches", ["enable-automation", "enable-logging"])
+        options.add_experimental_option('useAutomationExtension', False)
+        
+        # Same additional arguments as Chrome
+        options.add_argument('--disable-popup-blocking')
+        options.add_argument('--start-maximized')
+        options.add_argument('--disable-extensions')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
     else:
         raise ValueError(f"Unsupported browser: {browser_type}")
     
-    # Common options for all browsers
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--disable-blink-features=AutomationControlled')
-    
-    # Make browser look more human
-    if browser_type in ['chrome', 'edge']:
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
-    
-    print(f'[{browser_type}] Creating browser session...')
+    print(f'[{browser_type}] Creating browser session with stealth mode...')
     driver = webdriver.Remote(
         command_executor='http://selenium-hub:4444/wd/hub',
         options=options
     )
     
+    # Apply Selenium Stealth for Chrome/Edge (most effective)
+    if browser_type in ['chrome', 'edge']:
+        # Set user agent via CDP
+        driver.execute_cdp_cmd('Network.setUserAgentOverride', {
+            "userAgent": user_agent,
+            "platform": "Win32",
+            "acceptLanguage": "en-US,en;q=0.9"
+        })
+        
+        # Apply selenium-stealth
+        stealth(driver,
+            languages=["en-US", "en"],
+            vendor="Google Inc.",
+            platform="Win32",
+            webgl_vendor="Intel Inc.",
+            renderer="Intel Iris OpenGL Engine",
+            fix_hairline=True,
+        )
+        
+        # Additional CDP commands for stealth
+        driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
+            'source': '''
+                Object.defineProperty(navigator, 'webdriver', {
+                    get: () => undefined
+                });
+                
+                // Mock plugins
+                Object.defineProperty(navigator, 'plugins', {
+                    get: () => [1, 2, 3, 4, 5]
+                });
+                
+                // Mock languages
+                Object.defineProperty(navigator, 'languages', {
+                    get: () => ['en-US', 'en']
+                });
+                
+                // Chrome runtime
+                window.chrome = {
+                    runtime: {},
+                    loadTimes: function() {},
+                    csi: function() {},
+                    app: {}
+                };
+                
+                // Mock permissions
+                const originalQuery = window.navigator.permissions.query;
+                window.navigator.permissions.query = (parameters) => (
+                    parameters.name === 'notifications' ?
+                        Promise.resolve({ state: 'denied' }) :
+                        originalQuery(parameters)
+                );
+            '''
+        })
+    elif browser_type == 'firefox':
+        # For Firefox, inject stealth script after page load
+        driver._stealth_js = '''
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined,
+                configurable: true
+            });
+            
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5],
+                configurable: true
+            });
+            
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['en-US', 'en'],
+                configurable: true
+            });
+        '''
+    
     driver.set_page_load_timeout(30)
-    print(f'[{browser_type}] ✓ Browser ready')
+    driver.set_window_size(1920, 1080)
+    
+    print(f'[{browser_type}] ✓ Browser ready with advanced stealth mode')
     
     return driver
 
@@ -188,7 +313,24 @@ def browse():
             print(f'\n[{browser_type}] 🌐 Starting journey from: {start_url}')
             
             driver.get(start_url)
-            time.sleep(random.uniform(3, 6))
+            
+            # Inject stealth script for Firefox
+            if hasattr(driver, '_stealth_js'):
+                try:
+                    driver.execute_script(driver._stealth_js)
+                except:
+                    pass
+            
+            # Random human-like delay
+            time.sleep(random.uniform(2, 5))
+            
+            # Simulate human reading/scrolling behavior on first page
+            for _ in range(random.randint(1, 2)):
+                scroll_amount = random.randint(200, 500)
+                driver.execute_script(f'window.scrollBy(0, {scroll_amount});')
+                time.sleep(random.uniform(0.8, 2.0))
+            
+            time.sleep(random.uniform(1, 3))
             
             max_depth = random.randint(30, 50)
             current_depth = 0
@@ -198,11 +340,23 @@ def browse():
                     current_url = driver.current_url
                     current_domain = get_domain(current_url)
                     
-                    # Scroll the page
-                    for _ in range(random.randint(1, 3)):
+                    # Scroll the page with more human-like behavior
+                    scroll_count = random.randint(1, 3)
+                    for i in range(scroll_count):
+                        # Variable scroll amounts
                         scroll_position = random.randint(100, 1000)
-                        driver.execute_script(f'window.scrollTo(0, {scroll_position});')
-                        time.sleep(random.uniform(1, 2))
+                        driver.execute_script(f'window.scrollBy(0, {scroll_position});')
+                        
+                        # Human-like pauses (sometimes longer, sometimes shorter)
+                        if random.random() < 0.3:  # 30% chance of longer pause
+                            time.sleep(random.uniform(2, 4))
+                        else:
+                            time.sleep(random.uniform(0.5, 1.5))
+                        
+                        # Occasionally scroll back up a bit
+                        if random.random() < 0.2:  # 20% chance
+                            driver.execute_script(f'window.scrollBy(0, -{random.randint(50, 200)});')
+                            time.sleep(random.uniform(0.3, 0.8))
                     
                     # Find clickable links
                     links = driver.find_elements(By.TAG_NAME, 'a')
@@ -254,8 +408,13 @@ def browse():
                             link_domain = get_domain(href)
                             print(f'  [{browser_type}] Depth {current_depth}: {href[:80]}')
                             
+                            # Human-like delay before clicking
+                            time.sleep(random.uniform(0.5, 1.5))
+                            
                             chosen_link.click()
-                            time.sleep(random.uniform(3, 6))
+                            
+                            # Variable delay after click (humans don't click instantly)
+                            time.sleep(random.uniform(2, 5))
                             current_depth += 1
                             
                             if link_domain != start_domain:

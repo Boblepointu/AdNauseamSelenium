@@ -50,8 +50,8 @@ print_header "Browser Chaos Generator"
 echo "📦 Installing dependencies..."
 apt-get update -qq > /dev/null 2>&1
 apt-get install -y curl -qq > /dev/null 2>&1
-pip install selenium --quiet
-print_success "Dependencies installed"
+pip install selenium selenium-stealth --quiet
+print_success "Dependencies installed (Selenium + Selenium Stealth)"
 echo ""
 
 # ============================================================
