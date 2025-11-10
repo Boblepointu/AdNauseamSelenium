@@ -943,7 +943,48 @@ def browse():
                             # Human-like delay before clicking
                             time.sleep(random.uniform(0.5, 1.5))
                             
-                            chosen_link.click()
+                            # Try multiple click methods (handle intercepted clicks)
+                            click_success = False
+                            
+                            # Method 1: Regular click
+                            try:
+                                chosen_link.click()
+                                click_success = True
+                            except Exception as e:
+                                if 'intercepted' in str(e).lower():
+                                    print(f'  [{browser_type}] Click intercepted, trying alternative methods...')
+                                    
+                                    # Method 2: Scroll into view and click
+                                    try:
+                                        driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", chosen_link)
+                                        time.sleep(0.5)
+                                        chosen_link.click()
+                                        click_success = True
+                                    except:
+                                        # Method 3: JavaScript click (most reliable)
+                                        try:
+                                            driver.execute_script("arguments[0].click();", chosen_link)
+                                            click_success = True
+                                            print(f'  [{browser_type}] ✓ Used JavaScript click')
+                                        except:
+                                            # Method 4: Navigate directly
+                                            try:
+                                                driver.get(href)
+                                                click_success = True
+                                                print(f'  [{browser_type}] ✓ Navigated directly to URL')
+                                            except:
+                                                pass
+                                else:
+                                    # Some other error, try JavaScript click
+                                    try:
+                                        driver.execute_script("arguments[0].click();", chosen_link)
+                                        click_success = True
+                                    except:
+                                        pass
+                            
+                            if not click_success:
+                                print(f'  [{browser_type}] ⚠ Could not click link, skipping')
+                                continue
                             
                             # Variable delay after click (humans don't click instantly)
                             time.sleep(random.uniform(2, 5))
@@ -968,8 +1009,8 @@ def browse():
                                 print(f'  [{browser_type}] 🔄 Now exploring: {start_domain}')
                                 
                         except Exception as click_error:
-                            print(f'  [{browser_type}] Click failed: {str(click_error)[:50]}')
-                            break
+                            print(f'  [{browser_type}] Navigation failed: {str(click_error)[:50]}')
+                            continue
                     else:
                         print(f'  [{browser_type}] No suitable link found at depth {current_depth}')
                         break
