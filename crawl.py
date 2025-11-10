@@ -828,66 +828,90 @@ def generate_random_connection():
 
 def get_timezone_for_language(language):
     """
-    Get a realistic timezone offset based on the primary language
+    Map language/region to realistic timezone offset
+    French-heavy biased but with realistic distribution
     
-    Returns timezone offset in minutes (e.g., -60 for UTC+1)
-    Negative offset means ahead of UTC (e.g., UTC+1 = -60)
+    Returns timezone offset in minutes (negative is west of UTC)
     """
+    # Parse language code (e.g., "fr-FR" -> "fr")
+    lang_code = language.split('-')[0].split(',')[0].lower()
     
-    # Extract primary language code
-    lang_code = language.split(',')[0].split(';')[0].split('-')[0]
-    
-    # Map languages to typical timezone offsets (in minutes, negative = ahead of UTC)
+    # Map languages to common timezone offsets (in minutes)
+    # European timezones (-60 to +180 minutes)
     timezone_map = {
-        'fr': [
-            -60,   # France (UTC+1/+2)
-            -60,   # Most common
-            -120,  # During DST
-        ],
-        'de': [
-            -60,   # Germany (UTC+1/+2)
-            -60,
-            -120,
-        ],
-        'es': [
-            -60,   # Spain (UTC+1/+2)
-            -60,
-            -120,
-        ],
-        'it': [
-            -60,   # Italy (UTC+1/+2)
-            -60,
-            -120,
-        ],
-        'pt': [
-            0,     # Portugal (UTC+0/+1)
-            -60,
-        ],
-        'nl': [
-            -60,   # Netherlands (UTC+1/+2)
-            -120,
-        ],
-        'pl': [
-            -60,   # Poland (UTC+1/+2)
-            -120,
-        ],
-        'sv': [
-            -60,   # Sweden (UTC+1/+2)
-            -120,
-        ],
-        'en': [
-            0,     # UK (UTC+0/+1)
-            -60,   # UK during DST
-            300,   # US East (UTC-5)
-            360,   # US Central (UTC-6)
-            420,   # US West (UTC-7)
-            480,   # US Pacific (UTC-8)
-        ],
+        'fr': [-60, 60, 120],  # France (CET/CEST)
+        'de': [60, 120],  # Germany (CET/CEST)
+        'it': [60, 120],  # Italy
+        'es': [60, 120],  # Spain
+        'pt': [0, 60],  # Portugal
+        'nl': [60, 120],  # Netherlands
+        'be': [60, 120],  # Belgium
+        'pl': [60, 120],  # Poland
+        'en': [0, 60, -300, -360, -480, 600],  # UK, US East, US Central, US West, Australia
+        'ru': [180, 240, 300],  # Russia (multiple zones)
+        'ar': [180],  # Arabic countries
+        'zh': [480],  # China
+        'ja': [540],  # Japan
+        'ko': [540],  # Korea
     }
     
-    # Get timezone for language or default to Central European Time
-    offsets = timezone_map.get(lang_code, [-60, -120])
-    return random.choice(offsets)
+    if lang_code in timezone_map:
+        return random.choice(timezone_map[lang_code])
+    
+    # Default to Central European Time
+    return random.choice([60, 120])
+
+
+def get_coords_for_timezone(timezone_offset):
+    """
+    Map timezone offset to realistic geographic coordinates
+    Used for geolocation API consistency
+    
+    Args:
+        timezone_offset: Timezone offset in minutes
+    
+    Returns:
+        tuple: (latitude, longitude) with slight randomization
+    """
+    # Major cities by timezone offset (minutes from UTC)
+    timezone_to_city_coords = {
+        -480: (37.7749, -122.4194),   # San Francisco (PST)
+        -420: (33.4484, -112.0740),   # Phoenix (MST)
+        -360: (41.8781, -87.6298),    # Chicago (CST)
+        -300: (40.7128, -74.0060),    # New York (EST)
+        -240: (10.4806, -66.9036),    # Caracas
+        -180: (-23.5505, -46.6333),   # São Paulo
+        0: (51.5074, -0.1278),        # London (GMT)
+        60: (48.8566, 2.3522),        # Paris (CET)
+        120: (52.5200, 13.4050),      # Berlin (CEST)
+        180: (55.7558, 37.6173),      # Moscow
+        240: (25.2048, 55.2708),      # Dubai
+        300: (28.6139, 77.2090),      # Delhi
+        330: (19.0760, 72.8777),      # Mumbai
+        360: (23.8103, 90.4125),      # Dhaka
+        420: (13.7563, 100.5018),     # Bangkok
+        480: (39.9042, 116.4074),     # Beijing
+        540: (35.6762, 139.6503),     # Tokyo
+        600: (37.5665, 126.9780),     # Seoul / Sydney area
+        660: (-33.8688, 151.2093),    # Sydney
+        720: (-36.8485, 174.7633),    # Auckland
+    }
+    
+    # Get closest timezone
+    if timezone_offset in timezone_to_city_coords:
+        base_lat, base_lng = timezone_to_city_coords[timezone_offset]
+    else:
+        # Find nearest timezone
+        nearest_offset = min(timezone_to_city_coords.keys(), 
+                           key=lambda x: abs(x - timezone_offset))
+        base_lat, base_lng = timezone_to_city_coords[nearest_offset]
+    
+    # Add ±0.5km noise to coordinates
+    lat_noise = (random.random() - 0.5) * 0.01  # ~0.5km
+    lng_noise = (random.random() - 0.5) * 0.01
+    
+    return (round(base_lat + lat_noise, 4), round(base_lng + lng_noise, 4))
+
 
 def generate_random_battery():
     """
@@ -1170,13 +1194,25 @@ def generate_random_fonts():
     num_fonts = random.randint(int(len(all_fonts) * 0.55), int(len(all_fonts) * 0.98))
     return random.sample(all_fonts, num_fonts)
 
-def generate_random_plugins():
+def generate_random_plugins(browser_type='chrome'):
     """
-    Generate randomized browser plugins for fingerprinting diversity
+    Generate randomized browser-specific plugins for fingerprinting diversity
+    
+    Args:
+        browser_type: Browser type (chrome/firefox/edge/chromium) for realistic plugin lists
     
     Returns a JavaScript-ready string representation of plugins array
     PDF plugins are heavily randomized as they're major fingerprinting vectors
+    
+    30% chance of no plugins (privacy-conscious users)
+    50% chance of partial plugins
+    20% chance of full plugin list
     """
+    
+    # 30% chance of no plugins (increasing privacy awareness)
+    if random.random() < 0.3:
+        return '[]'
+    
     plugins = []
     
     # PDF Plugin variations (CRITICAL fingerprinting vector - always present but highly varied)
@@ -1221,10 +1257,34 @@ def generate_random_plugins():
         },
     ]
     
-    # Add 1-2 PDF plugins
-    num_pdf = random.choice([1, 1, 1, 2])
+    # Browser-specific PDF plugin selection
+    if browser_type == 'firefox':
+        # Firefox primarily uses PDF.js
+        pdf_candidates = [p for p in pdf_plugins if 'PDF.js' in p['name'] or 'Firefox' in p['name']]
+        if not pdf_candidates:
+            pdf_candidates = [pdf_plugins[4]]  # PDF.js
+    elif browser_type == 'edge':
+        # Edge has its own PDF viewer and Chrome-based ones
+        pdf_candidates = [p for p in pdf_plugins if 'Edge' in p['name'] or 'Chrome' in p['name']]
+    elif browser_type == 'chromium':
+        # Chromium uses open-source PDF viewers
+        pdf_candidates = [p for p in pdf_plugins if 'Chromium' in p['name'] or 'Chrome PDF Plugin' in p['name']]
+    else:  # chrome
+        # Chrome has various PDF plugins
+        pdf_candidates = [p for p in pdf_plugins if 'Chrome' in p['name']]
+    
+    # Add 1-2 PDF plugins (or 0 if 50% partial plugin mode)
+    pdf_chance = random.random()
+    if pdf_chance < 0.2:  # 20% - full plugins
+        num_pdf = random.choice([1, 2])
+    elif pdf_chance < 0.7:  # 50% - partial plugins (1 or 0)
+        num_pdf = random.choice([0, 1, 1])
+    else:  # 30% already handled above (no plugins at all)
+        num_pdf = 1
+    
     for _ in range(num_pdf):
-        plugins.append(random.choice(pdf_plugins))
+        if pdf_candidates:
+            plugins.append(random.choice(pdf_candidates))
     
     # Additional plugin types (present on some systems)
     optional_plugins = [
@@ -2448,8 +2508,8 @@ def create_driver(browser_type):
     # Generate random fonts list
     fonts = generate_random_fonts()
     
-    # Generate random plugins with heavy PDF randomization
-    plugins_js = generate_random_plugins()
+    # Generate random plugins with browser-specific logic
+    plugins_js = generate_random_plugins(browser_type)
     
     # Generate random WebRTC local IPs
     webrtc = generate_random_webrtc()
@@ -3118,6 +3178,75 @@ def create_driver(browser_type):
                             return pc;
                         }};
                         window.RTCPeerConnection.prototype = OriginalRTCPeerConnection.prototype;
+                    }}
+                    
+                    // ============================================
+                    // PERFORMANCE API NOISE INJECTION
+                    // ============================================
+                    
+                    // Add noise to performance.memory
+                    if (performance.memory) {{
+                        const originalMemory = Object.getOwnPropertyDescriptor(Performance.prototype, 'memory') ||
+                                             Object.getOwnPropertyDescriptor(performance, 'memory');
+                        Object.defineProperty(performance, 'memory', {{
+                            get: function() {{
+                                const base = originalMemory && originalMemory.get ? 
+                                           originalMemory.get.call(this) : {{
+                                    totalJSHeapSize: {random.randint(8000000, 15000000)},
+                                    usedJSHeapSize: {random.randint(4000000, 9000000)},
+                                    jsHeapSizeLimit: {random.randint(1900000000, 2200000000)}
+                                }};
+                                // Add 5-10% noise to memory values
+                                const noise = 1 + (Math.random() * 0.10 - 0.05);
+                                return {{
+                                    totalJSHeapSize: Math.floor(base.totalJSHeapSize * noise),
+                                    usedJSHeapSize: Math.floor(base.usedJSHeapSize * noise),
+                                    jsHeapSizeLimit: base.jsHeapSizeLimit
+                                }};
+                            }},
+                            configurable: true,
+                            enumerable: true
+                        }});
+                    }}
+                    
+                    // Add slight noise to performance.now()
+                    const originalNow = performance.now;
+                    const timeOffset = (Math.random() * 2 - 1);  // ±1ms offset
+                    performance.now = function() {{
+                        return originalNow.call(this) + timeOffset + (Math.random() * 0.1 - 0.05);
+                    }};
+                    
+                    // ============================================
+                    // OCCASIONAL CLIPBOARD/ERROR SIMULATION  
+                    // ============================================
+                    
+                    // Occasionally inject realistic errors (5% chance)
+                    if (Math.random() < 0.05) {{
+                        setTimeout(() => {{
+                            console.warn('Third-party cookie blocked');
+                            console.warn('Tracking protection may affect functionality');
+                        }}, Math.random() * 1000 + 500);
+                    }}
+                    
+                    // Simulate occasional clipboard access (3% chance)
+                    if (Math.random() < 0.03) {{
+                        setTimeout(() => {{
+                            try {{
+                                const selection = window.getSelection();
+                                if (document.body.querySelector('p, h1, h2, span, div')) {{
+                                    const el = document.body.querySelector('p, h1, h2, span, div');
+                                    const range = document.createRange();
+                                    if (el && el.childNodes[0]) {{
+                                        range.selectNode(el.childNodes[0]);
+                                        selection.removeAllRanges();
+                                        selection.addRange(range);
+                                        // Simulate copy
+                                        document.execCommand('copy');
+                                        selection.removeAllRanges();
+                                    }}
+                                }}
+                            }} catch(e) {{}}
+                        }}, Math.random() * 2000 + 1000);
                     }}
                 '''
             })
