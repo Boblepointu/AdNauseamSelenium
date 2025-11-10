@@ -38,7 +38,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -82,7 +82,7 @@ services:
       replicas: 5
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -108,7 +108,7 @@ services:
       replicas: 5
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -134,7 +134,7 @@ services:
       replicas: 10
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -160,7 +160,7 @@ services:
       replicas: 10
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -186,7 +186,7 @@ services:
       replicas: 10
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -212,7 +212,7 @@ services:
       replicas: 5
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -238,7 +238,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -264,7 +264,7 @@ services:
       replicas: 3
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -293,7 +293,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -319,7 +319,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -345,7 +345,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -371,7 +371,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -397,7 +397,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -423,7 +423,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -449,7 +449,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -475,7 +475,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -504,7 +504,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -530,7 +530,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -556,7 +556,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -582,7 +582,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -608,7 +608,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -634,7 +634,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -660,7 +660,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -689,7 +689,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -803,7 +803,7 @@ services:
       replicas: 10
       placement:
         constraints:
-          - node.hostname == switz
+          - node.hostname == testnetslaveportainer
       restart_policy:
         condition: on-failure
         delay: 10s
