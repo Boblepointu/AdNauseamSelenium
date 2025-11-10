@@ -245,6 +245,126 @@ def auto_accept_cookies(driver, browser_type):
         # Don't let cookie handling break the automation
         return False
 
+def detect_and_click_ads(driver, browser_type, click_chance=0.6):
+    """Detect ads on page and optionally click them (60% chance by default)"""
+    try:
+        # Common ad selectors (Google Ads, display ads, etc.)
+        ad_selectors = [
+            # Google Ads
+            'iframe[id*="google_ads"]',
+            'iframe[id*="aswift"]',
+            'div[id*="google_ads"]',
+            'ins.adsbygoogle',
+            
+            # Generic ad containers
+            '[class*="advertisement"]',
+            '[class*="ad-container"]',
+            '[class*="ad-banner"]',
+            '[class*="ad-slot"]',
+            '[id*="ad-container"]',
+            '[id*="advertisement"]',
+            'div[class*="ads"]',
+            'div[id*="ads"]',
+            
+            # Common ad networks
+            '[class*="doubleclick"]',
+            '[id*="doubleclick"]',
+            'iframe[src*="doubleclick"]',
+            'iframe[src*="googlesyndication"]',
+            'iframe[src*="advertising"]',
+            
+            # Ad links
+            'a[href*="ad.doubleclick"]',
+            'a[href*="googleadservices"]',
+            'a[rel="sponsored"]',
+            'a[data-ad]',
+            
+            # Taboola, Outbrain, etc.
+            '[class*="taboola"]',
+            '[class*="outbrain"]',
+            '[id*="taboola"]',
+            '[id*="outbrain"]'
+        ]
+        
+        ads_found = []
+        
+        # Find all potential ads
+        for selector in ad_selectors:
+            try:
+                elements = driver.find_elements(By.CSS_SELECTOR, selector)
+                for element in elements:
+                    try:
+                        if element.is_displayed() and element.is_enabled():
+                            ads_found.append(element)
+                    except:
+                        continue
+            except:
+                continue
+        
+        if not ads_found:
+            return False
+        
+        print(f'  [{browser_type}] 📢 Detected {len(ads_found)} ad(s) on page')
+        
+        # Decide whether to click (60% chance)
+        if random.random() > click_chance:
+            print(f'  [{browser_type}] 🎲 Decided not to click ads this time')
+            return False
+        
+        # Try to click a random ad
+        ad_to_click = random.choice(ads_found)
+        
+        try:
+            # Scroll ad into view
+            driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", ad_to_click)
+            time.sleep(random.uniform(0.5, 1.0))
+            
+            # Try to click the ad
+            ad_to_click.click()
+            print(f'  [{browser_type}] 💰 Clicked on ad!')
+            time.sleep(random.uniform(1, 3))
+            
+            # If a new tab/window opened, close it and return to original
+            if len(driver.window_handles) > 1:
+                driver.switch_to.window(driver.window_handles[-1])
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                print(f'  [{browser_type}] 🔄 Closed ad tab, returned to main window')
+            
+            return True
+            
+        except Exception as e:
+            # Ad might be in iframe, try to find and click link inside
+            try:
+                if ad_to_click.tag_name == 'iframe':
+                    driver.switch_to.frame(ad_to_click)
+                    links = driver.find_elements(By.TAG_NAME, 'a')
+                    if links:
+                        links[0].click()
+                        driver.switch_to.default_content()
+                        print(f'  [{browser_type}] 💰 Clicked ad link in iframe!')
+                        time.sleep(random.uniform(1, 3))
+                        
+                        # Close any new windows
+                        if len(driver.window_handles) > 1:
+                            driver.switch_to.window(driver.window_handles[-1])
+                            driver.close()
+                            driver.switch_to.window(driver.window_handles[0])
+                        
+                        return True
+                    driver.switch_to.default_content()
+            except:
+                try:
+                    driver.switch_to.default_content()
+                except:
+                    pass
+            
+            return False
+            
+    except Exception as e:
+        # Don't let ad clicking break the automation
+        return False
+
 def create_driver(browser_type):
     """Create a Selenium WebDriver for automated browsing with anti-detection"""
     
@@ -709,6 +829,9 @@ def browse():
             # Auto-accept cookies
             auto_accept_cookies(driver, browser_type)
             
+            # Try to detect and click ads (60% chance)
+            detect_and_click_ads(driver, browser_type, click_chance=0.6)
+            
             # Simulate human reading/scrolling behavior on first page
             for _ in range(random.randint(1, 2)):
                 scroll_amount = random.randint(200, 500)
@@ -830,6 +953,13 @@ def browse():
                                 auto_accept_cookies(driver, browser_type)
                             except:
                                 pass
+                            
+                            # Occasionally try to click ads (60% chance)
+                            if random.random() < 0.4:  # 40% of the time, try to click ads
+                                try:
+                                    detect_and_click_ads(driver, browser_type, click_chance=0.6)
+                                except:
+                                    pass
                             
                             current_depth += 1
                             
