@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Browser Chaos Generator with AdNauseam Extension
-Automates browsing across multiple sites with ad-clicking extension
+Browser Chaos Generator
+Automates browsing across multiple sites to generate traffic
 """
 
 from selenium import webdriver
@@ -12,10 +12,23 @@ from selenium.common.exceptions import TimeoutException, WebDriverException
 import time
 import random
 from urllib.parse import urlparse
-import os
 
 # Comprehensive list of websites across China, Europe, and America
+# Prioritized list with ad-heavy sites first
 sites = [
+    # High-ad content sites (news, tabloids, tech blogs)
+    "https://dailymail.co.uk", "https://forbes.com", "https://cnet.com", "https://techcrunch.com",
+    "https://weather.com", "https://msn.com", "https://yahoo.com", "https://aol.com",
+    "https://huffpost.com", "https://buzzfeed.com", "https://tmz.com", "https://ign.com",
+    
+    # News sites with ads
+    "https://cnn.com", "https://foxnews.com", "https://usatoday.com", "https://nypost.com",
+    "https://thesun.co.uk", "https://mirror.co.uk", "https://express.co.uk",
+    "https://bild.de", "https://20minutes.fr", "https://sport1.de",
+    
+    # Shopping/E-commerce (typically ad-heavy)
+    "https://ebay.com", "https://etsy.com", "https://aliexpress.com", "https://wish.com",
+    "https://groupon.com", "https://slickdeals.net", "https://rakuten.com",
     # Chinese E-commerce
     "https://taobao.com", "https://tmall.com", "https://jd.com", "https://pinduoduo.com", "https://vip.com",
     "https://suning.com", "https://dangdang.com", "https://yanxuan.163.com", "https://xiaomiyoupin.com",
@@ -115,14 +128,7 @@ sites = [
     "https://coinbase.com", "https://binance.com", "https://coinmarketcap.com"
 ]
 
-# Extension paths - must be mounted in Docker
-EXTENSION_PATHS = {
-    'chrome': '/extensions/adnauseam-chrome',
-    'firefox': '/extensions/adnauseam.xpi',
-    'edge': '/extensions/adnauseam-chrome'
-}
-
-browsers = ['firefox']  # Temporarily using only Firefox for debugging
+browsers = ['firefox', 'chrome', 'edge']
 
 def get_domain(url):
     """Extract domain from URL"""
@@ -132,92 +138,19 @@ def get_domain(url):
     except:
         return ''
 
-def setup_adnauseam(driver, browser_type):
-    """Configure AdNauseam extension on first run - enable all three options"""
-    try:
-        print(f"  [{browser_type}] Setting up AdNauseam...")
-        time.sleep(3)
-        
-        # Try to find AdNauseam first-run page
-        windows = driver.window_handles
-        for window in windows:
-            driver.switch_to.window(window)
-            current_url = driver.current_url
-            
-            if 'adnauseam' in current_url.lower() or 'firstrun' in current_url.lower():
-                print(f"  [{browser_type}] Found AdNauseam setup page: {current_url[:50]}")
-                time.sleep(2)
-                
-                try:
-                    # Enable all three toggles: HIDE ADS, CLICK ADS, BLOCK MALWARE
-                    driver.execute_script("""
-                        var toggles = document.querySelectorAll('input[type="checkbox"]');
-                        var count = 0;
-                        toggles.forEach(function(toggle) {
-                            if (!toggle.checked) {
-                                toggle.click();
-                                count++;
-                            }
-                        });
-                        return count;
-                    """)
-                    time.sleep(1)
-                    print(f"  [{browser_type}] ✓ AdNauseam configured: HIDE ADS, CLICK ADS, BLOCK MALWARE enabled")
-                except Exception as e:
-                    print(f"  [{browser_type}] Could not auto-configure: {str(e)[:50]}")
-                
-                break
-        
-        # Return to normal browsing
-        if len(driver.window_handles) > 0:
-            driver.switch_to.window(driver.window_handles[0])
-            
-    except Exception as e:
-        print(f"  [{browser_type}] AdNauseam setup error: {str(e)[:50]}")
-
 def create_driver(browser_type):
-    """Create a Selenium WebDriver with AdNauseam extension loaded"""
-    options = None
+    """Create a Selenium WebDriver for automated browsing"""
     
     if browser_type == 'chrome':
         options = webdriver.ChromeOptions()
-        if os.path.exists(EXTENSION_PATHS['chrome']):
-            options.add_argument(f'--load-extension={EXTENSION_PATHS["chrome"]}')
-            print(f'[{browser_type}] ✓ Loading AdNauseam extension')
-        else:
-            print(f'[{browser_type}] ⚠ AdNauseam extension not found at {EXTENSION_PATHS["chrome"]}')
-            
     elif browser_type == 'firefox':
         options = webdriver.FirefoxOptions()
-        # Set preferences to allow unsigned extensions - multiple approaches
-        options.set_preference("xpinstall.signatures.required", False)
-        options.set_preference("extensions.install.requireBuiltInCerts", False)
-        options.set_preference("extensions.install.requireSecureOrigin", False)
-        
-        # For Firefox with Remote WebDriver, we need to add the extension to the profile
-        if os.path.exists(EXTENSION_PATHS['firefox']):
-            # Note: For remote Firefox, extensions must be added via profile or base64 encoded
-            # Since we're using Remote WebDriver, we'll need to handle this differently
-            print(f'[{browser_type}] Adding extension to Firefox profile...')
-            # Read the .xpi file and base64 encode it
-            import base64
-            with open(EXTENSION_PATHS['firefox'], 'rb') as f:
-                extension_data = base64.b64encode(f.read()).decode('utf-8')
-            # Store it to install after driver creation
-            options._extension_data = extension_data
-            print(f'[{browser_type}] ✓ Extension data prepared')
-        else:
-            print(f'[{browser_type}] ⚠ AdNauseam extension not found at {EXTENSION_PATHS["firefox"]}')
-        
     elif browser_type == 'edge':
         options = webdriver.EdgeOptions()
-        if os.path.exists(EXTENSION_PATHS['edge']):
-            options.add_argument(f'--load-extension={EXTENSION_PATHS["edge"]}')
-            print(f'[{browser_type}] ✓ Loading AdNauseam extension')
-        else:
-            print(f'[{browser_type}] ⚠ AdNauseam extension not found at {EXTENSION_PATHS["edge"]}')
+    else:
+        raise ValueError(f"Unsupported browser: {browser_type}")
     
-    # Common options
+    # Common options for all browsers
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-gpu')
@@ -228,33 +161,14 @@ def create_driver(browser_type):
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option('useAutomationExtension', False)
     
+    print(f'[{browser_type}] Creating browser session...')
     driver = webdriver.Remote(
         command_executor='http://selenium-hub:4444/wd/hub',
         options=options
     )
     
-    # For Firefox, install extension after driver creation using Remote WebDriver commands
-    if browser_type == 'firefox' and hasattr(options, '_extension_data'):
-        try:
-            print(f'[{browser_type}] Installing extension via Remote WebDriver...')
-            # Use the Firefox-specific remote command to install an extension
-            # Use 'temporary': True to allow unsigned extensions
-            addon_id = driver.execute('INSTALL_ADDON', {'addon': options._extension_data, 'temporary': True})['value']
-            print(f'[{browser_type}] ✓ Installed AdNauseam extension (temporary)')
-            print(f'[{browser_type}] Extension ID: {addon_id}')
-            time.sleep(3)  # Give extension time to initialize
-        except Exception as e:
-            print(f'[{browser_type}] ❌ Failed to install extension:')
-            print(f'[{browser_type}] Error type: {type(e).__name__}')
-            print(f'[{browser_type}] Error message: {str(e)}')
-            import traceback
-            print(f'[{browser_type}] Traceback:')
-            traceback.print_exc()
-    
     driver.set_page_load_timeout(30)
-    
-    # Configure AdNauseam
-    setup_adnauseam(driver, browser_type)
+    print(f'[{browser_type}] ✓ Browser ready')
     
     return driver
 
@@ -262,7 +176,7 @@ def browse():
     """Main browsing function - creates chaos by clicking through random links"""
     browser_type = random.choice(browsers)
     print(f'\n{"="*60}')
-    print(f'Starting {browser_type} browser with AdNauseam')
+    print(f'Starting {browser_type} browser')
     print(f'{"="*60}')
     
     driver = create_driver(browser_type)
@@ -274,7 +188,7 @@ def browse():
             print(f'\n[{browser_type}] 🌐 Starting journey from: {start_url}')
             
             driver.get(start_url)
-            time.sleep(random.uniform(3, 8))
+            time.sleep(random.uniform(3, 6))
             
             max_depth = random.randint(30, 50)
             current_depth = 0
@@ -284,7 +198,7 @@ def browse():
                     current_url = driver.current_url
                     current_domain = get_domain(current_url)
                     
-                    # Scroll to trigger ad loading (AdNauseam will handle clicking)
+                    # Scroll the page
                     for _ in range(random.randint(1, 3)):
                         scroll_position = random.randint(100, 1000)
                         driver.execute_script(f'window.scrollTo(0, {scroll_position});')
@@ -378,16 +292,12 @@ def browse():
 if __name__ == '__main__':
     print("""
     ╔════════════════════════════════════════════════════════════╗
-    ║   Browser Chaos Generator with AdNauseam                   ║
-    ║   Automated browsing with ad-clicking extension            ║
+    ║   Browser Chaos Generator                                  ║
+    ║   Automated browsing to generate web traffic               ║
     ╚════════════════════════════════════════════════════════════╝
     """)
     
-    print("Extension paths:")
-    for browser, path in EXTENSION_PATHS.items():
-        exists = '✓' if os.path.exists(path) else '✗'
-        print(f"  {exists} {browser}: {path}")
-    
+    print(f"Available browsers: {', '.join(browsers)}")
     print("\nStarting in 5 seconds...")
     time.sleep(5)
     
