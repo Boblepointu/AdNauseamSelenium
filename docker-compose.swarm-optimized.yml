@@ -1,12 +1,12 @@
 version: '3.8'
 
-# Docker Swarm Stack for AdNauseam Browser Automation
-# Maintains browser version diversity for maximum TLS/HTTP/CSS fingerprint variation
-# Uses pre-built images from GitHub Container Registry
+# Docker Swarm Stack - Optimized for 24GB RAM / 4 CPU Node
+# All services pinned to testnetslaveportainer
+# Reduced memory footprint while maintaining browser diversity
 
 services:
   # ============================================
-  # SELENIUM HUB
+  # SELENIUM HUB - 2GB RAM
   # ============================================
   selenium-hub:
     image: selenium/hub:latest
@@ -51,7 +51,7 @@ services:
         max_attempts: 5
       resources:
         limits:
-          memory: 4G
+          memory: 3G
         reservations:
           memory: 2G
       labels:
@@ -70,24 +70,30 @@ services:
         - "traefik.http.middlewares.selenium-redirect.redirectscheme.permanent=true"
 
   # ============================================
-  # CHROME NODES - DIVERSE VERSIONS (Main Node)
+  # CHROME NODES - 1 replica each, 768MB RAM
+  # Total: 8 × 768MB = 6GB
   # ============================================
   chrome-95:
     image: selenium/node-chrome:95.0
     networks:
       - selenium-network
+    volumes:
+      - type: tmpfs
+        target: /home/seluser/Downloads
+        tmpfs:
+          size: 52428800
     environment:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -95,8 +101,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   chrome-110:
     image: selenium/node-chrome:110.0
@@ -106,14 +114,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -121,8 +129,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   chrome-120:
     image: selenium/node-chrome:120.0
@@ -132,14 +142,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -147,8 +157,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   chrome-125:
     image: selenium/node-chrome:125.0
@@ -158,14 +170,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -173,8 +185,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   chrome-130:
     image: selenium/node-chrome:130.0
@@ -184,14 +198,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -199,8 +213,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   chrome-latest:
     image: selenium/node-chrome:latest
@@ -210,14 +226,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -225,8 +241,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   chrome-beta:
     image: selenium/node-chrome:beta
@@ -236,14 +254,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -251,8 +269,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   chrome-dev:
     image: selenium/node-chrome:dev
@@ -262,14 +282,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -277,11 +297,14 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   # ============================================
-  # FIREFOX NODES - DIVERSE VERSIONS (Main Node)
+  # FIREFOX NODES - 1 replica each, 768MB RAM
+  # Total: 8 × 768MB = 6GB
   # ============================================
   firefox-98:
     image: selenium/node-firefox:98.0
@@ -291,14 +314,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -306,8 +329,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   firefox-110:
     image: selenium/node-firefox:110.0
@@ -317,14 +342,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -332,8 +357,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   firefox-120:
     image: selenium/node-firefox:120.0
@@ -343,14 +370,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -358,8 +385,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   firefox-130:
     image: selenium/node-firefox:130.0
@@ -369,14 +398,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -384,8 +413,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   firefox-140:
     image: selenium/node-firefox:140.0
@@ -395,14 +426,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -410,8 +441,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   firefox-latest:
     image: selenium/node-firefox:latest
@@ -421,14 +454,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -436,8 +469,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   firefox-beta:
     image: selenium/node-firefox:beta
@@ -447,14 +482,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -462,8 +497,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   firefox-dev:
     image: selenium/node-firefox:dev
@@ -473,14 +510,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -488,11 +525,14 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   # ============================================
-  # EDGE NODES - DIVERSE VERSIONS (Main Node)
+  # EDGE NODES - 1 replica each, 768MB RAM
+  # Total: 7 × 768MB = 5.4GB
   # ============================================
   edge-114:
     image: selenium/node-edge:114.0
@@ -502,14 +542,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -517,8 +557,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   edge-120:
     image: selenium/node-edge:120.0
@@ -528,14 +570,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -543,8 +585,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   edge-125:
     image: selenium/node-edge:125.0
@@ -554,14 +598,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -569,8 +613,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   edge-130:
     image: selenium/node-edge:130.0
@@ -580,14 +626,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -595,8 +641,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   edge-latest:
     image: selenium/node-edge:latest
@@ -606,14 +654,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -621,8 +669,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   edge-beta:
     image: selenium/node-edge:beta
@@ -632,14 +682,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -647,8 +697,10 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   edge-dev:
     image: selenium/node-edge:dev
@@ -658,14 +710,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -673,11 +725,13 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   # ============================================
-  # CHROMIUM NODE (Main Node)
+  # CHROMIUM NODE - 768MB RAM
   # ============================================
   chromium-latest:
     image: selenium/node-chromium:latest
@@ -687,14 +741,14 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 2gb
+    shm_size: 1gb
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
         constraints:
           - node.hostname == testnetslaveportainer
@@ -702,14 +756,14 @@ services:
         condition: on-failure
         delay: 10s
       resources:
+        limits:
+          memory: 1G
         reservations:
-          memory: 2G
+          memory: 768M
 
   # ============================================
-  # BROWSER AUTOMATION - CONSOLIDATED SERVICE
-  # Using pre-built GHCR image with all dependencies included
-  # FIXED: Removed shared volume to prevent mount thrashing
-  # Each container generates its own personas independently
+  # BROWSER AUTOMATION - 2 replicas, 384MB each
+  # Total: 2 × 384MB = 768MB
   # ============================================
   browser-automation:
     image: ghcr.io/boblepointu/adnauseamselenium:latest
@@ -737,7 +791,7 @@ services:
         max_attempts: 5
       resources:
         limits:
-          memory: 768M
+          memory: 512M
           cpus: '0.5'
         reservations:
           memory: 384M
@@ -753,3 +807,4 @@ networks:
   selenium-network:
     driver: overlay
     attachable: true
+
