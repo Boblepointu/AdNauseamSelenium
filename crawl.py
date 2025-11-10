@@ -551,7 +551,10 @@ def create_driver(browser_type):
             "profile.password_manager_enabled": False,
             "webrtc.ip_handling_policy": "disable_non_proxied_udp",
             "webrtc.multiple_routes_enabled": False,
-            "webrtc.nonproxied_udp_enabled": False
+            "webrtc.nonproxied_udp_enabled": False,
+            # Disable external protocol handler prompts
+            "profile.default_content_setting_values.protocol_handlers": 2,
+            "profile.content_settings.exceptions.protocol_handlers": {}
         }
         options.add_experimental_option("prefs", prefs)
         
@@ -598,6 +601,22 @@ def create_driver(browser_type):
         options.set_preference("browser.cache.offline.enable", False)
         options.set_preference("network.http.use-cache", False)
         
+        # Disable external protocol handler prompts (xdg-open, etc.)
+        options.set_preference("network.protocol-handler.external-default", False)
+        options.set_preference("network.protocol-handler.warn-external-default", False)
+        options.set_preference("network.protocol-handler.expose-all", False)
+        options.set_preference("network.protocol-handler.expose.http", True)
+        options.set_preference("network.protocol-handler.expose.https", True)
+        options.set_preference("network.protocol-handler.expose.ftp", True)
+        # Disable specific protocol handlers that trigger popups
+        options.set_preference("network.protocol-handler.external.mailto", False)
+        options.set_preference("network.protocol-handler.external.news", False)
+        options.set_preference("network.protocol-handler.external.nntp", False)
+        options.set_preference("network.protocol-handler.external.snews", False)
+        options.set_preference("network.protocol-handler.external.tel", False)
+        options.set_preference("network.protocol-handler.external.webcal", False)
+        options.set_preference("network.protocol-handler.external.ms-windows-store", False)
+        
     elif browser_type == 'edge':
         options = webdriver.EdgeOptions()
         
@@ -634,7 +653,10 @@ def create_driver(browser_type):
             "webrtc.nonproxied_udp_enabled": False,
             "profile.default_content_setting_values.media_stream_mic": 2,
             "profile.default_content_setting_values.media_stream_camera": 2,
-            "profile.default_content_setting_values.geolocation": 2
+            "profile.default_content_setting_values.geolocation": 2,
+            # Disable external protocol handler prompts
+            "profile.default_content_setting_values.protocol_handlers": 2,
+            "profile.content_settings.exceptions.protocol_handlers": {}
         }
         options.add_experimental_option("prefs", prefs)
     else:
