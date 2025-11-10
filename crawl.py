@@ -2243,6 +2243,29 @@ def auto_accept_cookies(driver, browser_type, max_attempts=3):
                 'button.didomi-button-highlight',
                 '#didomi-notice-agree-button',
                 
+                # Utiq / ConsentHub / Reworld Media
+                'button:contains("Accepter"):not(:contains("Rejeter"))',
+                '[class*="consenthub"] button:contains("Accepter")',
+                '[id*="utiq"] button:contains("Accepter")',
+                'button[class*="accept"]:not([class*="reject"])',
+                
+                # IAB TCF / Quantcast banners (French/English)
+                'button:has-text("Accepter tout")',
+                'button:has-text("Accept All Cookies")',
+                'button:has-text("Accept All")',
+                'button:has-text("Accepter")',
+                '[data-testid="consent-banner-accept-button"]',
+                '[data-testid="accept-all-cookies"]',
+                '[class*="acceptAll"]',
+                '[class*="accept-all"]',
+                'button[class*="cmp-accept"]',
+                'button[class*="consent-accept"]',
+                
+                # TUI and travel sites
+                'button:has-text("Accepter")',
+                '.cookie-banner button:has-text("Accept")',
+                '[class*="cookie"] button:has-text("Accept")',
+                
                 # Common IDs
                 '#accept-cookies', '#acceptCookies', '#cookie-accept', '#cookieAccept',
                 '#accept-all', '#acceptAll', '#cookie-consent-accept', '#onetrust-accept-btn-handler',
@@ -2256,6 +2279,7 @@ def auto_accept_cookies(driver, browser_type, max_attempts=3):
                 # Data attributes
                 '[data-action="accept"]', '[data-cookie="accept"]', '[data-consent="accept"]',
                 '[data-testid="cookie-accept"]', '[data-testid="accept-all"]',
+                '[data-choice="accept"]', '[data-choice="accept-all"]',
                 
                 # Common button names
                 'button[name="accept"]', 'button[name="accept-all"]', 'button[name="agree"]',
@@ -2276,16 +2300,36 @@ def auto_accept_cookies(driver, browser_type, max_attempts=3):
             
             # Step 4: Find buttons by text content
             accept_text_patterns = [
-                'accept all', 'accept cookies', 'i accept', 'allow all', 'allow cookies',
-                'agree', 'agree to all', 'got it', 'ok', 'continue', 'agree and close', 'accept & close',
-                'accept and continue', 'accepter', 'tout accepter', 'aceptar', 'akzeptieren', 'accetto',
-                'aceitar', 'acceptera', 'ja, accepteren', 'zgadzam się', 'souhlasím',
+                # English variations
+                'accept all cookies', 'accept all', 'accept cookies', 'i accept', 'allow all', 'allow cookies',
+                'agree', 'agree to all', 'agree and continue', 'got it', 'ok', 'continue', 
+                'agree and close', 'accept & close', 'accept and continue',
+                # French variations
+                'accepter et continuer', 'accepter tout', 'accepter', 'tout accepter', 
+                'j\'accepte', 'j accepte', 'accepter et fermer',
+                # Spanish
+                'aceptar todo', 'aceptar', 'acepto', 'aceptar y continuar',
+                # German
+                'alle akzeptieren', 'akzeptieren', 'einverstanden', 'akzeptieren und fortfahren',
+                # Italian
+                'accetta tutto', 'accetto', 'accetta', 'accetta e continua',
+                # Portuguese
+                'aceitar tudo', 'aceitar', 'aceitar e continuar',
+                # Dutch
+                'accepteer alles', 'accepteren', 'ja, accepteren', 'accepteren en doorgaan',
+                # Other languages
+                'acceptera', 'zgadzam się', 'souhlasím',
                 'συμφωνώ', 'принимаю', 'kabul ediyorum', 'موافق'
             ]
             
             try:
                 all_buttons = driver.find_elements(By.TAG_NAME, 'button')
                 all_buttons += driver.find_elements(By.CSS_SELECTOR, 'a.button, .btn, [role="button"]')
+                
+                # First pass: prioritize "accept all" / "accepter tout" type buttons
+                priority_patterns = ['accept all cookies', 'accept all', 'accepter tout', 'tout accepter',
+                                   'accepter et continuer', 'accept and continue',
+                                   'allow all', 'aceptar todo', 'alle akzeptieren', 'accetta tutto']
                 
                 for button in all_buttons:
                     try:
@@ -2294,11 +2338,51 @@ def auto_accept_cookies(driver, browser_type, max_attempts=3):
                         
                         button_text = button.text.lower().strip()
                         
+                        # Skip reject buttons
+                        reject_keywords = ['reject', 'refuse', 'rejeter', 'refuser', 'deny', 'decline']
+                        if any(keyword in button_text for keyword in reject_keywords):
+                            continue
+                        
+                        # Check priority patterns first
+                        for pattern in priority_patterns:
+                            if pattern in button_text:
+                                button.click()
+                                print(f'  [{browser_type}] 🍪 Accepted cookies via text: "{button.text[:40]}"')
+                                time.sleep(0.5)
+                                return True
+                    except:
+                        continue
+                
+                # Second pass: accept other accept buttons
+                for button in all_buttons:
+                    try:
+                        if not button.is_displayed():
+                            continue
+                        
+                        button_text = button.text.lower().strip()
+                        
+                        # Skip reject buttons (check before anything else)
+                        reject_keywords = ['reject', 'refuse', 'rejeter', 'refuser', 'deny', 'decline', 'preferences', 'manage', 'gérer']
+                        if any(keyword in button_text for keyword in reject_keywords):
+                            continue
+                        
+                        # Skip empty buttons
+                        if not button_text:
+                            continue
+                        
+                        # Check for exact simple matches first (for buttons with just "Accepter", "Accept", etc.)
+                        simple_accept_words = ['accepter', 'accept', 'agree', 'ok', 'aceptar', 'akzeptieren', 'accetta', 'aceitar']
+                        if button_text in simple_accept_words:
+                            button.click()
+                            print(f'  [{browser_type}] 🍪 Accepted cookies via exact match: "{button.text[:40]}"')
+                            time.sleep(0.5)
+                            return True
+                        
                         # Check if button text matches any accept pattern
                         for pattern in accept_text_patterns:
                             if pattern in button_text or button_text == pattern.replace(' ', ''):
                                 button.click()
-                                print(f'  [{browser_type}] 🍪 Accepted cookies via text: "{button.text[:30]}"')
+                                print(f'  [{browser_type}] 🍪 Accepted cookies via text: "{button.text[:40]}"')
                                 time.sleep(0.5)
                                 return True
                     except:
