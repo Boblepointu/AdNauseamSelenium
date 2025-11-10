@@ -50,14 +50,14 @@ print_header "Browser Chaos Generator"
 echo "📦 Installing dependencies..."
 apt-get update -qq > /dev/null 2>&1
 apt-get install -y curl -qq > /dev/null 2>&1
-pip install selenium --quiet
-print_success "Dependencies installed (Selenium with manual stealth)"
+pip install selenium numpy --quiet
+print_success "Dependencies installed (Selenium + NumPy for human-like timing)"
 echo ""
 
 # ============================================================
-# STEP 2: Setup crawl.py
+# STEP 2: Setup crawl.py and persona_manager.py
 # ============================================================
-echo "📥 Setting up crawl.py..."
+echo "📥 Setting up scripts..."
 if [ -f "/app/crawl.py" ]; then
     print_info "Using local crawl.py from /app/crawl.py"
     cp /app/crawl.py /tmp/crawl.py
@@ -86,6 +86,22 @@ else
         exit 1
     fi
 fi
+
+# Setup persona_manager.py
+if [ -f "/app/persona_manager.py" ]; then
+    print_info "Using local persona_manager.py from /app/persona_manager.py"
+    cp /app/persona_manager.py /tmp/persona_manager.py
+    chmod +x /tmp/persona_manager.py
+    print_success "persona_manager.py ready"
+else
+    print_warning "persona_manager.py not found, persona persistence disabled"
+fi
+
+# Create persona data directory
+mkdir -p /app/data/personas
+chmod 777 /app/data/personas
+print_success "Persona data directory created"
+
 echo ""
 
 # ============================================================

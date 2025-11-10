@@ -1,5 +1,10 @@
 version: '3.8'
 
+# Common environment for all browser nodes (disable telemetry spam)
+x-node-common: &node-common-env
+  SE_OTEL_TRACES_EXPORTER: none
+  SE_ENABLE_TRACING: false
+
 volumes:
   personas-data:
     driver: local
@@ -15,6 +20,8 @@ services:
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_NODE_MAX_SESSIONS=25
       - SE_SESSION_TIMEOUT=300
+      - SE_OTEL_TRACES_EXPORTER=none
+      - SE_ENABLE_TRACING=false
 
   # ============================================
   # CHROME NODES (Diverse versions for maximum TLS/HTTP/CSS diversity)
@@ -29,6 +36,8 @@ services:
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
       - SE_NODE_MAX_SESSIONS=2
+      - SE_OTEL_TRACES_EXPORTER=none
+      - SE_ENABLE_TRACING=false
     shm_size: 2gb
 
   chrome-110:
