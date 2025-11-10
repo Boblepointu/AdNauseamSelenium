@@ -4102,6 +4102,240 @@ def handle_new_tab_from_ad(driver, browser_type, current_browsing_tab):
             pass
         return current_browsing_tab, False
 
+def detect_and_bypass_bot_challenge(driver, browser_type, max_attempts=3):
+    """
+    Detect and attempt to bypass bot detection challenges (Cloudflare, etc.)
+    
+    Args:
+        driver: WebDriver instance
+        browser_type: Browser name for logging
+        max_attempts: Maximum number of challenge attempts (default 3)
+    
+    Returns:
+        bool: True if challenge was bypassed or not present, False if failed
+    """
+    try:
+        for attempt in range(max_attempts):
+            time.sleep(random.uniform(1.5, 3.0))  # Wait for page to load
+            
+            # Get page source and title to detect challenges
+            try:
+                page_title = driver.title.lower()
+                page_source = driver.page_source.lower()
+            except:
+                return True  # If we can't get page info, assume we're good
+            
+            # Detection patterns for various bot challenges
+            challenge_indicators = [
+                'cloudflare' in page_source,
+                'just a moment' in page_title or 'just a moment' in page_source,
+                'checking your browser' in page_source,
+                'verify you are human' in page_source or 'vérifiez que vous êtes' in page_source,
+                'confirmez que vous êtes un humain' in page_source,
+                'challenge-form' in page_source,
+                'cf-challenge' in page_source,
+                'ray id' in page_source and 'cloudflare' in page_source,
+                'ddos-guard' in page_source,
+                'sucuri' in page_source and 'security check' in page_source,
+                'perimeterx' in page_source or 'px-captcha' in page_source,
+                'datadome' in page_source,
+                'are you a robot' in page_source,
+                'human verification' in page_source,
+            ]
+            
+            if not any(challenge_indicators):
+                # No challenge detected
+                if attempt == 0:
+                    return True  # Clean page load
+                else:
+                    print(f'  [{browser_type}] ✅ Bot challenge passed! (attempt {attempt + 1})')
+                    return True
+            
+            print(f'  [{browser_type}] 🤖 Bot challenge detected (attempt {attempt + 1}/{max_attempts})...')
+            
+            # Check for CAPTCHA (if present, we skip)
+            captcha_indicators = [
+                'captcha' in page_source,
+                'recaptcha' in page_source,
+                'hcaptcha' in page_source,
+                'g-recaptcha' in page_source,
+                'h-captcha' in page_source,
+            ]
+            
+            if any(captcha_indicators):
+                print(f'  [{browser_type}] 🧩 CAPTCHA detected - skipping (as requested)')
+                return False
+            
+            # Look for challenge buttons/checkboxes to click
+            # Try multiple selectors for different challenge types
+            challenge_selectors = [
+                # Cloudflare
+                'input[type="checkbox"]',
+                'input#challenge-form',
+                '.cf-turnstile',
+                'iframe[src*="challenges.cloudflare.com"]',
+                'input[name="cf_captcha_kind"]',
+                # Generic challenge buttons
+                'button[type="submit"]',
+                'input[type="submit"]',
+                'button:contains("Verify")',
+                'button:contains("Continue")',
+                'button:contains("I\'m not a robot")',
+                'button:contains("Je ne suis pas un robot")',
+                # Checkboxes
+                'input[type="checkbox"][name*="human"]',
+                'input[type="checkbox"][id*="verify"]',
+                'input[type="checkbox"][id*="challenge"]',
+            ]
+            
+            clicked_something = False
+            
+            # First try to find and click checkboxes
+            try:
+                checkboxes = driver.find_elements(By.CSS_SELECTOR, 'input[type="checkbox"]')
+                for checkbox in checkboxes:
+                    try:
+                        if checkbox.is_displayed() and checkbox.is_enabled():
+                            # Human-like delay before clicking
+                            time.sleep(random.uniform(0.8, 1.5))
+                            
+                            # Move mouse to checkbox realistically
+                            try:
+                                actions = ActionChains(driver)
+                                actions.move_to_element(checkbox)
+                                actions.pause(random.uniform(0.2, 0.5))
+                                actions.click()
+                                actions.perform()
+                            except:
+                                # Fallback to direct click
+                                checkbox.click()
+                            
+                            print(f'  [{browser_type}] ✓ Clicked challenge checkbox')
+                            clicked_something = True
+                            time.sleep(random.uniform(1.5, 3.0))  # Wait for processing
+                            break
+                    except:
+                        continue
+            except:
+                pass
+            
+            # Try clicking buttons if checkbox didn't work
+            if not clicked_something:
+                try:
+                    buttons = driver.find_elements(By.TAG_NAME, 'button')
+                    buttons.extend(driver.find_elements(By.CSS_SELECTOR, 'input[type="submit"]'))
+                    
+                    for button in buttons:
+                        try:
+                            if button.is_displayed() and button.is_enabled():
+                                button_text = button.text.lower() if button.text else ''
+                                button_value = button.get_attribute('value')
+                                if button_value:
+                                    button_text += ' ' + button_value.lower()
+                                
+                                # Look for verify/continue buttons
+                                if any(word in button_text for word in ['verify', 'continue', 'submit', 'proceed', 'confirm', 'vérifier', 'continuer']):
+                                    time.sleep(random.uniform(0.8, 1.5))
+                                    
+                                    try:
+                                        actions = ActionChains(driver)
+                                        actions.move_to_element(button)
+                                        actions.pause(random.uniform(0.2, 0.5))
+                                        actions.click()
+                                        actions.perform()
+                                    except:
+                                        button.click()
+                                    
+                                    print(f'  [{browser_type}] ✓ Clicked challenge button: "{button_text[:30]}"')
+                                    clicked_something = True
+                                    time.sleep(random.uniform(1.5, 3.0))
+                                    break
+                        except:
+                            continue
+                except:
+                    pass
+            
+            # Try iframe-based challenges (like Cloudflare Turnstile)
+            if not clicked_something:
+                try:
+                    iframes = driver.find_elements(By.TAG_NAME, 'iframe')
+                    for iframe in iframes:
+                        try:
+                            src = iframe.get_attribute('src')
+                            if src and ('challenge' in src.lower() or 'turnstile' in src.lower() or 'cloudflare' in src.lower()):
+                                print(f'  [{browser_type}] 🔄 Found challenge iframe, switching to it...')
+                                driver.switch_to.frame(iframe)
+                                time.sleep(random.uniform(0.5, 1.0))
+                                
+                                # Look for checkbox inside iframe
+                                try:
+                                    iframe_checkbox = driver.find_element(By.CSS_SELECTOR, 'input[type="checkbox"]')
+                                    if iframe_checkbox.is_displayed():
+                                        time.sleep(random.uniform(0.8, 1.5))
+                                        
+                                        try:
+                                            actions = ActionChains(driver)
+                                            actions.move_to_element(iframe_checkbox)
+                                            actions.pause(random.uniform(0.2, 0.5))
+                                            actions.click()
+                                            actions.perform()
+                                        except:
+                                            iframe_checkbox.click()
+                                        
+                                        print(f'  [{browser_type}] ✓ Clicked checkbox in iframe')
+                                        clicked_something = True
+                                        time.sleep(random.uniform(1.5, 3.0))
+                                except:
+                                    pass
+                                
+                                # Switch back to main content
+                                driver.switch_to.default_content()
+                                
+                                if clicked_something:
+                                    break
+                        except:
+                            try:
+                                driver.switch_to.default_content()
+                            except:
+                                pass
+                            continue
+                except:
+                    try:
+                        driver.switch_to.default_content()
+                    except:
+                        pass
+            
+            # If we didn't find anything to click, the challenge might be automatic
+            if not clicked_something:
+                print(f'  [{browser_type}] ⏳ Waiting for automatic challenge resolution...')
+                time.sleep(random.uniform(3.0, 5.0))
+            
+            # Check if we're still on a challenge page
+            # If yes, loop will continue to next attempt
+            
+        # After all attempts, check one more time if we passed
+        try:
+            time.sleep(random.uniform(1.0, 2.0))
+            page_source = driver.page_source.lower()
+            final_check = not any([
+                'cloudflare' in page_source and 'checking' in page_source,
+                'verify you are human' in page_source,
+                'confirmez que vous êtes un humain' in page_source,
+            ])
+            
+            if final_check:
+                print(f'  [{browser_type}] ✅ Bot challenge passed!')
+                return True
+            else:
+                print(f'  [{browser_type}] ❌ Failed to bypass bot challenge after {max_attempts} attempts')
+                return False
+        except:
+            return False
+            
+    except Exception as e:
+        print(f'  [{browser_type}] ⚠ Error in bot challenge bypass: {str(e)[:60]}')
+        return True  # Assume we're okay if error occurred
+
 def browse():
     """Main browsing function - creates chaos by clicking through random links"""
     # Initialize global fatigue model for this session
@@ -4152,6 +4386,12 @@ def browse():
                 except:
                     pass
             
+            # Detect and bypass bot challenges (Cloudflare, etc.)
+            challenge_passed = detect_and_bypass_bot_challenge(driver, browser_type, max_attempts=3)
+            if not challenge_passed:
+                print(f'  [{browser_type}] ⚠ Could not bypass bot challenge, skipping to next website')
+                continue  # Skip to next website
+            
             # Random human-like delay with fidgeting
             reading_behavior(driver, duration=random.uniform(2, 4))
             
@@ -4175,6 +4415,22 @@ def browse():
                             driver.execute_script(driver._stealth_js)
                         except:
                             pass
+                    
+                    # Check for bot challenges on the new ad tab
+                    challenge_passed = detect_and_bypass_bot_challenge(driver, browser_type, max_attempts=3)
+                    if not challenge_passed:
+                        print(f'  [{browser_type}] ⚠ Ad tab has bot challenge, closing it')
+                        try:
+                            driver.close()
+                            # Switch back to original browsing tab
+                            if current_browsing_tab in driver.window_handles:
+                                driver.switch_to.window(current_browsing_tab)
+                            elif driver.window_handles:
+                                current_browsing_tab = driver.window_handles[0]
+                                driver.switch_to.window(current_browsing_tab)
+                        except:
+                            pass
+                    
                     time.sleep(realistic_delay(1.5, variance=0.3))
             
             # Simulate human reading/scrolling behavior on first page with realistic mouse movement
