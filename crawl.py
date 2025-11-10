@@ -2799,59 +2799,244 @@ def auto_accept_cookies(driver, browser_type, max_attempts=3):
             except:
                 pass
             
-            # Step 4: Common "Accept All" / "Agree to all" buttons
+            # Step 4: Common "Accept All" / "Agree to all" buttons (Comprehensive Multi-Language, Multi-Provider)
             accept_all_selectors = [
-                # DIDOMI "Agree to all" button
+                # ============================================
+                # MAJOR CONSENT PLATFORMS
+                # ============================================
+                
+                # OneTrust
+                '#onetrust-accept-btn-handler',
+                '.onetrust-close-btn-handler',
+                'button[aria-label="Accept All Cookies"]',
+                '#accept-recommended-btn-handler',
+                '.ot-pc-refuse-all-handler',
+                
+                # Cookiebot
+                '#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll',
+                '#CybotCookiebotDialogBodyButtonAccept',
+                '.CybotCookiebotDialogBodyButton',
+                'a[id*="CybotCookiebot"]',
+                
+                # DIDOMI
                 'button[aria-label="Agree to all"]',
                 'button.didomi-button-highlight',
                 '#didomi-notice-agree-button',
+                '.didomi-consent-popup-actions button:first-child',
                 
-                # Usercentrics / accessiBe
-                'button:has-text("Accept All")',
+                # Quantcast Choice (TCF)
+                'button[aria-label="AGREE"]',
+                'button[aria-label="ACCEPTER"]',
+                'button[mode="primary"]',
+                '.qc-cmp2-summary-buttons button:first-child',
+                
+                # Usercentrics
                 '[data-testid="uc-accept-all-button"]',
                 '#uc-btn-accept-banner',
-                'button[aria-label="Accept All"]',
+                'button[data-testid="uc-accept-all-button"]',
+                '[aria-label="Accept All"]',
+                
+                # TrustArc
+                '#truste-consent-button',
+                '.truste-button1',
+                '.trustarc-agree-btn',
+                
+                # Osano
+                '.osano-cm-accept-all',
+                '.osano-cm-dialog__close',
+                
+                # Cookie Information
+                '#cookie-information-template-wrapper button',
+                
+                # Termly
+                '#termly-code-snippet-support button',
+                
+                # Sourcepoint
+                'button[title="Accept all"]',
+                'button[title="Accepter tout"]',
+                
+                # Consentmanager.net
+                '#cmpwelcomebtnyes',
+                '.cmpboxbtnyes',
+                
+                # ============================================
+                # TCF VENDOR DIALOGS (Multi-Language)
+                # ============================================
+                
+                # English
+                'button:has-text("Consent")',
+                'button:has-text("Accept")',
+                'button:has-text("I Accept")',
+                'button:has-text("I Agree")',
+                'button[title*="Consent"]',
+                'button[aria-label*="Consent"]',
+                'button[aria-label*="Accept"]',
+                
+                # French
+                'button:has-text("Accepter")',
+                'button:has-text("J\'accepte")',
+                'button:has-text("Je consens")',
+                'button[aria-label*="Accepter"]',
+                'button[title*="Accepter"]',
+                
+                # German
+                'button:has-text("Akzeptieren")',
+                'button:has-text("Alle akzeptieren")',
+                'button:has-text("Zustimmen")',
+                'button[aria-label*="Akzeptieren"]',
+                
+                # Spanish
+                'button:has-text("Aceptar")',
+                'button:has-text("Acepto")',
+                'button:has-text("Aceptar todo")',
+                'button[aria-label*="Aceptar"]',
+                
+                # Italian
+                'button:has-text("Accetta")',
+                'button:has-text("Accetto")',
+                'button:has-text("Accetta tutto")',
+                'button[aria-label*="Accetta"]',
+                
+                # Portuguese
+                'button:has-text("Aceitar")',
+                'button:has-text("Aceito")',
+                'button:has-text("Aceitar tudo")',
+                'button[aria-label*="Aceitar"]',
+                
+                # Dutch
+                'button:has-text("Accepteren")',
+                'button:has-text("Alles accepteren")',
+                'button[aria-label*="Accepteren"]',
+                
+                # Polish
+                'button:has-text("Akceptuję")',
+                'button:has-text("Zgadzam się")',
+                'button[aria-label*="Akceptuj"]',
+                
+                # Swedish
+                'button:has-text("Acceptera")',
+                'button:has-text("Godkänn")',
+                'button[aria-label*="Acceptera"]',
+                
+                # Danish
+                'button:has-text("Accepter")',
+                'button:has-text("Godkend")',
+                
+                # Norwegian
+                'button:has-text("Godta")',
+                'button:has-text("Aksepter")',
+                
+                # Finnish
+                'button:has-text("Hyväksy")',
+                
+                # ============================================
+                # COMMON CLASS PATTERNS
+                # ============================================
+                
+                '[class*="accept-all"]',
+                '[class*="acceptAll"]',
+                '[class*="accept_all"]',
+                '[class*="consent-accept"]',
+                '[class*="consent-btn"]',
+                '[class*="consent-button"]',
+                '[class*="cookie-accept"]',
+                '[class*="cookie-btn-accept"]',
+                '[class*="cookies-accept"]',
+                '[class*="cmp-accept"]',
+                '[class*="gdpr-accept"]',
+                '[class*="banner-accept"]',
+                '[class*="consent-agree"]',
+                '[class*="agree-button"]',
+                '.accept-cookies',
+                '.accept-button',
+                '.cookie-accept-button',
+                '.js-accept-cookies',
+                '.cookie-banner-accept',
+                '.consent-banner-button-accept',
+                
+                # ============================================
+                # COMMON ID PATTERNS
+                # ============================================
+                
+                '#accept-cookies',
+                '#acceptCookies',
+                '#accept_cookies',
+                '#cookie-accept',
+                '#cookieAccept',
+                '#cookie_accept',
+                '#accept-all',
+                '#acceptAll',
+                '#accept_all',
+                '#acceptAllButton',
+                '#accept-all-cookies',
+                '#accept_all_cookies',
+                '#btn-accept',
+                '#btn-accept-all',
+                '#btnAcceptAll',
+                '#cookie-consent-accept',
+                '#consent-accept-all',
+                '#gdpr-accept',
+                '#privacy-accept',
+                
+                # ============================================
+                # DATA ATTRIBUTES (Provider-Specific)
+                # ============================================
+                
+                '[data-action="accept"]',
+                '[data-action="accept-all"]',
+                '[data-action="acceptAll"]',
+                '[data-cookie="accept"]',
+                '[data-consent="accept"]',
+                '[data-consent="accept-all"]',
+                '[data-testid="cookie-accept"]',
+                '[data-testid="accept-all"]',
+                '[data-testid="accept-all-cookies"]',
+                '[data-testid="consent-banner-accept-button"]',
+                '[data-choice="accept"]',
+                '[data-choice="accept-all"]',
+                '[data-gdpr="accept"]',
+                '[data-cookie-consent="accept"]',
+                '[data-cc="accept"]',
+                '[data-consent-action="accept"]',
+                
+                # ============================================
+                # BUTTON NAMES & TITLES
+                # ============================================
+                
+                'button[name="accept"]',
+                'button[name="accept-all"]',
+                'button[name="agree"]',
+                'button[name="consent"]',
+                'button[title="Accept"]',
+                'button[title="Accept all"]',
+                'button[title="Accept All Cookies"]',
+                'button[title="Accepter"]',
+                'button[title="Accepter tout"]',
+                'button[title="Akzeptieren"]',
+                'button[title="Aceptar"]',
+                
+                # ============================================
+                # SPECIFIC SITE IMPLEMENTATIONS
+                # ============================================
+                
+                # IAB TCF Framework
+                '[class*="tcf"] button:first-child',
+                '[id*="tcf"] button[mode="primary"]',
                 
                 # Utiq / ConsentHub / Reworld Media
                 'button:contains("Accepter"):not(:contains("Rejeter"))',
                 '[class*="consenthub"] button:contains("Accepter")',
                 '[id*="utiq"] button:contains("Accepter")',
-                'button[class*="accept"]:not([class*="reject"])',
                 
-                # IAB TCF / Quantcast banners (French/English)
-                'button:has-text("Accepter tout")',
-                'button:has-text("Accept All Cookies")',
-                'button:has-text("Accept All")',
-                'button:has-text("Accepter")',
-                '[data-testid="consent-banner-accept-button"]',
-                '[data-testid="accept-all-cookies"]',
-                '[class*="acceptAll"]',
-                '[class*="accept-all"]',
-                'button[class*="cmp-accept"]',
-                'button[class*="consent-accept"]',
-                
-                # TUI and travel sites
-                'button:has-text("Accepter")',
-                '.cookie-banner button:has-text("Accept")',
+                # Generic fallbacks
+                'button[class*="accept"]:not([class*="reject"]):not([class*="refuse"])',
+                'button[id*="accept"]:not([id*="reject"])',
+                '.cookie-banner button:first-child',
+                '.cookie-notice button:first-child',
                 '[class*="cookie"] button:has-text("Accept")',
-                
-                # Common IDs
-                '#accept-cookies', '#acceptCookies', '#cookie-accept', '#cookieAccept',
-                '#accept-all', '#acceptAll', '#cookie-consent-accept', '#onetrust-accept-btn-handler',
-                '#acceptAllButton', '#accept_all_cookies', '#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll',
-                
-                # Common Classes
-                '.accept-cookies', '.acceptCookies', '.cookie-accept', '.cookieAccept',
-                '.accept-all', '.acceptAll', '.cookie-consent-accept', '.accept-button',
-                '.cookie-accept-button', '.js-accept-cookies', '.cookie-banner-accept',
-                
-                # Data attributes
-                '[data-action="accept"]', '[data-cookie="accept"]', '[data-consent="accept"]',
-                '[data-testid="cookie-accept"]', '[data-testid="accept-all"]',
-                '[data-choice="accept"]', '[data-choice="accept-all"]',
-                
-                # Common button names
-                'button[name="accept"]', 'button[name="accept-all"]', 'button[name="agree"]',
+                '[class*="consent"] button:has-text("Accept")',
+                '[class*="gdpr"] button:has-text("Accept")',
+                '[class*="privacy"] button:has-text("Accept")',
             ]
             
             # Try specific selectors first (faster and more reliable)
@@ -2867,28 +3052,105 @@ def auto_accept_cookies(driver, browser_type, max_attempts=3):
                 except:
                     continue
             
-            # Step 4: Find buttons by text content
+            # Step 5: Find buttons by text content (Multi-Language)
             accept_text_patterns = [
-                # English variations
+                # ============================================
+                # ENGLISH
+                # ============================================
                 'accept all cookies', 'accept all', 'accept cookies', 'i accept', 'allow all', 'allow cookies',
-                'agree', 'agree to all', 'agree and continue', 'got it', 'ok', 'continue', 
-                'agree and close', 'accept & close', 'accept and continue',
-                # French variations
+                'agree', 'agree to all', 'agree and continue', 'got it', 'ok', 'continue', 'consent',
+                'agree and close', 'accept & close', 'accept and continue', 'accept & continue',
+                'allow all cookies', 'yes, i accept', 'i understand', 'understood',
+                
+                # ============================================
+                # FRENCH
+                # ============================================
                 'accepter et continuer', 'accepter tout', 'accepter', 'tout accepter', 
-                'j\'accepte', 'j accepte', 'accepter et fermer',
-                # Spanish
-                'aceptar todo', 'aceptar', 'acepto', 'aceptar y continuar',
-                # German
+                'j\'accepte', 'j accepte', 'accepter et fermer', 'consentir', 'je consens',
+                'accepter les cookies', 'accepter tous les cookies', 'd\'accord',
+                'autoriser', 'autoriser tout',
+                
+                # ============================================
+                # GERMAN
+                # ============================================
                 'alle akzeptieren', 'akzeptieren', 'einverstanden', 'akzeptieren und fortfahren',
-                # Italian
-                'accetta tutto', 'accetto', 'accetta', 'accetta e continua',
-                # Portuguese
-                'aceitar tudo', 'aceitar', 'aceitar e continuar',
-                # Dutch
+                'alle cookies akzeptieren', 'verstanden', 'zustimmen', 'ich stimme zu',
+                'annehmen', 'alle annehmen', 'ok, verstanden',
+                
+                # ============================================
+                # SPANISH
+                # ============================================
+                'aceptar todo', 'aceptar', 'acepto', 'aceptar y continuar', 'consentimiento',
+                'aceptar todas', 'aceptar cookies', 'permitir', 'permitir todo',
+                'de acuerdo', 'entendido', 'estoy de acuerdo',
+                
+                # ============================================
+                # ITALIAN
+                # ============================================
+                'accetta tutto', 'accetto', 'accetta', 'accetta e continua', 'consenso',
+                'accetta tutti', 'accetta i cookie', 'acconsento', 'sono d\'accordo',
+                'd\'accordo', 'ho capito', 'autorizza',
+                
+                # ============================================
+                # PORTUGUESE
+                # ============================================
+                'aceitar tudo', 'aceitar', 'aceitar e continuar', 'consentir', 'aceito',
+                'aceitar cookies', 'aceitar todos', 'permitir', 'permitir tudo',
+                'concordo', 'eu aceito', 'entendi',
+                
+                # ============================================
+                # DUTCH
+                # ============================================
                 'accepteer alles', 'accepteren', 'ja, accepteren', 'accepteren en doorgaan',
-                # Other languages
-                'acceptera', 'zgadzam się', 'souhlasím',
-                'συμφωνώ', 'принимаю', 'kabul ediyorum', 'موافق'
+                'alle cookies accepteren', 'toestaan', 'akkoord', 'ik ga akkoord',
+                'begrepen', 'ik accepteer',
+                
+                # ============================================
+                # POLISH
+                # ============================================
+                'akceptuję', 'zgadzam się', 'zaakceptuj wszystko', 'akceptuj',
+                'akceptuj wszystkie', 'zgoda', 'rozumiem', 'potwierdzam',
+                
+                # ============================================
+                # SWEDISH
+                # ============================================
+                'acceptera', 'godkänn', 'acceptera alla', 'jag accepterar',
+                'acceptera allt', 'jag godkänner', 'ok, jag förstår', 'tillåt',
+                
+                # ============================================
+                # DANISH
+                # ============================================
+                'accepter', 'godkend', 'accepter alle', 'jeg accepterer',
+                'tillad', 'forstået', 'jeg forstår',
+                
+                # ============================================
+                # NORWEGIAN
+                # ============================================
+                'godta', 'aksepter', 'godta alle', 'jeg godtar',
+                'jeg aksepterer', 'tillat', 'forstått',
+                
+                # ============================================
+                # FINNISH
+                # ============================================
+                'hyväksy', 'hyväksy kaikki', 'hyväksyn', 'ymmärrän',
+                'salli', 'suostumus',
+                
+                # ============================================
+                # OTHER EUROPEAN LANGUAGES
+                # ============================================
+                'souhlasím', 'přijmout vše', 'přijmout', 'rozumím',  # Czech
+                'accept toate', 'sunt de acord', 'înțeleg',  # Romanian
+                
+                # ============================================
+                # NON-LATIN SCRIPTS
+                # ============================================
+                'συμφωνώ', 'αποδοχή', 'αποδοχή όλων', 'κατανοώ',  # Greek
+                'принимаю', 'согласен', 'принять все', 'понятно',  # Russian
+                'kabul ediyorum', 'kabul et', 'tümünü kabul et', 'anladım',  # Turkish
+                'موافق', 'قبول', 'قبول الكل', 'أوافق',  # Arabic
+                '同意する', '同意', 'すべて許可', '了解',  # Japanese
+                '동의', '모두 동의', '확인', '동의합니다',  # Korean
+                '接受', '全部接受', '同意', '我同意', '确定', '接受全部', '允许', '明白了',  # Chinese
             ]
             
             try:
@@ -2896,9 +3158,28 @@ def auto_accept_cookies(driver, browser_type, max_attempts=3):
                 all_buttons += driver.find_elements(By.CSS_SELECTOR, 'a.button, .btn, [role="button"]')
                 
                 # First pass: prioritize "accept all" / "accepter tout" type buttons
-                priority_patterns = ['accept all cookies', 'accept all', 'accepter tout', 'tout accepter',
-                                   'accepter et continuer', 'accept and continue',
-                                   'allow all', 'aceptar todo', 'alle akzeptieren', 'accetta tutto']
+                priority_patterns = [
+                    # English
+                    'accept all cookies', 'accept all', 'allow all', 'agree to all', 'consent',
+                    # French
+                    'accepter tout', 'tout accepter', 'accepter et continuer', 'accepter tous les cookies',
+                    # German
+                    'alle akzeptieren', 'alle cookies akzeptieren',
+                    # Spanish
+                    'aceptar todo', 'aceptar todas',
+                    # Italian
+                    'accetta tutto', 'accetta tutti',
+                    # Portuguese
+                    'aceitar tudo', 'aceitar todos',
+                    # Dutch
+                    'accepteer alles', 'alle cookies accepteren',
+                    # Polish
+                    'zaakceptuj wszystko', 'akceptuj wszystkie',
+                    # Swedish, Danish, Norwegian
+                    'acceptera alla', 'acceptera allt', 'godta alle', 'accepter alle',
+                    # Finnish, Czech
+                    'hyväksy kaikki', 'přijmout vše',
+                ]
                 
                 for button in all_buttons:
                     try:
@@ -2908,7 +3189,7 @@ def auto_accept_cookies(driver, browser_type, max_attempts=3):
                         button_text = button.text.lower().strip()
                         
                         # Skip reject buttons
-                        reject_keywords = ['reject', 'refuse', 'rejeter', 'refuser', 'deny', 'decline']
+                        reject_keywords = ['reject', 'refuse', 'rejeter', 'refuser', 'deny', 'decline', 'manage options']
                         if any(keyword in button_text for keyword in reject_keywords):
                             continue
                         
@@ -3642,6 +3923,38 @@ def create_driver(browser_type):
                         return {timezone_offset};
                     }};
                     
+                    // Mock Geolocation API (consistent with timezone)
+                    if (navigator.geolocation) {{
+                        const geoCoords = {str(get_coords_for_timezone(timezone_offset))};
+                        const mockPosition = {{
+                            coords: {{
+                                latitude: geoCoords[0],
+                                longitude: geoCoords[1],
+                                accuracy: 10 + Math.random() * 50,
+                                altitude: null,
+                                altitudeAccuracy: null,
+                                heading: null,
+                                speed: null
+                            }},
+                            timestamp: Date.now()
+                        }};
+                        
+                        navigator.geolocation.getCurrentPosition = function(success, error, options) {{
+                            if (success) {{
+                                setTimeout(() => success(mockPosition), 50 + Math.random() * 100);
+                            }}
+                        }};
+                        
+                        navigator.geolocation.watchPosition = function(success, error, options) {{
+                            if (success) {{
+                                setTimeout(() => success(mockPosition), 50 + Math.random() * 100);
+                            }}
+                            return Math.floor(Math.random() * 1000);
+                        }};
+                        
+                        navigator.geolocation.clearWatch = function(id) {{}};
+                    }}
+                    
                     // Mock Battery API with randomized realistic values
                     if (navigator.getBattery) {{
                         const batteryInfo = {{
@@ -4031,6 +4344,38 @@ def create_driver(browser_type):
                     Date.prototype.getTimezoneOffset = function() {{
                         return {timezone_offset};
                     }};
+                    
+                    // Mock Geolocation API (consistent with timezone)
+                    if (navigator.geolocation) {{
+                        const geoCoords = {str(get_coords_for_timezone(timezone_offset))};
+                        const mockPosition = {{
+                            coords: {{
+                                latitude: geoCoords[0],
+                                longitude: geoCoords[1],
+                                accuracy: 10 + Math.random() * 50,
+                                altitude: null,
+                                altitudeAccuracy: null,
+                                heading: null,
+                                speed: null
+                            }},
+                            timestamp: Date.now()
+                        }};
+                        
+                        navigator.geolocation.getCurrentPosition = function(success, error, options) {{
+                            if (success) {{
+                                setTimeout(() => success(mockPosition), 50 + Math.random() * 100);
+                            }}
+                        }};
+                        
+                        navigator.geolocation.watchPosition = function(success, error, options) {{
+                            if (success) {{
+                                setTimeout(() => success(mockPosition), 50 + Math.random() * 100);
+                            }}
+                            return Math.floor(Math.random() * 1000);
+                        }};
+                        
+                        navigator.geolocation.clearWatch = function(id) {{}};
+                    }}
                     
                     // Mock Battery API with randomized realistic values
                     if (navigator.getBattery) {{
