@@ -3537,8 +3537,19 @@ def detect_and_click_ads(driver, browser_type, click_chance=0.6):
             pass
         return False
 
-def create_driver(browser_type):
-    """Create a Selenium WebDriver for automated browsing with anti-detection"""
+def create_driver(browser_type, max_retries=3):
+    """Create a Selenium WebDriver for automated browsing with anti-detection
+    
+    Args:
+        browser_type: The browser to create (chrome, firefox, etc.)
+        max_retries: Maximum number of retry attempts for session creation
+        
+    Returns:
+        WebDriver instance
+        
+    Raises:
+        Exception: If unable to create driver after max_retries attempts
+    """
     
     # Generate a random realistic user agent (thousands of combinations possible)
     user_agent = generate_random_user_agent()
@@ -3765,11 +3776,41 @@ def create_driver(browser_type):
     else:
         raise ValueError(f"Unsupported browser: {browser_type}")
     
+    # ============================================
+    # RETRY LOGIC FOR SESSION CREATION
+    # ============================================
     print(f'[{browser_type}] Creating browser session with stealth mode...')
-    driver = webdriver.Remote(
-        command_executor='http://selenium-hub:4444/wd/hub',
-        options=options
-    )
+    
+    last_error = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            if attempt > 1:
+                print(f'[{browser_type}] 🔄 Retry attempt {attempt}/{max_retries}...')
+                time.sleep(5 * attempt)  # Exponential backoff
+            
+            driver = webdriver.Remote(
+                command_executor='http://selenium-hub:4444/wd/hub',
+                options=options
+            )
+            
+            # If successful, break out of retry loop
+            print(f'[{browser_type}] ✅ Session created successfully')
+            break
+            
+        except Exception as e:
+            last_error = e
+            error_msg = str(e)
+            print(f'[{browser_type}] ⚠ Session creation attempt {attempt}/{max_retries} failed: {error_msg[:100]}')
+            
+            if attempt < max_retries:
+                if 'timeout' in error_msg.lower() or 'timed out' in error_msg.lower():
+                    print(f'[{browser_type}] 💤 Selenium Grid is overloaded, waiting before retry...')
+                elif 'unable to connect to renderer' in error_msg.lower():
+                    print(f'[{browser_type}] 💥 Renderer crash, waiting before retry...')
+            else:
+                # Final attempt failed
+                print(f'[{browser_type}] ❌ Failed to create session after {max_retries} attempts')
+                raise Exception(f"Could not create {browser_type} session after {max_retries} attempts: {error_msg}")
     
     # ============================================
     # CDP SETUP - Selenium Grid 4 Native Support
@@ -4201,6 +4242,33 @@ def create_driver(browser_type):
     
     return driver
 
+def is_driver_alive(driver):
+    """
+    Check if the WebDriver connection is still alive
+    Returns True if connection is good, False if connection is lost
+    """
+    try:
+        # Try a simple command to check if session is alive
+        _ = driver.current_url
+        return True
+    except Exception as e:
+        error_msg = str(e).lower()
+        # Check for all connection loss indicators
+        if any(phrase in error_msg for phrase in [
+            'tried to run command without establishing',
+            'cannot find session',
+            'invalid session id',
+            'session deleted',
+            'no such session',
+            'unable to connect to renderer',
+            'disconnected',
+            'session not created',
+            'invalid operation'
+        ]):
+            return False
+        # For other errors, assume driver might still be alive
+        return True
+
 def manage_tabs(driver, browser_type, current_browsing_tab, max_tabs=8):
     """
     Manage open tabs realistically - keep some open, close others randomly
@@ -4216,6 +4284,10 @@ def manage_tabs(driver, browser_type, current_browsing_tab, max_tabs=8):
                switched_tab is True if we switched to a different tab
     """
     try:
+        # First check if driver is alive
+        if not is_driver_alive(driver):
+            raise WebDriverException("Driver connection lost")
+        
         all_handles = driver.window_handles
         
         # If only one tab, nothing to do
@@ -4274,12 +4346,12 @@ def manage_tabs(driver, browser_type, current_browsing_tab, max_tabs=8):
         
     except Exception as e:
         error_msg = str(e)
-        print(f'  [{browser_type}] ⚠ Tab management error: {error_msg[:50]}')
+        print(f'  [{browser_type}] ⚠ Tab management error: {error_msg[:100]}')
         
         # Check if session is lost - re-raise to trigger session recreation in main loop
-        if 'Cannot find session' in error_msg or 'invalid session id' in error_msg.lower():
+        if not is_driver_alive(driver):
             print(f'  [{browser_type}] 💥 Session lost in tab management - propagating error...')
-            raise  # Re-raise to be caught by main loop's WebDriverException handler
+            raise WebDriverException("Driver connection lost")  # Re-raise with clear message
         
         # Try to recover from other errors
         try:
@@ -4595,6 +4667,12 @@ def browse():
     
     while websites_visited < max_websites_per_session:
         try:
+            # Periodic health check every 10 websites
+            if websites_visited > 0 and websites_visited % 3 == 0:
+                if not is_driver_alive(driver):
+                    print(f'[{browser_type}] ⚠ Driver health check failed at website {websites_visited}')
+                    raise WebDriverException("Driver health check failed")
+            
             start_url = random.choice(sites)
             start_domain = get_domain(start_url)
             websites_visited += 1
@@ -4908,38 +4986,66 @@ def browse():
         except TimeoutException:
             print(f'[{browser_type}] ⏱ Timeout, moving to next website')
             websites_visited += 1
+            
+            # Check if driver is still alive after timeout
+            if not is_driver_alive(driver):
+                print(f'[{browser_type}] ⚠ Driver connection lost after timeout')
+                # Fall through to WebDriverException handler below
+                raise WebDriverException("Driver connection lost after timeout")
+                
         except WebDriverException as e:
             error_msg = str(e)
-            print(f'[{browser_type}] ⚠ WebDriver error: {error_msg[:80]}')
+            print(f'[{browser_type}] ⚠ WebDriver error: {error_msg[:100]}')
+            
+            # Check if driver connection is actually lost (comprehensive check)
+            driver_is_dead = not is_driver_alive(driver)
             
             # Check if session is lost - needs recreation
-            if 'Cannot find session' in error_msg or 'invalid session id' in error_msg.lower():
-                print(f'[{browser_type}] 🔄 Session lost! Creating new session...')
+            if driver_is_dead or any(phrase in error_msg.lower() for phrase in [
+                'cannot find session',
+                'invalid session id',
+                'tried to run command without establishing',
+                'unable to connect to renderer',
+                'driver connection lost',
+                'session deleted',
+                'no such session'
+            ]):
+                print(f'[{browser_type}] 💀 Session is dead! Creating new session...')
                 try:
                     # Close CDP WebSocket if it exists
                     if hasattr(driver, '_cdp_client') and driver._cdp_client:
-                        driver._cdp_client.close()
-                    driver.quit()
+                        try:
+                            driver._cdp_client.close()
+                        except:
+                            pass
+                    try:
+                        driver.quit()
+                    except:
+                        pass
                 except:
                     pass
                 
                 # Create new driver and reset state
                 try:
+                    print(f'[{browser_type}] 🔄 Creating fresh driver session...')
                     driver = create_driver(browser_type)
                     current_browsing_tab = driver.current_window_handle
                     max_tabs = random.randint(5, 10)
                     print(f'[{browser_type}] ✅ New session created successfully')
                     print(f'[{browser_type}] 📍 New tab: {current_browsing_tab[:8]}... (max {max_tabs} tabs)')
+                    websites_visited += 1  # Count this as a visited website
                 except Exception as create_error:
-                    print(f'[{browser_type}] ❌ Failed to create new session: {str(create_error)[:80]}')
+                    print(f'[{browser_type}] ❌ Failed to create new session: {str(create_error)[:100]}')
                     print(f'[{browser_type}] Exiting to restart container...')
                     break
             else:
                 # Other WebDriver errors - try to continue
                 print(f'[{browser_type}] Trying to continue with same session...')
+                websites_visited += 1  # Still count as visited
                 time.sleep(2)
         except Exception as e:
-            print(f'[{browser_type}] ⚠ Error: {str(e)[:80]}')
+            print(f'[{browser_type}] ⚠ Error: {str(e)[:100]}')
+            websites_visited += 1  # Count this too
     
     # Session complete, close browser
     print(f'\n[{browser_type}] ✅ Session complete! Visited {websites_visited} websites.')
