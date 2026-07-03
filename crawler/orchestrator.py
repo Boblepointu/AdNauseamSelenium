@@ -33,6 +33,20 @@ BANNER = """
     """
 
 
+def _write_heartbeat():
+    """Touch the heartbeat file so the container healthcheck sees liveness.
+
+    Called both per-site and inside the per-site link traversal, since a single
+    deep site can legitimately take minutes — without the inner refresh the
+    healthcheck would flip unhealthy on a healthy-but-slow session.
+    """
+    try:
+        with open(os.getenv('HEARTBEAT_FILE', '/tmp/crawler_heartbeat'), 'w') as _hb:
+            _hb.write(str(time.time()))
+    except Exception:
+        pass
+
+
 def _stats_summary():
     """Render the cumulative process metrics as one compact line."""
     s = config.STATS
@@ -82,12 +96,8 @@ def browse():
     
     while websites_visited < max_websites_per_session:
         try:
-            # Heartbeat: signal liveness once per iteration for the healthcheck.
-            try:
-                with open(os.getenv('HEARTBEAT_FILE', '/tmp/crawler_heartbeat'), 'w') as _hb:
-                    _hb.write(str(time.time()))
-            except Exception:
-                pass
+            # Heartbeat: signal liveness once per site for the healthcheck.
+            _write_heartbeat()
 
             # Periodic health check + metrics summary every HEALTH_CHECK_INTERVAL websites
             if websites_visited > 0 and websites_visited % HEALTH_CHECK_INTERVAL == 0:
@@ -223,6 +233,9 @@ def browse():
             
             while current_depth < max_depth:
                 try:
+                    # Refresh liveness during long single-site traversals.
+                    _write_heartbeat()
+
                     # Manage tabs at each iteration (might switch tabs randomly)
                     current_browsing_tab, tab_switched = manage_tabs(driver, browser_type, current_browsing_tab, max_tabs)
                     
