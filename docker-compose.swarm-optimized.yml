@@ -4,7 +4,8 @@ version: '3.8'
 # CANONICAL SWARM STACK  (docker stack deploy -c docker-compose.swarm-optimized.yml adnauseam)
 # ----------------------------------------------------------------------------
 # This is the single source of truth for Docker Swarm deployments.
-# docker-compose.swarm.yml and docker-compose.swarm-fixed.yml are DEPRECATED.
+# (The former docker-compose.swarm.yml / docker-compose.swarm-fixed.yml variants
+#  have been removed in favor of this file.)
 #
 # All tunables are environment variables with sane defaults (see .env.example).
 # Copy .env.example to .env and adjust before deploying.

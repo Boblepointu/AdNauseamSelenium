@@ -1121,22 +1121,17 @@ def generate_random_user_agent(browser_type):
     
     # MASSIVELY EXPANDED Platform/OS options - Desktop, Mobile, Tablet, Legacy
     platforms = [
-        # Modern Windows (heavily weighted)
+        # Modern Windows -- Windows 10 AND 11 both report "Windows NT 10.0".
+        # There is no "Windows NT 11.0". No "rv:" token here: that is a Gecko field
+        # added only when building a Firefox UA, never inside a Chromium UA string.
         "Windows NT 10.0; Win64; x64",
         "Windows NT 10.0; Win64; x64",
         "Windows NT 10.0; Win64; x64",
-        "Windows NT 11.0; Win64; x64",
-        "Windows NT 11.0; Win64; x64",
+        "Windows NT 10.0; Win64; x64",
+        "Windows NT 10.0; Win64; x64",
         "Windows NT 10.0; WOW64",
-        "Windows NT 10.0; Win64; x64; rv:109.0",
-        "Windows NT 10.0; Win64; x64; rv:115.0",
-        "Windows NT 6.1; Win64; x64",  # Windows 7
+        "Windows NT 6.1; Win64; x64",  # Windows 7 (small remaining share)
         "Windows NT 6.3; Win64; x64",  # Windows 8.1
-        "Windows NT 6.2; Win64; x64",  # Windows 8
-        "Windows NT 6.1; WOW64",  # Windows 7 32-bit on 64-bit
-        "Windows NT 6.3; WOW64",
-        "Windows NT 5.1",  # Windows XP
-        "Windows NT 6.0",  # Windows Vista
         "Windows NT 10.0; ARM64",
         
         # macOS (massively expanded)
@@ -1180,7 +1175,7 @@ def generate_random_user_agent(browser_type):
         "X11; Debian; Linux x86_64",
         "X11; Arch Linux; Linux x86_64",
         "X11; Manjaro; Linux x86_64",
-        "X11; Linux x86_64; rv:109.0",
+        "X11; Linux x86_64",
         "X11; Linux i686",
         "X11; CrOS x86_64 14541.0.0",  # ChromeOS
         "X11; CrOS x86_64 15117.0.0",
@@ -1319,40 +1314,22 @@ def generate_random_user_agent(browser_type):
         "617.1.15", "617.1.16", "617.1.17", "617.1.18",
     ]
     
-    # MASSIVELY EXPANDED Chrome versions (major versions and builds)
-    chrome_major_versions = [
-        109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130
-    ]
-    chrome_builds = [
-        "0.0.0", "0.0.0", "0.0.0",  # Common default
-        "0.5414.74", "0.5414.87", "0.5414.119", "0.5414.129",
-        "0.5481.77", "0.5481.100", "0.5481.177", "0.5481.192",
-        "0.5615.49", "0.5615.86", "0.5615.121", "0.5615.137", "0.5615.165",
-        "0.5735.90", "0.5735.106", "0.5735.134", "0.5735.198", "0.5735.248",
-        "0.5845.96", "0.5845.110", "0.5845.140", "0.5845.179", "0.5845.228",
-        "0.5993.70", "0.5993.88", "0.5993.117", "0.5993.159",
-        "0.6045.105", "0.6045.124", "0.6045.159", "0.6045.199",
-        "0.6099.56", "0.6099.71", "0.6099.109", "0.6099.129", "0.6099.216",
-        "0.6100.42", "0.6100.67", "0.6100.88", "0.6100.99",
-        "0.6261.57", "0.6261.69", "0.6261.94", "0.6261.111", "0.6261.128",
-        "0.6312.58", "0.6312.86", "0.6312.105", "0.6312.122", "0.6312.145",
-        "0.6367.60", "0.6367.78", "0.6367.91", "0.6367.118", "0.6367.155", "0.6367.201",
-        "0.6478.61", "0.6478.114", "0.6478.126", "0.6478.182",
-        "0.6563.64", "0.6563.110", "0.6563.156", "0.6563.187",
-        "0.6613.84", "0.6613.119", "0.6613.137", "0.6613.162",
-        "0.6723.58", "0.6723.91", "0.6723.116", "0.6723.132",
-        "0.6820.51", "0.6820.82", "0.6820.106", "0.6820.128",
+    # Coherent (Chrome major, build-base) pairs. Each build-base actually belongs
+    # to that major release, so we never emit an impossible major.build combination.
+    # Refreshed to recent releases to avoid an obviously-stale (low-trust) UA.
+    chrome_version_pairs = [
+        (120, 6099), (121, 6167), (122, 6261), (123, 6312), (124, 6367),
+        (125, 6422), (126, 6478), (127, 6533), (128, 6613), (129, 6668),
+        (130, 6723), (131, 6778), (132, 6834), (133, 6943),
     ]
     
     # MASSIVELY EXPANDED Firefox versions
     firefox_versions = [
-        110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128
+        115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135
     ]
     
-    # MASSIVELY EXPANDED Edge versions
-    edge_versions = [
-        109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125
-    ]
+    # Edge major tracks the Chrome major it is built on, so it is derived from the
+    # chosen chrome_version_pairs entry below rather than picked independently.
     
     # Normalize to the families we actually launch. The pool is
     # chrome / chromium / firefox / edge — Safari/Opera/IE are never launched
@@ -1376,23 +1353,21 @@ def generate_random_user_agent(browser_type):
     elif bt == 'edge':
         # Edge is Chromium-based (AppleWebKit/537.36) with an Edg/ token, Windows-first.
         webkit = "537.36"
-        edge_ver = random.choice(edge_versions)
-        chrome_major = random.choice(chrome_major_versions)
-        chrome_build = random.choice(chrome_builds)
-        chrome_version = f"{chrome_major}.{chrome_build}"
+        chrome_major, chrome_base = random.choice(chrome_version_pairs)
+        chrome_version = f"{chrome_major}.0.{chrome_base}.{random.randint(50, 240)}"
+        edge_ver = chrome_major  # Edge major tracks the Chrome major it is built on
         win_platforms = [p for p in platforms if 'Windows' in p]
         if win_platforms:
             platform = random.choice(win_platforms)
         ua = (f"Mozilla/5.0 ({platform}) AppleWebKit/{webkit} (KHTML, like Gecko) "
               f"Chrome/{chrome_version} Safari/{webkit} "
-              f"Edg/{edge_ver}.0.{random.randint(1000, 9999)}.{random.randint(10, 99)}")
+              f"Edg/{edge_ver}.0.{random.randint(1000, 3999)}.{random.randint(10, 99)}")
 
     else:
         # chrome / chromium -> Chromium UA (AppleWebKit/537.36 + Chrome token).
         webkit = "537.36"
-        chrome_major = random.choice(chrome_major_versions)
-        chrome_build = random.choice(chrome_builds)
-        chrome_version = f"{chrome_major}.{chrome_build}"
+        chrome_major, chrome_base = random.choice(chrome_version_pairs)
+        chrome_version = f"{chrome_major}.0.{chrome_base}.{random.randint(50, 240)}"
         if 'iPhone' in platform or 'iPad' in platform:
             # Chrome on iOS is CriOS on the WebKit engine, not the Chrome token.
             ua = (f"Mozilla/5.0 ({platform}) AppleWebKit/605.1.15 (KHTML, like Gecko) "
