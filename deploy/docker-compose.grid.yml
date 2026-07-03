@@ -83,11 +83,30 @@ services:
       SELENIUM_HUB: "selenium-hub:4444"
       LOG_LEVEL: "INFO"
       PERSONA_ROTATION_STRATEGY: "weighted"
+      WEBDRIVER_COMMAND_TIMEOUT: "120"
+    labels:
+      autoheal: "true"   # autoheal restarts this container if it goes unhealthy
     mem_limit: 768m
     logging: *logging
     restart: unless-stopped
     deploy:
       replicas: 5
+
+  # restart:unless-stopped does NOT restart an *unhealthy* container (only on exit).
+  # The crawler's heartbeat healthcheck flips unhealthy if a browse loop wedges, so
+  # autoheal watches for that and restarts it. Scoped by the `autoheal=true` label,
+  # so it never touches other containers on the host.
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: adnauseam-autoheal
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: autoheal
+      AUTOHEAL_INTERVAL: "30"
+      AUTOHEAL_START_PERIOD: "120"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    logging: *logging
+    restart: unless-stopped
 
 # On a host with free default pools, Docker auto-assigns the network. If you hit
 # "could not find an available, non-overlapping IPv4 address pool", pin one:

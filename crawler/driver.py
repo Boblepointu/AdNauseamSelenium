@@ -699,7 +699,17 @@ def create_driver(browser_type, max_retries=3):
                 command_executor=f"http://{os.getenv('SELENIUM_HUB', 'selenium-hub:4444')}/wd/hub",
                 options=options
             )
-            
+
+            # Bound EVERY remote command (not just the health probe) so a wedged
+            # node/session/page can never hang the browse loop indefinitely. The
+            # ceiling is well above page-load (30s) so legitimate slow navigations
+            # still complete; a true hang raises a timeout that recovery handles.
+            try:
+                driver.command_executor._client_config.timeout = int(
+                    os.getenv('WEBDRIVER_COMMAND_TIMEOUT', '120'))
+            except Exception:
+                pass
+
             # If successful, break out of retry loop
             logger.info(f'[{browser_type}] ✅ Session created successfully')
             break
@@ -818,6 +828,7 @@ def create_driver(browser_type, max_retries=3):
     
     try:
         driver.set_page_load_timeout(30)
+        driver.set_script_timeout(30)
         driver.set_window_size(screen["width"], screen["height"])
     except Exception:
         # If we can't finish configuring the session, don't leave a zombie
