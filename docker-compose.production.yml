@@ -1,7 +1,14 @@
 version: '3.8'
 
-# Production Docker Compose using GitHub Container Registry images
-# This file demonstrates how to use the pre-built images from GHCR
+# ============================================================================
+# PRODUCTION (single-host, non-Swarm) stack using pre-built GHCR images.
+# ----------------------------------------------------------------------------
+# For multi-node Docker Swarm deployments use the canonical stack instead:
+#   docker-compose.swarm-optimized.yml
+#
+# The browser-automation service is a SINGLE, horizontally scalable service so
+# you can run:  docker compose -f docker-compose.production.yml up -d --scale browser-automation=10
+# ============================================================================
 
 volumes:
   personas-data:
@@ -11,8 +18,11 @@ services:
   # Selenium Hub
   selenium-hub:
     image: selenium/hub:latest
-    ports:
-      - "4444:4444"
+    # SECURITY: the hub port (4444) is intentionally NOT published to the host,
+    # so the Selenium grid is not exposed. The browser nodes and the automation
+    # containers reach it over the internal compose network as "selenium-hub:4444".
+    # If you need the grid UI from the host, put it behind an authenticated
+    # reverse proxy rather than publishing 4444 directly.
     environment:
       - SE_SESSION_REQUEST_TIMEOUT=300
       - SE_NODE_SESSION_TIMEOUT=300
@@ -89,80 +99,24 @@ services:
       - SE_ENABLE_TRACING=false
     shm_size: 2gb
 
-  # Browser Automation Instances (using GHCR image)
-  browser-automation-1:
+  # Browser Automation (using GHCR image)
+  # SCALABLE: this is a single service with no container_name and no host ports,
+  # so it can be scaled to N replicas:
+  #   docker compose -f docker-compose.production.yml up -d --scale browser-automation=10
+  browser-automation:
     image: ghcr.io/boblepointu/adnauseamselenium:latest
     depends_on:
       - selenium-hub
       - chrome-latest
-      - firefox-latest
-    volumes:
-      - personas-data:/app/data/personas
-    environment:
-      - SELENIUM_HUB=selenium-hub:4444
-      - PERSONA_ROTATION_STRATEGY=weighted
-      - PERSONA_MAX_AGE_DAYS=30
-      - PERSONA_MAX_USES=100
-    restart: unless-stopped
-
-  browser-automation-2:
-    image: ghcr.io/boblepointu/adnauseamselenium:latest
-    depends_on:
-      - selenium-hub
       - chrome-120
-      - firefox-120
-    volumes:
-      - personas-data:/app/data/personas
-    environment:
-      - SELENIUM_HUB=selenium-hub:4444
-      - PERSONA_ROTATION_STRATEGY=weighted
-      - PERSONA_MAX_AGE_DAYS=30
-      - PERSONA_MAX_USES=100
-    restart: unless-stopped
-
-  browser-automation-3:
-    image: ghcr.io/boblepointu/adnauseamselenium:latest
-    depends_on:
-      - selenium-hub
-      - edge-latest
-      - chrome-latest
-    volumes:
-      - personas-data:/app/data/personas
-    environment:
-      - SELENIUM_HUB=selenium-hub:4444
-      - PERSONA_ROTATION_STRATEGY=random
-      - PERSONA_MAX_AGE_DAYS=30
-      - PERSONA_MAX_USES=100
-    restart: unless-stopped
-
-  browser-automation-4:
-    image: ghcr.io/boblepointu/adnauseamselenium:latest
-    depends_on:
-      - selenium-hub
       - firefox-latest
-      - edge-latest
-    volumes:
-      - personas-data:/app/data/personas
-    environment:
-      - SELENIUM_HUB=selenium-hub:4444
-      - PERSONA_ROTATION_STRATEGY=weighted
-      - PERSONA_MAX_AGE_DAYS=30
-      - PERSONA_MAX_USES=100
-    restart: unless-stopped
-
-  browser-automation-5:
-    image: ghcr.io/boblepointu/adnauseamselenium:latest
-    depends_on:
-      - selenium-hub
-      - chrome-120
       - firefox-120
       - edge-latest
     volumes:
       - personas-data:/app/data/personas
     environment:
-      - SELENIUM_HUB=selenium-hub:4444
-      - PERSONA_ROTATION_STRATEGY=round-robin
-      - PERSONA_MAX_AGE_DAYS=30
-      - PERSONA_MAX_USES=100
+      - SELENIUM_HUB=${SELENIUM_HUB:-selenium-hub:4444}
+      - PERSONA_ROTATION_STRATEGY=${PERSONA_ROTATION_STRATEGY:-weighted}
+      - PERSONA_MAX_AGE_DAYS=${PERSONA_MAX_AGE_DAYS:-30}
+      - PERSONA_MAX_USES=${PERSONA_MAX_USES:-100}
     restart: unless-stopped
-

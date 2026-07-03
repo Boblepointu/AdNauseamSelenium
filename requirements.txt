@@ -2,5 +2,7 @@ selenium==4.15.2
 numpy==1.26.2
 Faker==20.1.0
 websocket-client==1.7.0
-requests==2.31.0
+# requests bumped to >=2.32.4 to address CVE-2024-35195 (verify=False persistence
+# across a Session) and CVE-2024-47081 (.netrc credential leak to arbitrary hosts).
+requests>=2.32.4
 

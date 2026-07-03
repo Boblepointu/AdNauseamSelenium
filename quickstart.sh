@@ -2,7 +2,7 @@
 # Quick start script for AdNauseam Browser Automation
 # This script helps you get started quickly with the project
 
-set -e
+set -euo pipefail
 
 # Colors
 GREEN='\033[0;32m'
@@ -52,7 +52,7 @@ echo "  4) Exit"
 echo ""
 read -p "Enter your choice [1-4]: " choice
 
-case $choice in
+case "$choice" in
     1)
         print_header "Using Pre-built Images from GHCR"
         
@@ -71,7 +71,7 @@ case $choice in
         print_success "Image pulled successfully"
         
         print_info "Starting production stack..."
-        docker-compose -f docker-compose.production.yml up -d
+        docker compose -f docker-compose.production.yml up -d
         
         print_success "Stack started!"
         echo ""
@@ -80,10 +80,10 @@ case $choice in
         echo "  • 5 Browser automation instances"
         echo ""
         print_info "View logs with:"
-        echo "  docker-compose -f docker-compose.production.yml logs -f"
+        echo "  docker compose -f docker-compose.production.yml logs -f"
         echo ""
         print_info "Stop with:"
-        echo "  docker-compose -f docker-compose.production.yml down"
+        echo "  docker compose -f docker-compose.production.yml down"
         ;;
         
     2)
@@ -104,7 +104,7 @@ case $choice in
         print_success "Image built successfully"
         
         print_info "Starting minimal stack..."
-        # Create a minimal docker-compose for testing
+        # Create a minimal docker compose for testing
         cat > docker-compose.minimal.yml <<EOF
 version: '3.8'
 
@@ -141,7 +141,7 @@ services:
       - ./personas:/app/data/personas
 EOF
         
-        docker-compose -f docker-compose.minimal.yml up -d
+        docker compose -f docker-compose.minimal.yml up -d
         
         print_success "Stack started!"
         echo ""
@@ -150,10 +150,10 @@ EOF
         echo "  • 1 Browser automation instance"
         echo ""
         print_info "View logs with:"
-        echo "  docker-compose -f docker-compose.minimal.yml logs -f"
+        echo "  docker compose -f docker-compose.minimal.yml logs -f"
         echo ""
         print_info "Stop with:"
-        echo "  docker-compose -f docker-compose.minimal.yml down"
+        echo "  docker compose -f docker-compose.minimal.yml down"
         ;;
         
     3)
@@ -175,7 +175,7 @@ EOF
         print_success "Docker found"
         
         print_info "Starting full development stack..."
-        docker-compose up -d
+        docker compose up -d
         
         print_success "Stack started!"
         echo ""
@@ -191,10 +191,10 @@ EOF
         echo "  docker stats"
         echo ""
         print_info "View logs with:"
-        echo "  docker-compose logs -f"
+        echo "  docker compose logs -f"
         echo ""
         print_info "Stop with:"
-        echo "  docker-compose down"
+        echo "  docker compose down"
         ;;
         
     4)
@@ -215,7 +215,7 @@ print_info "Next steps:"
 echo "  • Read the documentation: DOCKER.md"
 echo "  • Customize configuration: Edit environment variables"
 echo "  • Monitor personas: Check /app/data/personas/personas.json"
-echo "  • Scale instances: docker-compose up -d --scale browser-automation=N"
+echo "  • Scale instances: docker compose up -d --scale browser-automation=N"
 echo ""
 print_success "Happy automating! 🚀"
 

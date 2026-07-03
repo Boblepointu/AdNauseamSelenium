@@ -279,14 +279,18 @@ docker buildx build --platform linux/amd64,linux/arm64 -t my-automation:multi .
 
 ```bash
 # Use pre-built images from GHCR
-docker-compose -f docker-compose.production.yml up -d
+docker compose -f docker-compose.production.yml up -d
 
-# Scale automation instances
-docker-compose -f docker-compose.production.yml up -d --scale browser-automation=10
+# Scale automation instances.
+# NOTE: docker-compose.production.yml now defines a SINGLE scalable
+# `browser-automation` service (no container_name / no host ports), so
+# --scale works. (Previously it defined per-instance services
+# browser-automation-1..5, and this command silently did nothing.)
+docker compose -f docker-compose.production.yml up -d --scale browser-automation=10
 
 # Update to latest image
-docker-compose -f docker-compose.production.yml pull
-docker-compose -f docker-compose.production.yml up -d
+docker compose -f docker-compose.production.yml pull
+docker compose -f docker-compose.production.yml up -d
 ```
 
 ### Kubernetes

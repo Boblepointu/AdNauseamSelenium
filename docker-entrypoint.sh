@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 # Docker Entrypoint for Browser Automation
-set -e
+set -euo pipefail
 
 # Colors for output
 GREEN='\033[0;32m'

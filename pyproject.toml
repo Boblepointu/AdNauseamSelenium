@@ -1,0 +1,38 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+# Legacy code base: keep the scan wide but the ruleset pragmatic so the linter
+# runs clean instead of drowning the signal in style noise.
+extend-exclude = ["doc"]
+
+[tool.ruff.lint]
+# Small, high-signal rule set. E/F catch real errors, a handful of others catch
+# genuine bugs without flooding on pre-existing legacy style.
+select = ["E", "F", "W"]
+ignore = [
+    "E501",  # line too long — legacy code has many long strings/UAs
+    "E402",  # module-level import not at top — some modules guard imports
+    "E741",  # ambiguous variable name (l, O, I) — present in legacy helpers
+    "E722",  # bare except — used deliberately in best-effort browser cleanup
+    "F401",  # unused import — re-exports / lazy wiring across the package
+    "F841",  # unused local variable — legacy bookkeeping
+    "F541",  # f-string without placeholders — harmless legacy usage
+    "W291",  # trailing whitespace — pervasive in legacy docstrings
+    "W293",  # blank line contains whitespace — pervasive in legacy docstrings
+]
+
+[tool.ruff.format]
+quote-style = "preserve"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+# Lenient: informational only, not required to pass yet.
+check_untyped_defs = false
+disallow_untyped_defs = false
+warn_return_any = false
+warn_unused_ignores = false

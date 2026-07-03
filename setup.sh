@@ -2,7 +2,7 @@
 # Browser Automation Setup Script
 # Downloads crawl.py and runs browser automation
 
-set -e  # Exit on error
+set -euo pipefail  # Exit on error, unset vars, and pipeline failures
 
 # Configuration
 GITHUB_REPO="Boblepointu/AdNauseamSelenium"

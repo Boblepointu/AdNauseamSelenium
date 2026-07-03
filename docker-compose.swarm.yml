@@ -1,8 +1,14 @@
 version: '3.8'
 
-# Docker Swarm Stack for AdNauseam Browser Automation
-# Maintains browser version diversity for maximum TLS/HTTP/CSS fingerprint variation
-# Uses pre-built images from GitHub Container Registry
+# ============================================================================
+# DEPRECATED -- DO NOT USE FOR NEW DEPLOYMENTS
+# ----------------------------------------------------------------------------
+# This file is kept only for historical reference and will be removed.
+# The canonical Swarm stack is: docker-compose.swarm-optimized.yml
+# (it is parameterized via .env.example, mounts /dev/shm tmpfs correctly,
+#  and does not expose the Selenium grid on host ports).
+# Please migrate to docker-compose.swarm-optimized.yml.
+# ============================================================================
 
 services:
   # ============================================
@@ -10,19 +16,8 @@ services:
   # ============================================
   selenium-hub:
     image: selenium/hub:latest
-    ports:
-      - target: 4444
-        published: 4444
-        protocol: tcp
-        mode: ingress
-      - target: 4442
-        published: 4442
-        protocol: tcp
-        mode: ingress
-      - target: 4443
-        published: 4443
-        protocol: tcp
-        mode: ingress
+    # SECURITY: raw host port publishes for the Selenium grid removed (4444/4442/4443).
+    # Grid stays on the internal overlay; operator access is via authenticated Traefik only.
     networks:
       - traefik-public
       - selenium-network
@@ -44,7 +39,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 15s
@@ -57,10 +52,10 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.swarm.network=traefik-public"
-        - "traefik.http.routers.selenium.rule=Host(`selenium.service.lotusia.org`)"
+        - "traefik.http.routers.selenium.rule=Host(`${SELENIUM_HOST:-selenium.local}`)"
         - "traefik.http.routers.selenium.entrypoints=web"
         - "traefik.http.routers.selenium.middlewares=selenium-redirect"
-        - "traefik.http.routers.selenium-secure.rule=Host(`selenium.service.lotusia.org`)"
+        - "traefik.http.routers.selenium-secure.rule=Host(`${SELENIUM_HOST:-selenium.local}`)"
         - "traefik.http.routers.selenium-secure.entrypoints=websecure"
         - "traefik.http.routers.selenium-secure.tls=true"
         - "traefik.http.routers.selenium-secure.tls.certresolver=letsencrypt"
@@ -90,7 +85,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -116,7 +111,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -142,7 +137,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -168,7 +163,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -194,7 +189,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -220,7 +215,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -246,7 +241,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -272,7 +267,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -301,7 +296,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -327,7 +322,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -353,7 +348,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -379,7 +374,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -405,7 +400,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -431,7 +426,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -457,7 +452,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -483,7 +478,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -512,7 +507,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -538,7 +533,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -564,7 +559,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -590,7 +585,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -616,7 +611,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -642,7 +637,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -668,7 +663,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -697,7 +692,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -730,7 +725,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 15s

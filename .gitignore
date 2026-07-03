@@ -1,1 +1,32 @@
-__pycache__/crawl.cpython-312.pyc
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Test / lint caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Runtime data
+data/personas/
+*.log
+
+# Local env / secrets (keep .env.example tracked)
+.env
+!.env.example
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store

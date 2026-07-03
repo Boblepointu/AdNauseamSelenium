@@ -1,8 +1,19 @@
 version: '3.8'
 
-# Docker Swarm Stack - Optimized for 24GB RAM / 4 CPU Node
-# All services pinned to testnetslaveportainer
-# Reduced memory footprint while maintaining browser diversity
+# ============================================================================
+# CANONICAL SWARM STACK  (docker stack deploy -c docker-compose.swarm-optimized.yml adnauseam)
+# ----------------------------------------------------------------------------
+# This is the single source of truth for Docker Swarm deployments.
+# docker-compose.swarm.yml and docker-compose.swarm-fixed.yml are DEPRECATED.
+#
+# All tunables are environment variables with sane defaults (see .env.example).
+# Copy .env.example to .env and adjust before deploying.
+#
+# NODE PLACEMENT: services are pinned to nodes carrying the label
+#   role=${BROWSER_NODE_ROLE:-browser}
+# Label your worker node(s) once with:
+#   docker node update --label-add role=browser <node-name>
+# ============================================================================
 
 services:
   # ============================================
@@ -10,19 +21,10 @@ services:
   # ============================================
   selenium-hub:
     image: selenium/hub:latest
-    ports:
-      - target: 4444
-        published: 4444
-        protocol: tcp
-        mode: ingress
-      - target: 4442
-        published: 4442
-        protocol: tcp
-        mode: ingress
-      - target: 4443
-        published: 4443
-        protocol: tcp
-        mode: ingress
+    # SECURITY: raw host port publishes for the Selenium grid removed.
+    # 4444 (hub API) and 4442/4443 (event bus) must NOT be exposed on the host.
+    # The hub stays reachable to browser nodes over the internal 'selenium-network'
+    # overlay, and to operators only through the authenticated Traefik router below.
     networks:
       - traefik-public
       - selenium-network
@@ -41,26 +43,26 @@ services:
       retries: 5
       start_period: 60s
     deploy:
-      replicas: 1
+      replicas: ${SELENIUM_HUB_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 15s
         max_attempts: 5
       resources:
         limits:
-          memory: 3G
+          memory: ${SELENIUM_HUB_MEM_LIMIT:-3G}
         reservations:
-          memory: 2G
+          memory: ${SELENIUM_HUB_MEM_RESERVATION:-2G}
       labels:
         - "traefik.enable=true"
         - "traefik.swarm.network=traefik-public"
-        - "traefik.http.routers.selenium.rule=Host(`selenium.service.lotusia.org`)"
+        - "traefik.http.routers.selenium.rule=Host(`${SELENIUM_HOST:-selenium.local}`)"
         - "traefik.http.routers.selenium.entrypoints=web"
         - "traefik.http.routers.selenium.middlewares=selenium-redirect"
-        - "traefik.http.routers.selenium-secure.rule=Host(`selenium.service.lotusia.org`)"
+        - "traefik.http.routers.selenium-secure.rule=Host(`${SELENIUM_HOST:-selenium.local}`)"
         - "traefik.http.routers.selenium-secure.entrypoints=websecure"
         - "traefik.http.routers.selenium-secure.tls=true"
         - "traefik.http.routers.selenium-secure.tls.certresolver=letsencrypt"
@@ -77,11 +79,6 @@ services:
     image: selenium/node-chrome:95.0
     networks:
       - selenium-network
-    volumes:
-      - type: tmpfs
-        target: /home/seluser/Downloads
-        tmpfs:
-          size: 52428800
     environment:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
@@ -91,20 +88,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   chrome-110:
     image: selenium/node-chrome:110.0
@@ -119,20 +122,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   chrome-120:
     image: selenium/node-chrome:120.0
@@ -147,20 +156,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   chrome-125:
     image: selenium/node-chrome:125.0
@@ -175,20 +190,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   chrome-130:
     image: selenium/node-chrome:130.0
@@ -203,20 +224,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   chrome-latest:
     image: selenium/node-chrome:latest
@@ -231,20 +258,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   chrome-beta:
     image: selenium/node-chrome:beta
@@ -259,20 +292,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   chrome-dev:
     image: selenium/node-chrome:dev
@@ -287,20 +326,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   # ============================================
   # FIREFOX NODES - 1 replica each, 768MB RAM
@@ -319,20 +364,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   firefox-110:
     image: selenium/node-firefox:110.0
@@ -347,20 +398,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   firefox-120:
     image: selenium/node-firefox:120.0
@@ -375,20 +432,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   firefox-130:
     image: selenium/node-firefox:130.0
@@ -403,20 +466,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   firefox-140:
     image: selenium/node-firefox:140.0
@@ -431,20 +500,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   firefox-latest:
     image: selenium/node-firefox:latest
@@ -459,20 +534,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   firefox-beta:
     image: selenium/node-firefox:beta
@@ -487,20 +568,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   firefox-dev:
     image: selenium/node-firefox:dev
@@ -515,20 +602,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   # ============================================
   # EDGE NODES - 1 replica each, 768MB RAM
@@ -547,20 +640,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   edge-120:
     image: selenium/node-edge:120.0
@@ -575,20 +674,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   edge-125:
     image: selenium/node-edge:125.0
@@ -603,20 +708,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   edge-130:
     image: selenium/node-edge:130.0
@@ -631,20 +742,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   edge-latest:
     image: selenium/node-edge:latest
@@ -659,20 +776,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   edge-beta:
     image: selenium/node-edge:beta
@@ -687,20 +810,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   edge-dev:
     image: selenium/node-edge:dev
@@ -715,20 +844,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   # ============================================
   # CHROMIUM NODE - 768MB RAM
@@ -746,20 +881,26 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_OTEL_TRACES_EXPORTER=none
       - SE_ENABLE_TRACING=false
-    shm_size: 1gb
+    # NOTE: service-level shm_size is IGNORED by 'docker stack deploy'.
+    # Mount a 2GB tmpfs at /dev/shm so Chrome/Firefox don't crash on large pages.
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 2147483648
     deploy:
-      replicas: 1
+      replicas: ${NODE_REPLICAS:-1}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 10s
       resources:
         limits:
-          memory: 1G
+          memory: ${NODE_MEM_LIMIT:-1G}
         reservations:
-          memory: 768M
+          memory: ${NODE_MEM_RESERVATION:-768M}
 
   # ============================================
   # BROWSER AUTOMATION - 2 replicas, 384MB each
@@ -776,25 +917,25 @@ services:
         tmpfs:
           size: 104857600
     environment:
-      - SELENIUM_HUB=selenium-hub:4444
+      - SELENIUM_HUB=${SELENIUM_HUB:-selenium-hub:4444}
       - PERSONA_ROTATION_STRATEGY=weighted
       - PERSONA_MAX_AGE_DAYS=30
       - PERSONA_MAX_USES=100
     deploy:
-      replicas: 2
+      replicas: ${BROWSER_AUTOMATION_REPLICAS:-2}
       placement:
         constraints:
-          - node.hostname == testnetslaveportainer
+          - node.labels.role == ${BROWSER_NODE_ROLE:-browser}
       restart_policy:
         condition: on-failure
         delay: 15s
         max_attempts: 5
       resources:
         limits:
-          memory: 512M
+          memory: ${BROWSER_AUTOMATION_MEM_LIMIT:-512M}
           cpus: '0.5'
         reservations:
-          memory: 384M
+          memory: ${BROWSER_AUTOMATION_MEM_RESERVATION:-384M}
       update_config:
         parallelism: 1
         delay: 15s

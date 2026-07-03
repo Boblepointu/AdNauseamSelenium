@@ -14,7 +14,8 @@ ENV PYTHONUNBUFFERED=1 \
     PERSONA_ROTATION_STRATEGY=weighted \
     PERSONA_MAX_AGE_DAYS=30 \
     PERSONA_MAX_USES=100 \
-    SELENIUM_HUB=selenium-hub:4444
+    SELENIUM_HUB=selenium-hub:4444 \
+    HEARTBEAT_FILE=/tmp/crawler_heartbeat
 
 # Install system dependencies
 RUN apt-get update -qq && \
@@ -34,19 +35,31 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application files
 COPY crawl.py /app/crawl.py
 COPY persona_manager.py /app/persona_manager.py
+COPY crawler/ /app/crawler/
 COPY websites.txt /app/websites.txt
 
-# Create persona data directory
+# Create a non-root user to run the crawler
+RUN useradd -m -u 10001 crawler
+
+# Create persona data directory (owned by the non-root user, safe 755 perms)
 RUN mkdir -p /app/data/personas && \
-    chmod 777 /app/data/personas
+    chmod 755 /app/data/personas
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
-# Health check
-HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://${SELENIUM_HUB}/status || exit 1
+# Give the non-root user ownership of the app and data directories
+RUN chown -R crawler:crawler /app /app/data
+
+# Health check: verify the crawler heartbeat is fresh (updated within 180s)
+# instead of probing the Selenium hub, so the container is marked unhealthy
+# if the crawl loop stalls.
+HEALTHCHECK --interval=60s --timeout=10s --start-period=60s --retries=3 \
+    CMD test $(( $(date +%s) - $(stat -c %Y "$HEARTBEAT_FILE" 2>/dev/null || echo 0) )) -lt 180 || exit 1
+
+# Run as the non-root user
+USER crawler
 
 # Expose no ports (this is a client, not a server)
 

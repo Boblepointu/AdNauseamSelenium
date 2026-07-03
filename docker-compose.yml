@@ -1,3 +1,10 @@
+# ============================================================================
+# CANONICAL LOCAL / DEVELOPMENT stack (docker compose up).
+# Full browser-version diversity for local testing. For production use
+# docker-compose.production.yml; for Docker Swarm use docker-compose.swarm-optimized.yml.
+# NOTE: port 4444 is published to localhost for local grid access during dev only.
+# ============================================================================
+
 # Common environment for all browser nodes (disable telemetry spam)
 x-node-common: &node-common-env
   SE_OTEL_TRACES_EXPORTER: none

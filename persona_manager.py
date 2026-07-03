@@ -7,6 +7,7 @@ Stores personas in Docker volume for persistence across container restarts
 import json
 import os
 import random
+import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -25,7 +26,10 @@ class PersonaManager:
             personas_dir: Directory to store persona JSON files (Docker volume mount)
         """
         self.personas_dir = Path(personas_dir)
-        self.personas_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            self.personas_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            print(f'⚠️  Could not create personas dir {self.personas_dir}: {e}')
         self.personas_file = self.personas_dir / 'personas.json'
         self.personas = self._load_personas()
         
@@ -41,10 +45,27 @@ class PersonaManager:
         return {'personas': [], 'metadata': {'total_created': 0}}
     
     def _save_personas(self):
-        """Save personas to disk"""
+        """Save personas to disk atomically (temp file + os.replace)"""
+        tmp_path = None
         try:
-            with open(self.personas_file, 'w', encoding='utf-8') as f:
-                json.dump(self.personas, f, indent=2, ensure_ascii=False)
+            # Write to a temp file in the same directory, then atomically replace
+            # the target. This ensures a crash mid-write cannot corrupt the store.
+            fd, tmp_path = tempfile.mkstemp(
+                prefix='.personas_', suffix='.tmp', dir=str(self.personas_dir)
+            )
+            try:
+                with os.fdopen(fd, 'w', encoding='utf-8') as f:
+                    json.dump(self.personas, f, indent=2, ensure_ascii=False)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp_path, self.personas_file)
+                tmp_path = None
+            finally:
+                if tmp_path is not None and os.path.exists(tmp_path):
+                    try:
+                        os.remove(tmp_path)
+                    except OSError:
+                        pass
         except Exception as e:
             print(f'⚠️  Failed to save personas: {e}')
     
@@ -70,8 +91,23 @@ class PersonaManager:
         
         self.personas['personas'].append(persona)
         self.personas['metadata']['total_created'] += 1
+
+        # Bound growth: cap the number of stored personas so personas.json
+        # cannot grow unbounded even if clean_old_personas is never called.
+        try:
+            max_stored = int(os.getenv('PERSONA_MAX_STORED', '500'))
+        except (TypeError, ValueError):
+            max_stored = 500
+        if max_stored > 0 and len(self.personas['personas']) > max_stored:
+            before = len(self.personas['personas'])
+            # Keep the most-recently-used personas
+            self.personas['personas'].sort(key=lambda p: p['last_used'], reverse=True)
+            self.personas['personas'] = self.personas['personas'][:max_stored]
+            pruned = before - len(self.personas['personas'])
+            print(f'🧹 Pruned {pruned} personas to cap of {max_stored} (most-recently-used kept)')
+
         self._save_personas()
-        
+
         print(f'✅ Created persona: {persona_id}')
         return persona_id
     
