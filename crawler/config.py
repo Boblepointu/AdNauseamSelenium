@@ -8,10 +8,24 @@ reassignment is visible to every importer.
 """
 
 import os
+import time
 import logging
 from collections import Counter
 
 logger = logging.getLogger('crawler.config')
+
+
+def touch_heartbeat():
+    """Write the liveness heartbeat file. Called from the browse loop AND from
+    every recovery step (probe, session recreation, driver retries) so that a
+    slow-but-progressing recovery is never mistaken for a hang by the container
+    healthcheck / autoheal.
+    """
+    try:
+        with open(os.getenv('HEARTBEAT_FILE', '/tmp/crawler_heartbeat'), 'w') as _hb:
+            _hb.write(str(time.time()))
+    except Exception:
+        pass
 
 # Cumulative runtime metrics, shared across modules. Incremented in place
 # (e.g. ``config.STATS['ads_clicked'] += 1``) and periodically summarized by

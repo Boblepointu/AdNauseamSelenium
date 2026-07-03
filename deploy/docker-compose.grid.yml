@@ -88,7 +88,7 @@ services:
       SELENIUM_HUB: "selenium-hub:4444"
       LOG_LEVEL: "INFO"
       PERSONA_ROTATION_STRATEGY: "weighted"
-      WEBDRIVER_COMMAND_TIMEOUT: "120"
+      WEBDRIVER_COMMAND_TIMEOUT: "90"
     labels:
       autoheal: "true"   # autoheal restarts this container if it goes unhealthy
     mem_limit: 768m

@@ -692,6 +692,9 @@ def create_driver(browser_type, max_retries=3):
     last_error = None
     for attempt in range(1, max_retries + 1):
         try:
+            # Keep the heartbeat fresh during session creation so a slow/retrying
+            # connect isn't seen as a hang by the healthcheck.
+            config.touch_heartbeat()
             if attempt > 1:
                 logger.info(f'[{browser_type}] 🔄 Retry attempt {attempt}/{max_retries}...')
                 time.sleep(5 * attempt)  # Exponential backoff
@@ -703,7 +706,7 @@ def create_driver(browser_type, max_retries=3):
             # default is socket._GLOBAL_DEFAULT_TIMEOUT -> get_timeout() None ->
             # PoolManager(timeout=None) -> infinite wait: the root cause of the
             # permanent chrome/edge hangs. 120s is well above page-load (30s).
-            _cmd_timeout = int(os.getenv('WEBDRIVER_COMMAND_TIMEOUT', '120'))
+            _cmd_timeout = int(os.getenv('WEBDRIVER_COMMAND_TIMEOUT', '90'))
             try:
                 RemoteConnection.set_timeout(_cmd_timeout)  # selenium 4.15 API
             except Exception:

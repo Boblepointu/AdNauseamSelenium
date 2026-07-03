@@ -60,15 +60,11 @@ def _watchdog():
 def _write_heartbeat():
     """Touch the heartbeat file so the container healthcheck sees liveness.
 
-    Called both per-site and inside the per-site link traversal, since a single
-    deep site can legitimately take minutes — without the inner refresh the
-    healthcheck would flip unhealthy on a healthy-but-slow session.
+    Called per-site, inside the per-site link traversal, and throughout the
+    recovery paths, so that neither a deep slow site nor a multi-step session
+    recovery is mistaken for a hang.
     """
-    try:
-        with open(os.getenv('HEARTBEAT_FILE', '/tmp/crawler_heartbeat'), 'w') as _hb:
-            _hb.write(str(time.time()))
-    except Exception:
-        pass
+    config.touch_heartbeat()
 
 
 def _stats_summary():
@@ -483,8 +479,14 @@ def browse():
             error_msg = str(e)
             config.STATS['webdriver_errors'] += 1
 
+            # Refresh liveness: recovery may make one or more bounded-but-slow
+            # remote calls; without this a multi-step recovery could exceed the
+            # healthcheck window and be killed mid-recovery.
+            _write_heartbeat()
+
             # Check if driver connection is actually lost (comprehensive check)
             driver_is_dead = not is_driver_alive(driver)
+            _write_heartbeat()
 
             # Only emit a full traceback when the session is actually dead (rare,
             # actionable). Transient element/timeout errors get one concise line so
@@ -524,6 +526,7 @@ def browse():
                 # Create new driver and reset state
                 try:
                     logger.info(f'[{browser_type}] 🔄 Creating fresh driver session...')
+                    _write_heartbeat()
                     driver = create_driver(browser_type)
                     current_browsing_tab = driver.current_window_handle
                     max_tabs = random.randint(5, 10)
@@ -541,6 +544,7 @@ def browse():
                 time.sleep(2)
         except Exception as e:
             config.STATS['errors'] += 1
+            _write_heartbeat()
             logger.warning(f'[{browser_type}] Error during browse iteration: {str(e).splitlines()[0][:120]}')
             logger.debug('browse iteration error detail', exc_info=True)
             # A timed-out/wedged command surfaces here. If the session is no longer
