@@ -33,6 +33,19 @@ BANNER = """
     """
 
 
+def _stats_summary():
+    """Render the cumulative process metrics as one compact line."""
+    s = config.STATS
+    visited = s['sites_visited'] or 0
+    reachable = visited - s['sites_unreachable'] - s['challenges_skipped']
+    return (
+        f"📊 stats: visited={visited} reachable={reachable} "
+        f"unreachable={s['sites_unreachable']} challenges={s['challenges_skipped']} "
+        f"ads_clicked={s['ads_clicked']} pages_with_ads={s['pages_with_ads']} "
+        f"wd_errors={s['webdriver_errors']} recreated={s['sessions_recreated']} errors={s['errors']}"
+    )
+
+
 def browse():
     """Main browsing function - creates chaos by clicking through random links"""
     # Initialize global fatigue model for this session
@@ -76,8 +89,9 @@ def browse():
             except Exception:
                 pass
 
-            # Periodic health check every HEALTH_CHECK_INTERVAL websites
+            # Periodic health check + metrics summary every HEALTH_CHECK_INTERVAL websites
             if websites_visited > 0 and websites_visited % HEALTH_CHECK_INTERVAL == 0:
+                logger.info(f'[{browser_type}] {_stats_summary()}')
                 if not is_driver_alive(driver):
                     logger.warning(f'[{browser_type}] ⚠ Driver health check failed at website {websites_visited}')
                     raise WebDriverException("Driver health check failed")
@@ -93,10 +107,11 @@ def browse():
 
             start_domain = get_domain(start_url)
             websites_visited += 1
+            config.STATS['sites_visited'] += 1
 
             # Manage tabs before navigating
             current_browsing_tab, tab_switched = manage_tabs(driver, browser_type, current_browsing_tab, max_tabs)
-            
+
             if tab_switched:
                 # If we switched tabs, continue browsing the new tab
                 logger.info(f'\n[{browser_type}] 🌐 Continuing on switched tab...')
@@ -104,7 +119,26 @@ def browse():
             else:
                 # Navigate to new URL
                 logger.info(f'\n[{browser_type}] 🌐 Website {websites_visited}/{max_websites_per_session}: {start_url}')
-                driver.get(start_url)
+                try:
+                    driver.get(start_url)
+                except WebDriverException as nav_err:
+                    # Dead/unreachable domains (DNS failure, connection refused, TLS
+                    # errors) are expected in a large crawl list — Firefox surfaces
+                    # them as "Reached error page: about:neterror". Treat as a routine
+                    # skip (concise WARNING, no traceback) instead of a hard error,
+                    # unless the session itself actually died.
+                    msg = str(nav_err).lower()
+                    if any(s in msg for s in (
+                        'neterror', 'dnsnotfound', 'dns_probe', 'connectionfailure',
+                        'name_not_resolved', 'unreachable', 'connection refused',
+                        'err_connection', 'err_name', 'err_address', 'err_cert',
+                        'timed out', 'net::err',
+                    )) and is_driver_alive(driver):
+                        config.STATS['sites_unreachable'] += 1
+                        logger.warning(f'[{browser_type}] 🔗 Unreachable site, skipping: '
+                                       f'{start_domain} ({str(nav_err).splitlines()[0][:80]})')
+                        continue
+                    raise  # genuine WebDriver/session failure — handle below
             
             # Inject stealth script for Firefox
             if hasattr(driver, '_stealth_js'):
@@ -116,6 +150,7 @@ def browse():
             # Detect and bypass bot challenges (Cloudflare, etc.)
             challenge_passed = detect_and_bypass_bot_challenge(driver, browser_type, max_attempts=3)
             if not challenge_passed:
+                config.STATS['challenges_skipped'] += 1
                 logger.warning(f'  [{browser_type}] ⚠ Could not bypass bot challenge, skipping to next website')
                 continue  # Skip to next website
             
@@ -409,10 +444,19 @@ def browse():
                 
         except WebDriverException as e:
             error_msg = str(e)
-            logger.exception(f'[{browser_type}] WebDriver error during browse')
-            
+            config.STATS['webdriver_errors'] += 1
+
             # Check if driver connection is actually lost (comprehensive check)
             driver_is_dead = not is_driver_alive(driver)
+
+            # Only emit a full traceback when the session is actually dead (rare,
+            # actionable). Transient element/timeout errors get one concise line so
+            # they don't drown the logs.
+            if driver_is_dead:
+                logger.warning(f'[{browser_type}] WebDriver error (session lost): {error_msg.splitlines()[0][:120]}')
+            else:
+                logger.warning(f'[{browser_type}] WebDriver error (recoverable): {error_msg.splitlines()[0][:120]}')
+                logger.debug('WebDriver error detail', exc_info=True)
             
             # Check if session is lost - needs recreation
             if driver_is_dead or any(phrase in error_msg.lower() for phrase in [
@@ -424,6 +468,7 @@ def browse():
                 'session deleted',
                 'no such session'
             ]):
+                config.STATS['sessions_recreated'] += 1
                 logger.warning(f'[{browser_type}] 💀 Session is dead! Creating new session...')
                 try:
                     # Close CDP WebSocket if it exists
@@ -458,11 +503,13 @@ def browse():
                 # Note: this site was already counted when it was chosen/navigated.
                 time.sleep(2)
         except Exception as e:
+            config.STATS['errors'] += 1
             logger.exception(f'[{browser_type}] Error during browse iteration')
             # Note: this site was already counted when it was chosen/navigated.
-    
+
     # Session complete, close browser
     logger.info(f'\n[{browser_type}] ✅ Session complete! Visited {websites_visited} websites.')
+    logger.info(f'[{browser_type}] {_stats_summary()}')
     logger.info(f'[{browser_type}] Closing browser and starting new session...')
     try:
         # Close CDP WebSocket if it exists

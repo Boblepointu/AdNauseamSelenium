@@ -56,7 +56,6 @@ https://ledauphine.com
 https://dna.fr
 https://estrepublicain.fr
 https://republicain-lorrain.fr
-https://vosges-matin.fr
 https://lejsl.com
 https://bienpublic.com
 https://lyonne.fr
@@ -94,7 +93,6 @@ https://centrepresseaveyron.fr
 https://petitbleu.fr
 https://larepubliquedespyrenees.fr
 https://sudouest.fr
-https://charente-libre.fr
 https://lepopulaire.fr
 https://lamontagne.fr
 https://centre-presse.fr
@@ -109,7 +107,6 @@ https://rennes.maville.com
 https://lorient.maville.com
 https://quimper.maville.com
 https://vannes.maville.com
-https://stbrieuc.maville.com
 
 # French Tech & Digital
 https://01net.com
@@ -163,8 +160,6 @@ https://musique.jeuxactu.com
 https://music-story.com
 https://senscritique.com
 https://betaseries.com
-https://serieously.com
-https://brain-damaged.fr
 https://leblogducinema.com
 https://avoir-alire.com
 https://actuabd.com
@@ -204,7 +199,6 @@ https://largus.fr
 https://automobile-magazine.fr
 https://auto-moto.com
 https://turbo.fr
-https://automoto.fr
 https://autojournal.fr
 https://challenges.fr/automobile
 https://sportauto.fr
@@ -228,7 +222,6 @@ https://priceminister.com
 https://leboncoin.fr
 https://vinted.fr
 https://vestiairecollective.com
-https://videdressing.com
 https://selency.fr
 https://maisonsdumonde.com
 https://alinea.com
@@ -267,7 +260,6 @@ https://obaibi.fr
 https://jacadi.fr
 https://dpam.com
 https://bonpoint.com
-https://petit-bateau.fr
 https://tape-a-loeil.com
 https://catimini.com
 https://sergent-major.com
@@ -291,10 +283,8 @@ https://carrefour.fr
 https://auchan.fr
 https://leclerc.com
 https://intermarche.com
-https://systemu.fr
 https://super-u.fr
 https://hyper-u.fr
-https://utile.fr
 https://monoprix.fr
 https://franprix.fr
 https://casino.fr
@@ -310,10 +300,7 @@ https://thiriet.com
 https://toupargel.fr
 https://chronofresh.com
 https://lacagette.fr
-https://laruche.com
 https://laruchequiditoui.fr
-https://potagerdevil.fr
-https://lesansdouchebag.com
 https://courses.carrefour.fr
 https://coursesu.com
 https://shop.intermarche.fr
@@ -327,30 +314,25 @@ https://frichti.co
 https://nestor.fr
 https://popchef.com
 https://feedme.fr
-https://resto-in.fr
 https://alloresto.fr
 https://restopolitan.com
 https://zenchef.com
 https://thefork.fr
 https://lafourchette.fr
 https://opentable.fr
-https://reserver.michelin.fr
 https://petitfute.com
 https://mapstr.com
 https://cityvox.fr
 https://resto.fr
 https://qype.fr
 https://restaurantsparisiens.com
-https://guidemichelin.com/fr
 https://gaultmillau.com
 https://lebottin.com
 https://pudlo.fr
-https://fooding.com
 https://lebonbon.fr
 https://sortiraparis.com
 https://timeout.com/paris
 https://pariszigzag.fr
-https://secretsparisiens.com
 
 # French Travel & Tourism
 https://voyages-sncf.com
@@ -360,7 +342,6 @@ https://tgv-lyria.com
 https://eurostar.com
 https://transavia.com
 https://airfrance.fr
-https://hop.com
 https://corsair.fr
 https://frenchbee.com
 https://aigle-azur.fr
@@ -396,7 +377,6 @@ https://airbnb.fr
 https://abritel.fr
 https://homeaway.fr
 https://gites-de-france.com
-https://clvevacances.com
 https://locasun.fr
 https://interhome.fr
 https://homelidays.com
@@ -420,7 +400,6 @@ https://routard.com
 https://lonelyplanet.fr
 https://geo.fr
 https://voyageurs-du-monde.fr
-https://terres-aventure.com
 https://nomade-aventure.com
 https://allibert-trekking.com
 https://tirawa.com
@@ -468,7 +447,6 @@ https://proprietes-privees.com
 https://capifrance.fr
 https://safti.fr
 https://hosman.fr
-https://loftstore.fr
 https://monlogement.com
 https://flatlooker.com
 https://homeloop.fr
@@ -504,21 +482,16 @@ https://adzuna.fr
 https://emploi.com
 https://keljob.com
 https://ouest-france-emploi.com
-https://lemonde-emploi.fr
-https://figaro-emploi.fr
 https://emploi.lefigaro.fr
 https://paris-job.com
 https://bordeaux-job.com
 https://lyon-job.com
-https://toulouse-job.com
 https://marseille-job.com
-https://nantes-job.com
 https://recrutimmo.com
 https://batiactu-emploi.com
 https://emploi-pro.fr
 https://jobintree.com
 https://emploi-environnement.com
-https://emploiauto.com
 https://jobculture.fr
 https://emploisoignant.com
 https://emploi-collectivites.fr
@@ -533,18 +506,13 @@ https://bnpparibas.fr
 https://labanquepostale.fr
 https://societegenerale.fr
 https://lcl.fr
-https://caisse-epargne.fr
 https://banquepopulaire.fr
 https://creditmutuel.fr
 https://cic.fr
 https://cmso.com
-https://caissedesenormes.fr
 https://hsbc.fr
-https://ingdirect.fr
 https://fortuneo.fr
-https://hello-bank.fr
 https://monabanq.com
-https://orange-bank.fr
 https://revolut.com/fr
 https://n26.com/fr
 https://boursobank.com
@@ -559,18 +527,14 @@ https://franfinance.fr
 https://sofinco.fr
 https://younited-credit.com
 https://floa.fr
-https://lixx.fr
 https://cashper.fr
 https://finfrog.fr
-https://orange-credit.fr
 https://moneybounce.fr
 https://impots.gouv.fr
 https://service-public.fr
-https://securite-sociale.fr
 https://ameli.fr
 https://caf.fr
 https://pole-emploi.fr
-https://mon-compte-formation.gouv.fr
 https://moncompteformation.gouv.fr
 https://urssaf.fr
 https://msa.fr
@@ -579,7 +543,6 @@ https://info-retraite.fr
 https://mesdroitssociaux.gouv.fr
 
 # French Insurance
-https://assurance-direct.axa.fr
 https://axa.fr
 https://allianz.fr
 https://groupama.fr
@@ -711,10 +674,8 @@ https://bonprix.fr
 https://cmail.fr
 https://becquet.fr
 https://linvosges.com
-https://baincouture.com
 https://laredoute.fr
 https://zarahome.com/fr
-https://hmhome.com/fr
 https://urbanoutfitters.com/fr
 https://farfetch.com/fr
 https://luisaviaroma.com
@@ -776,7 +737,6 @@ https://autosphere.fr
 https://aramisauto.com
 https://autoeasy.fr
 https://kyump.com
-https://clicncars.com
 https://automobiledoccasion.fr
 https://paruvendu.fr/voiture-occasion
 https://ouestfrance-auto.com
@@ -794,7 +754,6 @@ https://citroen.fr
 https://renault.fr
 https://dacia.fr
 https://ds-automobiles.fr
-https://alpine-cars.fr
 https://opel.fr
 https://volkswagen.fr
 https://audi.fr
@@ -978,7 +937,6 @@ https://sohu.com
 https://qq.com
 https://people.com.cn
 https://xinhuanet.com
-https://chinanews.com.cn
 https://cankaoxiaoxi.com
 https://thepaper.cn
 https://jiemian.com
@@ -991,7 +949,6 @@ https://tmtpost.com
 https://pingwest.com
 https://ifeng.com
 https://chinadaily.com.cn
-https://ecns.cn
 https://globaltimes.cn
 
 # Chinese E-commerce
@@ -1005,14 +962,12 @@ https://dangdang.com
 https://gome.com.cn
 https://yhd.com
 https://amazon.cn
-https://kaola.com
 https://yanxuan.163.com
 https://xiaomiyoupin.com
 https://dewu.com
 https://poizon.com
 https://mogujie.com
 https://meilishuo.com
-https://beibei.com
 https://jumei.com
 https://ymatou.com
 
@@ -1044,7 +999,6 @@ https://debenhams.com
 https://house-of-fraser.co.uk
 https://selfridges.com
 https://harrods.com
-https://fortnum-mason.com
 https://allegro.pl
 https://ceneo.pl
 https://morele.net
@@ -1143,7 +1097,6 @@ https://aliexpress.com
 https://alibaba.com
 https://dhgate.com
 https://banggood.com
-https://gearbest.com
 
 # Search Engines
 https://google.com
@@ -1227,7 +1180,6 @@ https://serverfault.com
 https://superuser.com
 https://askubuntu.com
 https://reddit.com/r/programming
-https://hackernews.ycombinator.com
 https://producthunt.com
 https://betalist.com
 https://techmeme.com
@@ -1337,7 +1289,6 @@ https://qunar.com
 https://elong.com
 https://ly.com
 https://tuniu.com
-https://lvmama.com
 https://mafengwo.cn
 https://qyer.com
 https://16fan.com
@@ -1375,7 +1326,6 @@ https://morningstar.com
 https://etrade.com
 https://schwab.com
 https://fidelity.com
-https://tdameritrade.com
 https://interactivebrokers.com
 https://robinhood.com
 https://webull.com
@@ -1397,7 +1347,6 @@ https://coinmarketcap.com
 https://coingecko.com
 https://tradingview.com
 https://alipay.com
-https://wechatpay.com
 https://eastmoney.com
 https://xueqiu.com
 https://jrj.com.cn
@@ -1456,7 +1405,6 @@ https://serieA.com
 https://ligue1.com
 
 # Gaming
-https://steam.steampowered.com
 https://epicgames.com
 https://origin.com
 https://ubisoft.com
@@ -1585,7 +1533,6 @@ https://nidirect.gov.uk
 https://gov.ie
 https://service-public.fr
 https://elysee.fr
-https://assemblee-nationale.fr
 https://senat.fr
 https://conseil-constitutionnel.fr
 https://legifrance.gouv.fr
@@ -1799,7 +1746,6 @@ https://newstatesman.com
 https://lrb.co.uk
 https://theparisreview.org
 https://granta.com
-https://londonreviewofbooks.co.uk
 https://nybooks.com
 https://bookforum.com
 https://laphamsquarterly.org
@@ -1862,7 +1808,6 @@ https://sketchup.com
 https://homestyler.com
 https://roomsketcher.com
 https://cedreo.com
-https://punch-software.com
 https://chief-architect.com
 https://autodesk.com
 https://3ds.com
@@ -1884,7 +1829,6 @@ https://photoshop.com
 https://illustrator.com
 https://indesign.com
 https://premiere.com
-https://after-effects.com
 https://audition.com
 https://davinciresolve.com
 https://filmora.wondershare.com
@@ -1908,7 +1852,6 @@ https://focusrite.com
 https://presonus.com
 https://motu.com
 https://rme-audio.de
-https://universal-audio.com
 https://waves.com
 https://izotope.com
 https://plugin-alliance.com
@@ -1934,18 +1877,14 @@ https://sonokinetic.net
 https://heavyocity.com
 https://output.com
 https://auddict.com
-https://fluffy-audio.com
 https://soundiron.com
 https://impactsoundworks.com
 https://strezov-sampling.com
 https://cinesamples.com
-https://performance-samples.com
 https://cinematique-instruments.com
 https://versilian-studios.com
-https://bigcatsynthwork.com
 https://embertone.com
 https://realitone.com
-https://orange-tree-samples.com
 https://ujam.com
 https://toontrack.com
 https://fxpansion.com
@@ -1954,11 +1893,9 @@ https://getgooddrums.com
 https://slatedigital.com
 https://drumforge.com
 https://roomsound.com
-https://superiordrum-mer.com
 https://ezdrummer.com
 https://addictivedrums.com
 https://bfd-drums.com
-https://modo-drum.com
 
 # French Dating & Social
 https://meetic.fr
@@ -1974,7 +1911,6 @@ https://parship.fr
 https://disons-demain.fr
 https://senior-rencontre.com
 https://quintonic.fr
-https://notre-temps-rencontre.fr
 https://proximeety.com
 https://pof.com/fr
 https://badoo.com/fr
@@ -1990,11 +1926,9 @@ https://jm-date.com
 https://coco.fr
 https://tchatche.com
 https://ados.fr
-https://babel.fr
 https://lyad.fr
 https://rencontre-ados.net
 https://zoneados.com
-https://chatfrance.net
 https://rencontre.com
 https://jecontacte.com
 
@@ -2005,7 +1939,6 @@ https://forum.doctissimo.fr
 https://forum.aufeminin.com
 https://forum.magicmaman.com
 https://forum.psychologies.com
-https://forum.lequipe.fr
 https://forum.lesarnaques.com
 https://forum.pcastuces.com
 https://forum.ubuntu-fr.org
@@ -2014,27 +1947,14 @@ https://forum.malekal.com
 https://forum.zebulon.fr
 https://forum.clubic.com
 https://forum.macbidouille.com
-https://forum.macg.co
-https://forum.presence-pc.com
 https://forum.frandroid.com
-https://forum.auto-evasion.com
-https://forum.forum-auto.com
 https://forum-bmw.fr
 https://forum.alpinerenault.com
-https://passion-harley.com
-https://forum.camping-car.com
 https://forum.avcesar.com
-https://forum.voyage-algerie.com
-https://forum.routard.com
-https://forum.tripadvisor.fr
 https://forums.futura-sciences.com
-https://forums.mediapart.fr
 https://forums.macrumors.com/fr
 https://forum.sports-sante.com
 https://forum.runners.fr
-https://forum.trail-running.fr
-https://forum.jogging-plus.com
-https://forum.courseapied.net
 
 # French Universities & Education
 https://sorbonne-universite.fr
@@ -2061,8 +1981,6 @@ https://imt.fr
 https://polytechnique.edu
 https://centralesupelec.fr
 https://enpc.fr
-https://ensam.eu
-https://mines-paristech.fr
 https://telecom-paris.fr
 https://telecom-sudparis.eu
 https://imt-atlantique.fr
@@ -2072,12 +1990,9 @@ https://u-bordeaux.fr
 https://univ-toulouse.fr
 https://univ-lille.fr
 https://univ-lyon1.fr
-https://univ-lyon2.fr
-https://univ-lyon3.fr
 https://univ-grenoble-alpes.fr
 https://univ-amu.fr
 https://univ-cotedazur.fr
-https://univ-montpellier.fr
 https://univ-rennes.fr
 https://univ-rennes2.fr
 https://univ-nantes.fr
@@ -2087,7 +2002,6 @@ https://univ-brest.fr
 https://univ-lorraine.fr
 https://unistra.fr
 https://uha.fr
-https://univ-reims.fr
 https://univ-tours.fr
 https://univ-orleans.fr
 https://univ-poitiers.fr
@@ -2096,22 +2010,17 @@ https://uca.fr
 https://univ-st-etienne.fr
 https://univ-smb.fr
 https://univ-pau.fr
-https://univ-tlse2.fr
 https://univ-tlse3.fr
 https://univ-perp.fr
 https://uphf.fr
 https://univ-artois.fr
 https://univ-littoral.fr
-https://univ-picardie.fr
-https://univ-rouen-normandie.fr
 https://unicaen.fr
 https://univ-lehavre.fr
 https://univ-corse.fr
 https://univ-reunion.fr
 https://univ-antilles.fr
 https://univ-guyane.fr
-https://univ-nc.nc
-https://upf.pf
 
 # French Museums & Culture
 https://louvre.fr
@@ -2123,33 +2032,21 @@ https://musee-picasso.fr
 https://guimet.fr
 https://palais-portedoree.fr
 https://mahj.org
-https://museecluny.fr
 https://musee-armee.fr
-https://museegrevin.com
 https://chateauversailles.fr
-https://domaine-chantilly.com
-https://chateau-fontainebleau.fr
 https://chateau-chambord.fr
 https://chateaux-loire.fr
 https://mont-saint-michel.fr
 https://palaisdespapes.com
 https://musees-alsace.org
 https://mba-lyon.fr
-https://mba-lille.fr
-https://mba-bordeaux.fr
 https://mucem.org
-https://musee-arts-nantes.nantesmetropole.fr
-https://mba.toulouse.fr
-https://mba.rouen.fr
-https://mba-rennes.fr
 https://musba-bordeaux.fr
-https://musee-beaux-arts.dijon.fr
 https://mba.caen.fr
 https://musee-unterlinden.com
 https://mam.paris.fr
 https://palaisdetokyo.com
 https://fondationlouisvuitton.fr
-https://fondationcartier.com
 https://maisondelaphoto.com
 https://jeudepaume.org
 https://cinematheque.fr
@@ -2161,15 +2058,11 @@ https://comedie-francaise.fr
 https://opera-paris.fr
 https://philharmoniedeparis.fr
 https://cite-musique.fr
-https://theatredelacolline.fr
 https://theatre-odeon.eu
 https://theatre-chaillot.fr
-https://theatre-nation.fr
-https://theatre-champs-elysees.fr
 https://chatelet.com
 https://mc93.com
 https://tnba.org
-https://tnc-nice.com
 
 # French Newspapers - Regional Deep
 https://vosgesmatin.fr
@@ -2197,7 +2090,6 @@ https://ladepeche.fr
 https://lindependant.fr
 https://midilibre.fr
 https://centrepresseaveyron.fr
-https://lasemainedupays-basque.fr
 https://lavoixdunord.fr
 https://nordeclair.fr
 https://nordlittoral.fr
@@ -2205,13 +2097,11 @@ https://courrier-picard.fr
 https://lunion.fr
 https://lest-eclair.fr
 https://lardennais.fr
-https://courrier-de-louest.fr
 https://maville.com
 https://actu.fr
 https://infos-dijon.com
 https://vivre-a-chalon.com
 https://lepaysbriard.fr
-https://le-pays-doleron.fr
 https://sudradio.fr
 
 # French Telecom & Internet
@@ -2221,32 +2111,21 @@ https://sfr.fr
 https://bouyguestelecom.fr
 https://sosh.fr
 https://red-by-sfr.fr
-https://b-and-you.fr
 https://nrj-mobile.fr
-https://la-poste-mobile.fr
-https://coriolis-telecom.com
 https://prixtel.com
 https://lebara.fr
 https://lycamobile.fr
 https://syma-mobile.com
 https://reglo-mobile.fr
 https://auchan-telecom.fr
-https://cdiscount-mobile.fr
-https://carrefour-mobile.fr
 https://leclerc-mobile.fr
-https://simyo.fr
 https://joe-mobile.fr
-https://youphone.fr
 https://mint-mobile.fr
-https://nationalgeographic-mobile.fr
 https://virginmobile.fr
-https://edgeconnect.fr
-https://bbox.bouyguestelecom.fr
 https://nordnet.com
 https://k-net.fr
 https://ozone.net
 https://alsatis.com
-https://numericable.fr
 https://lafibre.info
 
 # French Government Services
@@ -2261,7 +2140,6 @@ https://ants.gouv.fr
 https://demarches-simplifiees.fr
 https://france-connect.gouv.fr
 https://moncompteformation.gouv.fr
-https://mesforfaits.fr
 https://solidarites-sante.gouv.fr
 https://education.gouv.fr
 https://enseignementsup-recherche.gouv.fr
@@ -2289,7 +2167,6 @@ https://ccomptes.fr
 https://conseil-constitutionnel.fr
 https://elysee.fr
 https://gouvernement.fr
-https://assemblee-nationale.fr
 https://senat.fr
 https://cnil.fr
 https://csa.fr
@@ -2310,12 +2187,10 @@ https://meteo.fr
 https://lachainemeteo.com
 https://meteo-paris.com
 https://meteo-villes.com
-https://prevision-meteo.fr
 https://infoclimat.fr
 https://meteociel.fr
 https://meteo60.fr
 https://meteo-lyon.net
-https://meteo-marseille.fr
 https://tameteo.com/fr
 https://wunderground.com/fr
 https://foreca.fr
@@ -2338,8 +2213,6 @@ https://meribel.net
 https://courchevel.com
 https://valthorens.com
 https://tignes.net
-https://val-d-isere.com
-https://alpe-huez.com
 https://lesdeuxalpes.com
 https://serre-chevalier.com
 https://vars.com
@@ -2361,26 +2234,19 @@ https://visit.alsace
 https://tourisme-lorraine.fr
 https://jura-tourism.com
 https://franche-comte.org
-https://bourgognefranchecomte.com
-https://destinationbourgogne.com
 https://beaune-tourisme.fr
 https://paysdelaloire.fr
-https://loirevalleytourism.com
 https://vendee-tourisme.com
 https://loire-atlantique.fr
-https://centrevaldeloire.fr
 https://valdeloire-france.com
 https://nouvelle-aquitaine.fr
 https://tourisme-aquitaine.fr
 https://tourisme-gironde.fr
 https://lavelodyssee.com
-https://tourisme-dordogne.com
 https://tourisme-lot.com
 https://tourisme-occitanie.com
-https://tourisme-toulouse.com
 https://tourisme-montpellier.fr
 https://nimes-tourisme.com
-https://tourisme-arles.com
 https://avignon-tourisme.com
 https://visit-provence.com
 https://tourismepaca.fr
@@ -2388,7 +2254,6 @@ https://cotedazur-tourisme.com
 https://nicecotedazur.org
 https://explorecannes.com
 https://antibes-juanlespins.com
-https://ot-sttropez.com
 https://visitvar.fr
 https://marseille-tourisme.com
 https://aixenprovencetourism.com
@@ -2405,9 +2270,7 @@ https://sncf.com
 https://sncf-connect.com
 https://ter.sncf.com
 https://transilien.com
-https://intercites.sncf.fr
 https://ratp.fr
-https://ile-de-france-mobilites.fr
 https://vianavigo.com
 https://tisseo.fr
 https://tcl.fr
@@ -2416,10 +2279,8 @@ https://cts-strasbourg.eu
 https://reseau-stan.com
 https://keolis.com
 https://transdev.com
-https://cars-region.fr
 https://flixbus.fr
 https://blablacar.fr
-https://blablacar-bus.com
 https://isilines.fr
 https://ouibus.com
 https://eurolines.fr
@@ -2432,7 +2293,6 @@ https://ouicar.fr
 https://koolicar.com
 https://citygo.fr
 https://rentalcars.com/fr
-https://auto-europe.fr
 https://alamo.fr
 https://enterprise.fr
 https://budget.fr
@@ -2446,7 +2306,6 @@ https://rentacar.fr
 https://roadstr.fr
 https://virtuo.com
 https://troov.com
-https://velib-metropole.fr
 https://velov.grandlyon.com
 https://velhop.strasbourg.eu
 https://velobleu.org
@@ -2482,7 +2341,6 @@ https://luxuryestate.com/fr
 https://prestigeproperty.fr
 https://barnes-international.com
 https://french-property.com
-https://proprietes-lefigaro.fr
 https://maison-a-part.com
 https://drimki.fr
 https://immobilier-danger.com
@@ -2491,11 +2349,9 @@ https://meilleurtaux.com
 https://empruntis.com
 https://cafpi.fr
 https://vousfinancer.com
-https://immoprêt.com
 https://immobilier-particulier.fr
 https://immonot.com
 https://encheres-publiques.com
-https://lien-immobilier.fr
 https://immobilier-neuf.fr
 https://leparticulier.fr
 https://immoneuf.com
@@ -2506,14 +2362,12 @@ https://unpi.org
 https://anil.org
 https://adil.org
 https://actionlogement.fr
-https://1percentlogement.fr
 https://cil.fr
 https://airbnb.fr
 https://abritel.fr
 https://homeaway.fr
 https://fewo-direkt.de/frankreich
 https://gites-de-france.com
-https://clvevacances.fr
 https://clevacances.com
 https://accueil-paysan.com
 https://bienvenue-a-la-ferme.com
@@ -2536,9 +2390,7 @@ https://wizbii.com
 https://jobirl.com
 https://choosemycompany.com
 https://myjobglasses.com
-https://hub-france.io
 https://emploi-store.fr
-https://pass.emploi-store.fr
 https://keljob.com
 https://jobijoba.com
 https://optioncarriere.com
@@ -2549,7 +2401,6 @@ https://jobrapido.com/fr
 https://fr.fashionjobs.com
 https://hotellerie-restauration.fr
 https://lhotellerie-restauration.fr
-https://hrjobs.fr
 https://recrutimmo.com
 https://staffsante.fr
 https://emploisoignant.com
@@ -2559,14 +2410,11 @@ https://emploi-territorial.fr
 https://emploipublic.fr
 https://jobpublic.fr
 https://carrieres-publiques.com
-https://talent.aphp.fr
 https://infirmiers.com/emploi
-https://macsf-emploi.fr
 https://staffsocial.fr
 https://emploi.action-sociale.org
 https://agevillage.com
 https://espace-emploi.fr
-https://clicemploi.org
 https://interim.fr
 https://adecco.fr
 https://manpower.fr
@@ -2581,27 +2429,17 @@ https://temporis.fr
 https://triangle-interim.com
 https://groupe-interaction.fr
 https://adequat-interim.com
-https://kelly-services.fr
-https://elior-emploi.com
 
 # French Legal & Professional Services
 https://service-public.fr/particuliers
 https://justice.fr
-https://conseil-national.avocat.fr
 https://cnb.avocat.fr
 https://avocats-paris.org
-https://barreau-de-paris.fr
-https://barreau-lyon.fr
-https://barreau-marseille.com
 https://notaires.fr
 https://notaires.paris
 https://immobilier.notaires.fr
-https://chambre-paris.notaires.fr
 https://expert-comptable.com
-https://ordre-experts-comptables.fr
 https://oec-paris.fr
-https://audit-legal-france.fr
-https://mazars.fr
 https://ey.com/fr
 https://deloitte.com/fr
 https://pwc.fr
@@ -2620,7 +2458,6 @@ https://dlapiper.com/fr
 https://ashurst.com/fr
 https://herbertsmithfreehills.com/fr
 https://hoganlovells.com/fr
-https://norton-rose.com/fr
 https://whitecase.com/fr
 https://skadden.com/fr
 https://kirkland.com/fr
@@ -2629,7 +2466,6 @@ https://latham.com/fr
 https://sullcrom.com/fr
 https://cravath.com/fr
 https://davispolk.com/fr
-https://simpson.com/fr
 https://paulweiss.com/fr
 https://willkie.com/fr
 https://cgsh.com/fr
@@ -2663,15 +2499,10 @@ https://zankyou.fr
 https://mariagemagazine.fr
 https://organisersonmariage.com
 https://organiser-un-mariage.com
-https://quelmariage.fr
 https://mariage.aufeminin.com
-https://marieeaddict.fr
 https://1001salles.com
-https://trouversalledemariage.fr
 https://le-cedre.fr
 https://deco-mariage.fr
-https://dragees-anahita.com
-https://mariageoriginal.com
 https://cotemariage.fr
 https://mariagesetreceptions.com
 
@@ -2698,7 +2529,6 @@ https://senioradom.com
 https://essentiel-autonomie.fr
 https://cap-retraite.fr
 https://retraite.com
-https://retraitesolidarite.com
 https://odella.fr
 https://petitsfreresdespauvres.fr
 https://croix-rouge.fr
@@ -2709,8 +2539,6 @@ https://emmaus-france.org
 https://atd-quartmonde.fr
 https://fondationdefrance.org
 https://fondationbrigittebardot.fr
-https://fondation-30millionsdamis.fr
-https://spa.aniwa.com
 https://chiens-online.com
 https://chatsdumonde.com
 https://zooplus.fr
@@ -2721,8 +2549,6 @@ https://truffaut.com
 https://jardiland.com
 https://gammvert.fr
 https://delbard.fr
-https://lechasseurdeplantes.com
-https://planfor.fr
 https://promessedefleurs.com
 https://jardins-animes.com
 https://gerbeaud.com
@@ -2755,13 +2581,8 @@ https://forum-auto.com
 https://forum-peugeot.com
 https://forum-auto.caradisiac.com
 https://planete-205.com
-https://planete-306.com
 https://308.forumactif.com
-https://passionmercedes.com
 https://forum-bmw.fr
-https://forum-audi.fr
-https://forum-volkswagen.fr
-https://forum-miniatures-auto.fr
 https://depannezvous.com
 https://oscaro.com
 https://yakarouler.com
@@ -2776,20 +2597,16 @@ https://norauto.fr
 https://feu-vert.fr
 https://midas.fr
 https://speedy.fr
-https://idfauto.fr
 https://carter-cash.com
 https://1001piles.com
 https://all-batteries.fr
-https://autossimo.fr
 https://fiches-auto.fr
 https://controle-technique.fr
 https://dekra-norisko.fr
 https://autosur.fr
 https://autovision.fr
 https://securitest.fr
-https://controle-technique-france.fr
 https://moncoyote.com
-https://gt-motive.com/fr
 
 # French Utility & Services
 https://edf.fr
@@ -2816,15 +2633,10 @@ https://homeserve.fr
 https://veolia.fr
 https://suez.fr
 https://saur.com
-https://1011-eau.com
-https://eau-de-paris.fr
-https://eau-en-ligne.com
 https://services.eaufrance.fr
 https://proxiserve.fr
 https://hellocasa.fr
 https://sedomicilier.fr
-https://mydomicile.fr
-https://societedomiciliation.com
 https://autoentrepreneur.urssaf.fr
 https://shine.fr
 https://qonto.com
@@ -2853,11 +2665,8 @@ https://chapitre.com
 https://decitre.fr
 https://dialoguesmorlaix.com
 https://librairie-gallimard.com
-https://librairie-sauramps.com
 https://librairie-kleber.com
-https://librairie-eyrolles.com
 https://lalibrairie.com
-https://placedeslibraires.fr
 https://recyclivre.com
 https://momox-shop.fr
 https://bouquinerie.com
@@ -2869,8 +2678,6 @@ https://troc.com
 https://pretachanger.fr
 https://mytroc.fr
 https://trocvestiaire.com
-https://swap-community.com
-https://emmaus-boutique.com
 https://luckyfind.fr
 https://back-market.fr
 https://recommerce.com
@@ -2878,14 +2685,11 @@ https://certideal.com
 https://smaaart.fr
 https://remade.com
 https://largo.fr
-https://underthepolite.com
-https://labelemmaüs.co
 https://le-relais.org
 https://lafibredutri.fr
 https://ecosystem.eco
 https://eco-systemes.fr
 https://ecologic-france.com
-https://maisons-du-monde.com
 https://habitat.fr
 https://ampm.fr
 https://made.com/fr
@@ -2903,13 +2707,10 @@ https://normann-copenhagen.com/fr
 
 # French Pet & Animals
 https://30millionsdamis.fr
-https://fondation-brigitte-bardot.fr
-https://spa.aniwa.com
 https://secondechance.org
 https://chiens-online.com
 https://chatsdumonde.com
 https://rescue-forum.com
-https://sos-chiens.fr
 https://code-animal.com
 https://wamiz.com
 https://woopets.fr
@@ -2924,7 +2725,6 @@ https://polytrans.fr
 https://animalis.com
 https://maxi-zoo.fr
 https://tom-co.com
-https://jardinerie-beaubourg.com
 https://lafermedesanimaux.com
 https://vetostore.com
 https://medpets.fr
@@ -2968,13 +2768,10 @@ https://festivalfocus.com
 https://festivals.fr
 https://monsieur-madame.com
 https://abcdrduson.com
-https://infos-concerts.com
 https://resmusica.com
-https://tous-les-festivals.com
 https://jds.fr
 https://agendaculturel.fr
 https://offi.fr
-https://que-faire-a-paris.fr
 https://parisbouge.com
 https://parisinfo.com
 https://evous.fr
@@ -2986,7 +2783,6 @@ https://liberation.fr/culture
 
 # French Associations & NGOs
 https://associations.gouv.fr
-https://associathèque.fr
 https://helloasso.com
 https://legalstart.fr
 https://monasso.fr
@@ -2997,12 +2793,9 @@ https://credofunding.fr
 https://arizuka.com
 https://francebenevolat.org
 https://benevolat.fr
-https://tous-benevoles.org
 https://jeveuxaider.gouv.fr
-https://latribunedesfondations.fr
 https://centre-francais-fondations.org
 https://admical.org
-https://mecenatdecompetence.fr
 https://apprentis-auteuil.org
 https://actioncontrelafaim.org
 https://medecinsdumonde.org
@@ -3010,22 +2803,15 @@ https://msf.fr
 https://handicap-international.fr
 https://oxfamfrance.org
 https://care-france.org
-https://actionaidefrance.fr
 https://psi.fr
 https://ccfd-terresolidaire.org
 https://cimade.org
 https://france-terre-asile.org
 https://lacimade.org
-https://emmaüs-international.org
-https://restos-du-coeur.org
 https://samu-social.fr
-https://abbePierre.fr
 https://fondationabbePierre.fr
 
 # French Automotive Services - Specific
-https://parc-auto.com
-https://moniteur-automobile.be/fr
-https://toutes-les-voitures.com
 https://fiches-auto.fr
 https://sportauto.fr
 https://auto-evasion.com
@@ -3052,7 +2838,6 @@ https://que-choisir.org
 https://60millions-mag.com
 https://ufcquechoisir.org
 https://clcv.org
-https://defenseconsommateurs.org
 https://conso.net
 https://quechoisir.org
 https://inc-conso.fr

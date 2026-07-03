@@ -9,8 +9,14 @@ reassignment is visible to every importer.
 
 import os
 import logging
+from collections import Counter
 
 logger = logging.getLogger('crawler.config')
+
+# Cumulative runtime metrics, shared across modules. Incremented in place
+# (e.g. ``config.STATS['ads_clicked'] += 1``) and periodically summarized by
+# the orchestrator so an operator can see success/skip/error rates per process.
+STATS = Counter()
 
 # Import persona manager for persistent fingerprint rotation.
 try:

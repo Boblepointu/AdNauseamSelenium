@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import WebDriverException
 
+from crawler import config
 from crawler.driver import is_driver_alive
 
 logger = logging.getLogger('crawler.interaction')
@@ -890,7 +891,8 @@ def detect_and_click_ads(driver, browser_type, click_chance=0.6):
             return False
         
         logger.info(f'  [{browser_type}] 📢 Detected {len(ads_found)} ad(s) on page')
-        
+        config.STATS['pages_with_ads'] += 1
+
         # Decide whether to click (60% chance)
         if random.random() > click_chance:
             logger.info(f'  [{browser_type}] 🎲 Decided not to click ads this time')
@@ -906,6 +908,7 @@ def detect_and_click_ads(driver, browser_type, click_chance=0.6):
             
             # Try to click the ad
             ad_to_click.click()
+            config.STATS['ads_clicked'] += 1
             logger.info(f'  [{browser_type}] 💰 Clicked on ad!')
             time.sleep(random.uniform(1, 3))
             
