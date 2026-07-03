@@ -3,6 +3,7 @@ import os
 import time
 import random
 import logging
+import threading
 from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, WebDriverException
@@ -31,6 +32,29 @@ BANNER = """
     ║   Automated browsing to generate web traffic               ║
     ╚════════════════════════════════════════════════════════════╝
     """
+
+
+def _watchdog():
+    """Backstop against any hang the command timeout doesn't catch.
+
+    Runs in a daemon thread. If the browse loop makes no progress (the heartbeat
+    file goes stale) for longer than WATCHDOG_TIMEOUT seconds, force-exit the
+    process so Docker's restart policy brings up a fresh session. This is the
+    last line of defence — the primary fix is the RemoteConnection command
+    timeout, which turns a wedged call into a prompt exception.
+    """
+    timeout = int(os.getenv('WATCHDOG_TIMEOUT', '300'))
+    hb_file = os.getenv('HEARTBEAT_FILE', '/tmp/crawler_heartbeat')
+    while True:
+        time.sleep(30)
+        try:
+            age = time.time() - os.path.getmtime(hb_file)
+        except OSError:
+            continue
+        if age > timeout:
+            logger.error('🐕 Watchdog: no progress for %ds (> %ds) — force-exiting for a clean restart',
+                         int(age), timeout)
+            os._exit(1)
 
 
 def _write_heartbeat():
@@ -517,7 +541,15 @@ def browse():
                 time.sleep(2)
         except Exception as e:
             config.STATS['errors'] += 1
-            logger.exception(f'[{browser_type}] Error during browse iteration')
+            logger.warning(f'[{browser_type}] Error during browse iteration: {str(e).splitlines()[0][:120]}')
+            logger.debug('browse iteration error detail', exc_info=True)
+            # A timed-out/wedged command surfaces here. If the session is no longer
+            # responsive, end this session so the main loop starts a fresh driver
+            # (rather than spinning on repeated timeouts).
+            if not is_driver_alive(driver):
+                config.STATS['sessions_recreated'] += 1
+                logger.warning(f'[{browser_type}] Session unresponsive — ending it to restart with a fresh driver')
+                break
             # Note: this site was already counted when it was chosen/navigated.
 
     # Session complete, close browser
@@ -565,6 +597,9 @@ def main():
     """Entry point: configure logging, initialize state, then loop forever."""
     configure_logging()
     setup()
+
+    # Start the liveness watchdog (daemon) before crawling begins.
+    threading.Thread(target=_watchdog, name='watchdog', daemon=True).start()
 
     # Keep the ASCII banner as a plain print so it renders without log framing.
     print(BANNER)

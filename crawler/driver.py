@@ -4,6 +4,7 @@ import time
 import random
 import logging
 from selenium import webdriver
+from selenium.webdriver.remote.remote_connection import RemoteConnection
 
 from crawler import config
 from crawler.config import PERSONA_ROTATION_STRATEGY
@@ -695,20 +696,29 @@ def create_driver(browser_type, max_retries=3):
                 logger.info(f'[{browser_type}] 🔄 Retry attempt {attempt}/{max_retries}...')
                 time.sleep(5 * attempt)  # Exponential backoff
             
+            # Bound EVERY remote command so a wedged node/session/page can never
+            # hang the browse loop forever. In selenium 4.15 this is a CLASS-level
+            # urllib3 timeout fed to the connection PoolManager, so it must be set
+            # BEFORE the connection is built (i.e. before webdriver.Remote). The
+            # default is socket._GLOBAL_DEFAULT_TIMEOUT -> get_timeout() None ->
+            # PoolManager(timeout=None) -> infinite wait: the root cause of the
+            # permanent chrome/edge hangs. 120s is well above page-load (30s).
+            _cmd_timeout = int(os.getenv('WEBDRIVER_COMMAND_TIMEOUT', '120'))
+            try:
+                RemoteConnection.set_timeout(_cmd_timeout)  # selenium 4.15 API
+            except Exception:
+                # Newer selenium deprecates the classmethod; set the class attr the
+                # PoolManager reads directly as a fallback. The in-process watchdog
+                # remains the backstop if neither applies.
+                try:
+                    RemoteConnection._timeout = _cmd_timeout
+                except Exception:
+                    pass
+
             driver = webdriver.Remote(
                 command_executor=f"http://{os.getenv('SELENIUM_HUB', 'selenium-hub:4444')}/wd/hub",
                 options=options
             )
-
-            # Bound EVERY remote command (not just the health probe) so a wedged
-            # node/session/page can never hang the browse loop indefinitely. The
-            # ceiling is well above page-load (30s) so legitimate slow navigations
-            # still complete; a true hang raises a timeout that recovery handles.
-            try:
-                driver.command_executor._client_config.timeout = int(
-                    os.getenv('WEBDRIVER_COMMAND_TIMEOUT', '120'))
-            except Exception:
-                pass
 
             # If successful, break out of retry loop
             logger.info(f'[{browser_type}] ✅ Session created successfully')
@@ -850,13 +860,8 @@ def is_driver_alive(driver):
     Returns True if connection is good, False if connection is lost
     """
     try:
-        # Bound the probe so a hung hub connection can't block forever.
-        # Selenium 4.41 exposes the underlying HTTP client config here.
-        try:
-            driver.command_executor._client_config.timeout = 15
-        except Exception:
-            pass
-        # Try a simple command to check if session is alive
+        # The probe is bounded by the global RemoteConnection timeout set in
+        # create_driver, so a hung hub connection cannot block forever here.
         _ = driver.current_url
         return True
     except Exception as e:
