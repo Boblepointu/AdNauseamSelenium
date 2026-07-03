@@ -24,7 +24,12 @@ x-node-env: &node-env
   SE_EVENT_BUS_SUBSCRIBE_PORT: "4443"
   SE_NODE_MAX_SESSIONS: "5"
   SE_NODE_OVERRIDE_MAX_SESSIONS: "true"
-  SE_NODE_SESSION_TIMEOUT: "1800"   # was 300 — too short; killed long crawl sessions
+  # Idle-session reaper. Active crawl sessions send commands every few seconds so
+  # they never idle out; this only reaps sessions ORPHANED when autoheal restarts a
+  # wedged replica (SIGKILL can't quit() the driver). 600s balances quick orphan
+  # cleanup against not killing a session that's briefly stuck (< the 120s command
+  # timeout). Was 300 (killed recovering sessions) then 1800 (orphans lingered 30m).
+  SE_NODE_SESSION_TIMEOUT: "600"
 
 services:
   selenium-hub:
