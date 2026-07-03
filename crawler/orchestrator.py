@@ -179,32 +179,36 @@ def browse():
             
             # Detect and bypass bot challenges (Cloudflare, etc.)
             challenge_passed = detect_and_bypass_bot_challenge(driver, browser_type, max_attempts=3)
+            _write_heartbeat()  # challenge handling can wait several seconds
             if not challenge_passed:
                 config.STATS['challenges_skipped'] += 1
                 logger.warning(f'  [{browser_type}] ⚠ Could not bypass bot challenge, skipping to next website')
                 continue  # Skip to next website
-            
+
             # Random human-like delay with fidgeting
             reading_behavior(driver, duration=random.uniform(2, 4))
-            
+
             # Auto-accept cookies
             auto_accept_cookies(driver, browser_type)
-            
+            _write_heartbeat()
+
             # Inject realistic console errors (10% chance)
             inject_realistic_errors(driver)
-            
+
             # Play YouTube videos if detected
             play_youtube_video(driver, browser_type)
-            
+            _write_heartbeat()
+
             # Simulate copy/paste behavior (5% chance)
             simulate_copy_paste(driver)
-            
+
             # Simulate right-click behavior (5% chance)
             simulate_right_click(driver, browser_type)
-            
+
             # Try to detect and click ads (60% chance)
             initial_tab_count = len(driver.window_handles)
             detect_and_click_ads(driver, browser_type, click_chance=0.6)
+            _write_heartbeat()
             
             # Handle new tabs from ads (40% chance to switch to ad tab)
             if len(driver.window_handles) > initial_tab_count:
