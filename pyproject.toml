@@ -27,6 +27,9 @@ quote-style = "preserve"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+# Put the repo root on sys.path so `import crawler` works under a bare `pytest`
+# invocation (CI), not only under `python -m pytest`.
+pythonpath = ["."]
 
 [tool.mypy]
 python_version = "3.11"
