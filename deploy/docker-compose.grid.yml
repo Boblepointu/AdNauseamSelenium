@@ -30,6 +30,13 @@ x-node-env: &node-env
   # cleanup against not killing a session that's briefly stuck (< the 120s command
   # timeout). Was 300 (killed recovering sessions) then 1800 (orphans lingered 30m).
   SE_NODE_SESSION_TIMEOUT: "600"
+  # Backstop for browser processes that outlive their session (observed: 18h-old
+  # chrome trees holding all 5 slots while SE_NODE_SESSION_TIMEOUT never fired).
+  # Kills browser processes older than 2h; no legit crawl session lives that long
+  # (watchdog force-exits after 300s without progress).
+  SE_ENABLE_BROWSER_LEFTOVERS_CLEANUP: "true"
+  SE_BROWSER_LEFTOVERS_INTERVAL_SECS: "1800"
+  SE_BROWSER_LEFTOVERS_PROCESSES_SECS: "7200"
 
 services:
   selenium-hub:
@@ -39,13 +46,18 @@ services:
       - "127.0.0.1:4444:4444"   # localhost-only; reach via SSH tunnel, not the LAN
     environment:
       SE_ROUTER_HEALTHCHECK: "true"
+      # Must stay BELOW the crawler's WEBDRIVER_COMMAND_TIMEOUT (90s). With the
+      # image default (300s) the hub kept fulfilling new-session requests long
+      # after the client timed out at 90s, creating orphaned sessions that
+      # saturated node slots and cascaded into more client timeouts.
+      SE_SESSION_REQUEST_TIMEOUT: "60"
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:4444/wd/hub/status"]
       interval: 10s
       timeout: 5s
       retries: 12
       start_period: 20s
-    mem_limit: 1g
+    mem_limit: 2g
     logging: *logging
     restart: unless-stopped
 
