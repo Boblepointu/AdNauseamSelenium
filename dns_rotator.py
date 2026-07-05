@@ -90,9 +90,14 @@ def _container_id(name):
 
 
 def _exec(cid, cmd):
-    """Run cmd (list) inside container cid via the Docker exec API."""
+    """Run cmd (list) as root inside container cid via the Docker exec API.
+
+    ``User: '0'`` is required because the Selenium node images run as the non-root
+    ``seluser`` by default, which cannot write ``/etc/resolv.conf``.
+    """
     status, data = _api('POST', '/containers/%s/exec' % cid,
-                        {'AttachStdout': False, 'AttachStderr': False, 'Cmd': cmd})
+                        {'AttachStdout': False, 'AttachStderr': False,
+                         'User': os.getenv('EXEC_USER', '0'), 'Cmd': cmd})
     if status != 201:
         return False, 'create exec HTTP %s' % status
     exec_id = json.loads(data)['Id']
