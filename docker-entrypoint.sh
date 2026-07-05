@@ -87,7 +87,28 @@ print_header "🚀 Browser Automation Running"
 echo ""
 
 # ============================================================
-# STEP 3: Execute the command passed to the container
+# STEP 3: Build the noise domain corpus (best-effort, non-fatal)
+# ============================================================
+# Guarded by a lockfile so that when several replicas boot together only one of
+# them actually fetches the blocklists; the others skip cleanly. This must never
+# abort the container (the script runs under `set -e`), hence the `|| print_*`
+# fallbacks below.
+if [ "${NOISE_ENABLED:-true}" = "true" ]; then
+    print_info "Building noise corpus (best-effort)..."
+    mkdir -p /data/noise 2>/dev/null || true
+    if command -v flock > /dev/null 2>&1; then
+        ( flock -n 9 && python3 /app/build_noise_corpus.py ) 9>/data/noise/.build.lock \
+            || print_warning "Noise corpus build skipped (locked or unavailable)"
+    else
+        # No flock in this image: run the builder directly; its own freshness
+        # guard keeps duplicate work cheap.
+        python3 /app/build_noise_corpus.py \
+            || print_warning "Noise corpus build skipped (unavailable)"
+    fi
+fi
+
+# ============================================================
+# STEP 4: Execute the command passed to the container
 # ============================================================
 exec "$@"
 

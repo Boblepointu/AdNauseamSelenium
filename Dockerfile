@@ -15,7 +15,13 @@ ENV PYTHONUNBUFFERED=1 \
     PERSONA_MAX_AGE_DAYS=30 \
     PERSONA_MAX_USES=100 \
     SELENIUM_HUB=selenium-hub:4444 \
-    HEARTBEAT_FILE=/tmp/crawler_heartbeat
+    HEARTBEAT_FILE=/tmp/crawler_heartbeat \
+    NOISE_ENABLED=true \
+    NOISE_RATIO=10 \
+    NOISE_MAX_CONCURRENCY=10 \
+    NOISE_SAMPLE_SIZE=400 \
+    NOISE_CORPUS_PATH=/data/noise/noise_domains.txt \
+    NOISE_CORPUS_MAX_AGE_DAYS=7
 
 # Install system dependencies
 RUN apt-get update -qq && \
@@ -35,6 +41,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application files
 COPY crawl.py /app/crawl.py
 COPY persona_manager.py /app/persona_manager.py
+COPY build_noise_corpus.py /app/build_noise_corpus.py
 COPY crawler/ /app/crawler/
 COPY websites.txt /app/websites.txt
 
@@ -44,6 +51,11 @@ RUN useradd -m -u 10001 crawler
 # Create persona data directory (owned by the non-root user, safe 755 perms)
 RUN mkdir -p /app/data/personas && \
     chmod 755 /app/data/personas
+
+# Create the shared noise corpus directory, writable by the non-root user so the
+# entrypoint's corpus build and the crawler's runtime harvesting can write to it.
+RUN mkdir -p /data/noise && \
+    chown -R crawler:crawler /data/noise
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh

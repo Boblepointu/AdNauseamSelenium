@@ -1,0 +1,295 @@
+"""AdNauseam-style network-noise feature: corpus loading + JS injection.
+
+This module is the Python half of the noise engine. It loads the domain corpus
+(built out-of-band by ``build_noise_corpus.py`` and grown at runtime by
+harvesting), samples a subset per page, and injects ``crawler/noise_engine.js``
+into the live browser so the page emits ~``NOISE_RATIO``× its real request
+volume in NON-EXECUTING request noise toward random domains.
+
+Safety: the corpus intentionally contains malware/tracker domains. They ONLY
+ever receive non-executing request primitives (fetch no-cors, Image, dns-prefetch
+etc., implemented in noise_engine.js) and are NEVER navigated to.
+
+Env reads mirror ``crawler.config`` style (read once at import time).
+"""
+import os
+import json
+import random
+import ipaddress
+import logging
+from pathlib import Path
+from urllib.parse import urlparse
+
+from crawler import config
+
+logger = logging.getLogger('crawler.noise')
+
+# Internal / special-use name suffixes that must never enter the noise pool.
+# Harvested hostnames resolving to these (or to a non-global IP literal) would
+# let a hostile page steer noise at the node's own services, cloud metadata, or
+# the internal LAN (SSRF amplification), so they are dropped at harvest time.
+_INTERNAL_SUFFIXES = (
+    '.local', '.internal', '.localhost', '.lan', '.intranet',
+    '.home.arpa', '.corp', '.localdomain',
+)
+_INTERNAL_EXACT = frozenset({'metadata.google.internal', 'localhost'})
+
+
+def _is_internal_host(host):
+    """True for loopback/private/link-local/reserved IPs and internal names.
+
+    Mirrors ``build_noise_corpus`` intent on the runtime harvest path. Wrapped
+    by the caller so it can never raise into the browse loop.
+    """
+    if host in _INTERNAL_EXACT or host.endswith(_INTERNAL_SUFFIXES):
+        return True
+    # IP literals (v4/v6, incl. bracketless): reject anything not globally routable.
+    try:
+        ip = ipaddress.ip_address(host.strip('[]'))
+    except ValueError:
+        return False  # a normal DNS name — allowed
+    return (ip.is_private or ip.is_loopback or ip.is_link_local
+            or ip.is_reserved or ip.is_unspecified or ip.is_multicast)
+
+# ---- Configuration (env-driven; mirrors crawler.config style) ---------------
+NOISE_ENABLED = os.getenv('NOISE_ENABLED', 'true').lower() == 'true'
+NOISE_RATIO = int(os.getenv('NOISE_RATIO', '10'))
+NOISE_MAX_CONCURRENCY = int(os.getenv('NOISE_MAX_CONCURRENCY', '10'))
+NOISE_SAMPLE_SIZE = int(os.getenv('NOISE_SAMPLE_SIZE', '400'))
+NOISE_CORPUS_PATH = os.getenv('NOISE_CORPUS_PATH', '/data/noise/noise_domains.txt')
+NOISE_SEED_PATH = os.getenv('NOISE_SEED_PATH', str(Path(__file__).parent / 'noise_seed.txt'))
+
+# Cap the RESIDENT domain pool so a multi-million-line corpus can't OOM a
+# memory-limited crawler (5 replicas share a 768MiB cap each). The on-disk
+# corpus may be far larger; the loader uniformly reservoir-samples down to this
+# many domains, which is ample diversity when we only sample a few hundred per
+# page. Growth from live harvesting is bounded to the same ceiling.
+NOISE_MAX_POOL = int(os.getenv('NOISE_MAX_POOL', '250000'))
+
+# How often (ms) the injected engine re-reads window.__NOISE.domains for a fresh
+# pool. Kept here so Python and JS agree on the re-injection cadence.
+NOISE_SAMPLE_REFRESH_MS = 15000
+
+# ---- Module-level mutable state ---------------------------------------------
+# The in-memory domain pool that sample_domains() draws from. Populated by
+# load_noise_domains() and grown in place by harvest_domains(). Tests monkeypatch
+# this attribute directly, so keep the name `_POOL`.
+_POOL = []
+
+# Set membership mirror of _POOL for O(1) "is this domain new?" checks during
+# harvesting (kept in sync with _POOL).
+_POOL_SEEN = set()
+
+# Guard so the "loaded N domains" line is logged only once per process.
+_POOL_LOADED = False
+
+# Cached engine source (read from disk once).
+_ENGINE_SOURCE = None
+
+
+def load_noise_domains():
+    """Load the domain corpus into the module pool once; return the pool.
+
+    Prefers ``NOISE_CORPUS_PATH`` (built/grown at runtime), falling back to the
+    bundled ``NOISE_SEED_PATH``. Missing files are tolerated (pool stays empty).
+    Idempotent and reusable: subsequent calls return the already-loaded pool
+    without re-reading disk or re-logging.
+    """
+    global _POOL, _POOL_SEEN, _POOL_LOADED
+    if _POOL_LOADED:
+        return _POOL
+
+    # Reservoir sampling: keep at most NOISE_MAX_POOL domains resident while
+    # sampling them uniformly across the whole (possibly sorted, possibly
+    # multi-million-line) file, so the pool is unbiased AND memory is bounded.
+    # The corpus builder already de-duplicates on disk, so we don't carry a
+    # full seen-set during the scan (that would defeat the memory bound).
+    domains = []
+    seen_total = 0
+    for path in (NOISE_CORPUS_PATH, NOISE_SEED_PATH):
+        if not path or not os.path.exists(path):
+            continue
+        try:
+            with open(path, 'r', encoding='utf-8', errors='replace') as fh:
+                for line in fh:
+                    line = line.strip()
+                    if not line or line.startswith('#'):
+                        continue
+                    dom = line.lower()
+                    if len(domains) < NOISE_MAX_POOL:
+                        domains.append(dom)
+                    else:
+                        j = random.randint(0, seen_total)
+                        if j < NOISE_MAX_POOL:
+                            domains[j] = dom
+                    seen_total += 1
+        except Exception as e:
+            logger.warning('⚠ Could not read noise corpus %s: %s', path, str(e)[:80])
+            continue
+        # First readable source wins; don't merge seed on top of a real corpus.
+        break
+
+    _POOL = domains
+    _POOL_SEEN = set(domains)
+    _POOL_LOADED = True
+    logger.info('✓ Loaded %d noise domain(s) into the pool (from %d on disk)',
+                len(_POOL), seen_total)
+    return _POOL
+
+
+def sample_domains(n):
+    """Return up to ``n`` random domains from the pool.
+
+    Safe for every edge: returns an empty list when the pool is empty or when
+    ``n`` <= 0, and returns the whole pool (shuffled) when ``n`` exceeds it.
+    Never raises.
+    """
+    try:
+        if n is None or n <= 0 or not _POOL:
+            return []
+        k = min(int(n), len(_POOL))
+        return random.sample(_POOL, k)
+    except Exception:
+        return []
+
+
+def clean_hostnames(urls):
+    """Turn resource URLs into clean lowercased http(s) hostnames.
+
+    Accepts an iterable that may contain None / non-strings / malformed URLs
+    without raising. Keeps only http/https URLs whose hostname contains a dot;
+    drops ftp/data/javascript/about/chrome/blob/file schemes and hostless URLs.
+    Aligns with ``sites.get_domain`` (netloc-ish, lowercased).
+    """
+    hosts = set()
+    if not urls:
+        return hosts
+    for url in urls:
+        try:
+            if not url or not isinstance(url, str):
+                continue
+            parsed = urlparse(url.strip())
+            if parsed.scheme.lower() not in ('http', 'https'):
+                continue
+            host = (parsed.hostname or '').lower()
+            if host and '.' in host and not _is_internal_host(host):
+                hosts.add(host)
+        except Exception:
+            continue
+    return hosts
+
+
+def _engine_source():
+    """Read and cache the standalone noise engine JS from disk."""
+    global _ENGINE_SOURCE
+    if _ENGINE_SOURCE is None:
+        try:
+            path = Path(__file__).parent / 'noise_engine.js'
+            _ENGINE_SOURCE = path.read_text(encoding='utf-8')
+        except Exception as e:
+            logger.warning('⚠ Could not read noise_engine.js: %s', str(e)[:80])
+            _ENGINE_SOURCE = ''
+    return _ENGINE_SOURCE
+
+
+def build_injection(domains, cfg):
+    """Build the single injection string: set window.__NOISE, then the engine.
+
+    Exactly ``"window.__NOISE=" + json.dumps({...}) + ";\\n" + <engine source>``
+    so the engine reads its inputs from the global the moment it evaluates.
+    """
+    payload = {'domains': list(domains), 'config': cfg}
+    return 'window.__NOISE=' + json.dumps(payload) + ';\n' + _engine_source()
+
+
+def inject_noise(driver, browser_type):
+    """Inject (or refresh) the noise engine on the current page. Never raises.
+
+    No-ops cleanly when the feature is disabled or the pool is empty. Bumps
+    ``config.STATS['noise_injections']`` on a successful execute_script.
+    """
+    if not NOISE_ENABLED or not _POOL:
+        return
+    try:
+        cfg = {
+            'ratio': NOISE_RATIO,
+            'maxConcurrency': NOISE_MAX_CONCURRENCY,
+            'sampleRefreshMs': NOISE_SAMPLE_REFRESH_MS,
+            'enabled': True,
+        }
+        domains = sample_domains(NOISE_SAMPLE_SIZE)
+        if not domains:
+            return
+        driver.execute_script(build_injection(domains, cfg))
+        config.STATS['noise_injections'] += 1
+    except Exception as e:
+        logger.debug('[%s] noise injection skipped: %s', browser_type, str(e)[:80])
+
+
+def harvest_domains(driver, browser_type):
+    """Harvest real resource domains + read back noise counts. Never raises.
+
+    Reads the page's real resource URLs via the Resource Timing API, extracts
+    NEW hostnames not already in the pool, appends them to ``NOISE_CORPUS_PATH``
+    and extends the in-memory pool so it grows within the process. Also reads
+    ``window.__noiseStats().sent`` and folds it into
+    ``config.STATS['noise_requests']`` monotonically (per-driver last value, so
+    re-injections/navigations that reset the JS counter don't double count).
+    """
+    global _POOL
+    try:
+        urls = driver.execute_script(
+            "return performance.getEntriesByType('resource').map(e=>e.name)"
+        )
+    except Exception as e:
+        logger.debug('[%s] harvest skipped (no resource timing): %s', browser_type, str(e)[:80])
+        urls = None
+
+    if urls:
+        try:
+            hosts = clean_hostnames(urls)
+            new = [h for h in hosts if h not in _POOL_SEEN]
+            if new:
+                for h in new:
+                    _POOL_SEEN.add(h)
+                    # Persist every new domain to disk, but bound the resident
+                    # pool so long-running processes can't grow it without limit.
+                    if len(_POOL) < NOISE_MAX_POOL:
+                        _POOL.append(h)
+                    else:
+                        _POOL[random.randrange(NOISE_MAX_POOL)] = h
+                _append_domains(new)
+                config.STATS['domains_harvested'] += len(new)
+        except Exception as e:
+            logger.debug('[%s] harvest processing failed: %s', browser_type, str(e)[:80])
+
+    # Read back cumulative noise counts from the engine and add the delta.
+    try:
+        stats = driver.execute_script(
+            'return window.__noiseStats ? window.__noiseStats() : null'
+        )
+        if stats and isinstance(stats, dict) and 'sent' in stats:
+            sent = int(stats.get('sent') or 0)
+            # The JS counter resets to 0 on each fresh page/injection, so a value
+            # smaller than our last-seen means a reset: count the whole new value.
+            last = getattr(driver, '_noise_last_sent', 0)
+            delta = sent - last if sent >= last else sent
+            if delta > 0:
+                config.STATS['noise_requests'] += delta
+            driver._noise_last_sent = sent
+    except Exception as e:
+        logger.debug('[%s] noise stats read failed: %s', browser_type, str(e)[:80])
+
+
+def _append_domains(domains):
+    """Best-effort append of newly harvested domains to the corpus file."""
+    try:
+        directory = os.path.dirname(NOISE_CORPUS_PATH) or '.'
+        os.makedirs(directory, exist_ok=True)
+        with open(NOISE_CORPUS_PATH, 'a', encoding='utf-8') as fh:
+            for dom in domains:
+                fh.write(dom)
+                fh.write('\n')
+    except Exception as e:
+        logger.debug('Could not append harvested domains to %s: %s',
+                     NOISE_CORPUS_PATH, str(e)[:80])

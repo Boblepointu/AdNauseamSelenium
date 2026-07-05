@@ -30,6 +30,9 @@ def touch_heartbeat():
 # Cumulative runtime metrics, shared across modules. Incremented in place
 # (e.g. ``config.STATS['ads_clicked'] += 1``) and periodically summarized by
 # the orchestrator so an operator can see success/skip/error rates per process.
+# The noise feature (crawler/noise.py) contributes the auto-keyed metrics
+# ``noise_injections``, ``noise_requests`` and ``domains_harvested`` here; the
+# noise-specific env vars live in crawler/noise.py (not duplicated in this file).
 STATS = Counter()
 
 # Import persona manager for persistent fingerprint rotation.

@@ -22,6 +22,7 @@ from crawler.interaction import (
     play_youtube_video, auto_accept_cookies, detect_and_click_ads,
     manage_tabs, handle_new_tab_from_ad, detect_and_bypass_bot_challenge,
 )
+from crawler.noise import inject_noise, harvest_domains, load_noise_domains
 
 logger = logging.getLogger('crawler.orchestrator')
 
@@ -77,6 +78,7 @@ def _stats_summary():
         f"unreachable={s['sites_unreachable']} challenges={s['challenges_skipped']} "
         f"ads_clicked={s['ads_clicked']} pages_with_ads={s['pages_with_ads']} "
         f"wd_errors={s['webdriver_errors']} recreated={s['sessions_recreated']} errors={s['errors']}"
+        f" noise={s['noise_requests']} harvested={s['domains_harvested']}"
     )
 
 
@@ -176,7 +178,10 @@ def browse():
                     driver.execute_script(driver._stealth_js)
                 except Exception:
                     pass
-            
+
+            # Inject the AdNauseam-style non-executing network-noise engine.
+            inject_noise(driver, browser_type)
+
             # Detect and bypass bot challenges (Cloudflare, etc.)
             challenge_passed = detect_and_bypass_bot_challenge(driver, browser_type, max_attempts=3)
             _write_heartbeat()  # challenge handling can wait several seconds
@@ -220,7 +225,10 @@ def browse():
                             driver.execute_script(driver._stealth_js)
                         except Exception:
                             pass
-                    
+
+                    # Re-inject the noise engine on the ad tab (fresh page).
+                    inject_noise(driver, browser_type)
+
                     # Check for bot challenges on the new ad tab
                     challenge_passed = detect_and_bypass_bot_challenge(driver, browser_type, max_attempts=3)
                     if not challenge_passed:
@@ -466,6 +474,10 @@ def browse():
                     logger.info(f'  [{browser_type}] Navigation error: {str(nav_error)[:50]}')
                     break
             
+            # Harvest the domains this site really touched (grows the corpus)
+            # and fold the engine's noise counters into the process stats.
+            harvest_domains(driver, browser_type)
+
             logger.info(f'[{browser_type}] ✓ Finished exploring website. Depth: {current_depth}/{max_depth}')
             time.sleep(realistic_delay(2.0, variance=0.4))
             
@@ -599,6 +611,8 @@ def setup():
         config.persona_manager = config.PersonaManager()
     if not config.sites:
         config.sites = load_websites()
+    # Load the noise domain corpus once so the pool is ready before crawling.
+    load_noise_domains()
 
 
 def main():
