@@ -42,6 +42,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY crawl.py /app/crawl.py
 COPY persona_manager.py /app/persona_manager.py
 COPY build_noise_corpus.py /app/build_noise_corpus.py
+COPY dns_rotator.py /app/dns_rotator.py
 COPY crawler/ /app/crawler/
 COPY websites.txt /app/websites.txt
 

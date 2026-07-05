@@ -17,9 +17,17 @@
 
   var N = window.__NOISE || { domains: [], config: {} };
   var cfg = Object.assign(
-    { ratio: 10, maxConcurrency: 10, sampleRefreshMs: 15000, enabled: true },
+    { ratio: 10, maxConcurrency: 10, sampleRefreshMs: 15000, enabled: true, dohRatio: 0.22 },
     N.config || {}
   );
+
+  // DoH resolver pool (weighted-expanded base URLs, e.g. https://dns.google/dns-query).
+  // A minority (~dohRatio) of DNS-generating emissions are DoH queries fired at these
+  // globally-rotating resolvers; the majority are STANDARD DNS lookups (fetch/img/link
+  // resolve through the browser node's system resolver, which the dns-rotator sidecar
+  // rotates across validated public :53 resolvers). Together: ~78% standard / ~22% DoH.
+  var dohPool = Array.isArray(N.doh) ? N.doh.slice() : [];
+  var dohRatio = (typeof cfg.dohRatio === 'number') ? cfg.dohRatio : 0.22;
 
   // ---- Double-injection guard -------------------------------------------------
   // If already running, just refresh the live pool and bail. This keeps a single
@@ -48,6 +56,7 @@
   // ---- Engine state -----------------------------------------------------------
   var stopped = false;
   var noiseSent = 0;          // number of noise requests we have issued
+  var dohSent = 0;            // subset of noiseSent that were DoH DNS queries
   var inFlight = 0;           // current concurrency (fetch/image slots)
   var ownUrls = Object.create(null); // URLs WE issued, to subtract from "real"
   var seenReal = Object.create(null); // real resource URLs already counted
@@ -132,6 +141,20 @@
   function pick(arr) { return arr[rand(arr.length)]; }
   function pickDomain() { return pool[rand(pool.length)]; }
 
+  var LABELCH = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  function randLabel() {
+    var len = 4 + rand(10), s = '';
+    for (var i = 0; i < len; i++) { s += LABELCH.charAt(rand(LABELCH.length)); }
+    return s;
+  }
+
+  // Most standard-DNS noise uses a fresh random subdomain so each request forces a
+  // NEW recursive lookup at the (rotating) system resolver instead of hitting cache —
+  // this is what makes the DNS noise voluminous and unique rather than repetitive.
+  function noisyHost(domain) {
+    return (Math.random() < 0.65) ? (randLabel() + '.' + domain) : domain;
+  }
+
   function cacheBust() {
     return 'nb=' + Date.now().toString(36) + rand(1e6).toString(36);
   }
@@ -145,7 +168,7 @@
 
   function buildUrl(domain, scheme) {
     var s = scheme || (Math.random() < 0.9 ? 'https' : 'http');
-    return s + '://' + domain + buildPath() + '?' + cacheBust();
+    return s + '://' + noisyHost(domain) + buildPath() + '?' + cacheBust();
   }
 
   // ---- Concurrency slot helpers ----------------------------------------------
@@ -225,9 +248,9 @@
       var link = document.createElement('link');
       link.rel = rel;
       if (rel === 'dns-prefetch') {
-        link.href = '//' + domain;
+        link.href = '//' + noisyHost(domain);
       } else if (rel === 'preconnect') {
-        link.href = 'https://' + domain;
+        link.href = 'https://' + noisyHost(domain);
       } else {
         var url = buildUrl(domain);
         ownUrls[url] = 1;
@@ -303,8 +326,64 @@
     return false;
   }
 
+  // ---- DoH (RFC 8484 wireformat) DNS query noise ------------------------------
+  // Encodes a DNS query for a random (usually fresh-subdomain) name with a random
+  // record type, base64url it, and GET it at a weighted-random global DoH resolver.
+  // no-cors: we never read the answer — the point is that the query is RESOLVED at a
+  // rotating set of resolvers worldwide, so no single resolver sees a coherent picture.
+  var QTYPES = [1, 1, 1, 28, 28, 16, 15, 2, 65]; // A (weighted), AAAA, TXT, MX, NS, HTTPS
+  function b64url(bytes) {
+    var bin = '';
+    for (var i = 0; i < bytes.length; i++) { bin += String.fromCharCode(bytes[i] & 255); }
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function dnsWire(name, qtype) {
+    var id = rand(65536);
+    var b = [(id >> 8) & 255, id & 255, 0x01, 0x00, 0, 1, 0, 0, 0, 0, 0, 0];
+    var labels = name.split('.');
+    for (var i = 0; i < labels.length; i++) {
+      var l = labels[i]; if (!l.length) { continue; }
+      b.push(l.length & 255);
+      for (var j = 0; j < l.length; j++) { b.push(l.charCodeAt(j) & 255); }
+    }
+    b.push(0);                              // root label
+    b.push((qtype >> 8) & 255, qtype & 255); // QTYPE
+    b.push(0, 1);                            // QCLASS = IN
+    return b64url(b);
+  }
+  function viaDoH() {
+    if (!dohPool.length) { return; }
+    var base = dohPool[rand(dohPool.length)];
+    var name = randLabel() + '.' + pickDomain();
+    var url = base + (base.indexOf('?') < 0 ? '?' : '&') + 'dns=' + dnsWire(name, pick(QTYPES));
+    ownUrls[url] = 1;
+    acquire();
+    noiseSent++;
+    dohSent++;
+    var done = false, timer = null;
+    var fin = function () {
+      if (done) { return; }
+      done = true;
+      if (timer) { clearTimeout(timer); timer = null; }
+      release();
+    };
+    try {
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var opts = { mode: 'no-cors', method: 'GET', cache: 'no-store', keepalive: true,
+                   credentials: 'omit', headers: { 'accept': 'application/dns-message' } };
+      if (ctrl) { opts.signal = ctrl.signal; }
+      timer = setTimeout(function () { try { if (ctrl) { ctrl.abort(); } } catch (e) {} fin(); }, REQ_TIMEOUT_MS);
+      fetch(url, opts).then(fin, fin);
+    } catch (e) {
+      fin();
+    }
+  }
+
   // ---- One noise emission, random primitive -----------------------------------
   function emitOne() {
+    // ~dohRatio of DNS-generating emissions are DoH; the rest are standard-DNS
+    // primitives (fetch/img/link) that resolve via the rotating system resolver.
+    if (dohPool.length && Math.random() < dohRatio) { viaDoH(); return; }
     var domain = pickDomain();
     if (!domain) { return; }
     var r = Math.random();
@@ -353,6 +432,8 @@
     try {
       var d = window.__NOISE && window.__NOISE.domains;
       if (Array.isArray(d) && d.length) { pool = d.slice(); }
+      var dh = window.__NOISE && window.__NOISE.doh;
+      if (Array.isArray(dh) && dh.length) { dohPool = dh.slice(); }
     } catch (e) { /* ignore */ }
   }
 
@@ -428,9 +509,11 @@
   window.__noiseStats = function () {
     return {
       sent: noiseSent,
+      doh: dohSent,
       real: realCount,
       target: target(),
-      pool: pool.length
+      pool: pool.length,
+      dohPool: dohPool.length
     };
   };
 

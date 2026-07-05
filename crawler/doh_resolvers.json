@@ -1,0 +1,358 @@
+{
+  "note": "DoH resolver pool for AdNauseam DNS-rotation noise. Validated via RFC8484 wireformat (example.com/A -> HTTP 200). country=provider home (ANYCAST=global anycast serving all regions incl. priority countries). geo_cc=measured geoip of endpoint IP from the deploy host. weight: prio-country unicast=3, anycast=2, other=1.",
+  "validated_utc": "2026-07-05T13:30:15Z",
+  "count": 39,
+  "resolvers": [
+    {
+      "url": "https://dns.google/dns-query",
+      "provider": "Google",
+      "country": "ANYCAST",
+      "geo_cc": "US",
+      "city": "Ashburn",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://cloudflare-dns.com/dns-query",
+      "provider": "Cloudflare",
+      "country": "ANYCAST",
+      "geo_cc": "CA",
+      "city": "Toronto",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://one.one.one.one/dns-query",
+      "provider": "Cloudflare",
+      "country": "ANYCAST",
+      "geo_cc": "AU",
+      "city": "South Brisbane",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://dns.quad9.net/dns-query",
+      "provider": "Quad9",
+      "country": "ANYCAST",
+      "geo_cc": "US",
+      "city": "Berkeley",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://dns10.quad9.net/dns-query",
+      "provider": "Quad9-open",
+      "country": "ANYCAST",
+      "geo_cc": "US",
+      "city": "Berkeley",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://doh.opendns.com/dns-query",
+      "provider": "OpenDNS",
+      "country": "ANYCAST",
+      "geo_cc": "US",
+      "city": "San Francisco",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://dns.adguard-dns.com/dns-query",
+      "provider": "AdGuard",
+      "country": "ANYCAST",
+      "geo_cc": "CY",
+      "city": "Limassol",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://unfiltered.adguard-dns.com/dns-query",
+      "provider": "AdGuard-open",
+      "country": "ANYCAST",
+      "geo_cc": "CY",
+      "city": "Limassol",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://dns.mullvad.net/dns-query",
+      "provider": "Mullvad",
+      "country": "ANYCAST",
+      "geo_cc": "US",
+      "city": "Los Angeles",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://doh.dns.sb/dns-query",
+      "provider": "DNS.SB",
+      "country": "ANYCAST",
+      "geo_cc": "DE",
+      "city": "D\u00fcsseldorf",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://doh.libredns.gr/dns-query",
+      "provider": "LibreDNS",
+      "country": "GR",
+      "geo_cc": "DE",
+      "city": "Nuremberg",
+      "weight": 1,
+      "class": "other"
+    },
+    {
+      "url": "https://doh.applied-privacy.net/query",
+      "provider": "AppliedPrivacy",
+      "country": "AT",
+      "geo_cc": "AT",
+      "city": "Wiener Neudorf",
+      "weight": 1,
+      "class": "other"
+    },
+    {
+      "url": "https://doh.ffmuc.net/dns-query",
+      "provider": "FFMUC",
+      "country": "DE",
+      "geo_cc": "DE",
+      "city": "Munich",
+      "weight": 1,
+      "class": "other"
+    },
+    {
+      "url": "https://dns.digitale-gesellschaft.ch/dns-query",
+      "provider": "DigitaleGesellschaft",
+      "country": "CH",
+      "geo_cc": "CH",
+      "city": "Zurich",
+      "weight": 3,
+      "class": "prio"
+    },
+    {
+      "url": "https://dns.switch.ch/dns-query",
+      "provider": "SWITCH",
+      "country": "CH",
+      "geo_cc": "CH",
+      "city": "Zurich",
+      "weight": 3,
+      "class": "prio"
+    },
+    {
+      "url": "https://dnsforge.de/dns-query",
+      "provider": "DNSForge",
+      "country": "DE",
+      "geo_cc": "DE",
+      "city": "Falkenstein",
+      "weight": 1,
+      "class": "other"
+    },
+    {
+      "url": "https://fdns1.dismail.de/dns-query",
+      "provider": "dismail",
+      "country": "DE",
+      "geo_cc": "DE",
+      "city": "Nuremberg",
+      "weight": 1,
+      "class": "other"
+    },
+    {
+      "url": "https://doh.42l.fr/dns-query",
+      "provider": "42l",
+      "country": "FR",
+      "geo_cc": "DE",
+      "city": "Falkenstein",
+      "weight": 3,
+      "class": "prio"
+    },
+    {
+      "url": "https://odvr.nic.cz/doh",
+      "provider": "nic.cz",
+      "country": "CZ",
+      "geo_cc": "CZ",
+      "city": "Prague",
+      "weight": 1,
+      "class": "other"
+    },
+    {
+      "url": "https://doh.tiarap.org/dns-query",
+      "provider": "Tiar",
+      "country": "SG",
+      "geo_cc": "CA",
+      "city": "Toronto",
+      "weight": 1,
+      "class": "other"
+    },
+    {
+      "url": "https://jp.tiar.app/dns-query",
+      "provider": "Tiar-JP",
+      "country": "JP",
+      "geo_cc": "JP",
+      "city": "Tokyo",
+      "weight": 3,
+      "class": "prio"
+    },
+    {
+      "url": "https://dns.alidns.com/dns-query",
+      "provider": "AliDNS",
+      "country": "CN",
+      "geo_cc": "CN",
+      "city": "Hangzhou",
+      "weight": 3,
+      "class": "prio"
+    },
+    {
+      "url": "https://doh.pub/dns-query",
+      "provider": "DNSPod",
+      "country": "CN",
+      "geo_cc": "CN",
+      "city": "Beijing",
+      "weight": 3,
+      "class": "prio"
+    },
+    {
+      "url": "https://doh.360.cn/dns-query",
+      "provider": "360",
+      "country": "CN",
+      "geo_cc": "CN",
+      "city": "Jinrongjie",
+      "weight": 3,
+      "class": "prio"
+    },
+    {
+      "url": "https://public.dns.iij.jp/dns-query",
+      "provider": "IIJ",
+      "country": "JP",
+      "geo_cc": "JP",
+      "city": "Chiyoda City",
+      "weight": 3,
+      "class": "prio"
+    },
+    {
+      "url": "https://private.canadianshield.cira.ca/dns-query",
+      "provider": "CIRA",
+      "country": "CA",
+      "geo_cc": "CA",
+      "city": "Montreal",
+      "weight": 3,
+      "class": "prio"
+    },
+    {
+      "url": "https://protected.canadianshield.cira.ca/dns-query",
+      "provider": "CIRA-prot",
+      "country": "CA",
+      "geo_cc": "CA",
+      "city": "Montreal",
+      "weight": 3,
+      "class": "prio"
+    },
+    {
+      "url": "https://doh.cleanbrowsing.org/doh/security-filter/",
+      "provider": "CleanBrowsing",
+      "country": "ANYCAST",
+      "geo_cc": "US",
+      "city": "Washington",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://freedns.controld.com/p0",
+      "provider": "ControlD",
+      "country": "ANYCAST",
+      "geo_cc": "CA",
+      "city": "Toronto",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://dns.brahma.world/dns-query",
+      "provider": "Brahma",
+      "country": "DE",
+      "geo_cc": "DE",
+      "city": "Nuremberg",
+      "weight": 1,
+      "class": "other"
+    },
+    {
+      "url": "https://wikimedia-dns.org/dns-query",
+      "provider": "Wikimedia",
+      "country": "ANYCAST",
+      "geo_cc": "NL",
+      "city": "Amsterdam",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://dns.nextdns.io/dns-query",
+      "provider": "NextDNS",
+      "country": "ANYCAST",
+      "geo_cc": "FR",
+      "city": "Paris",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://dns.bebasid.com/unfiltered",
+      "provider": "BebasID",
+      "country": "ID",
+      "geo_cc": "ID",
+      "city": "Cikarang",
+      "weight": 1,
+      "class": "other"
+    },
+    {
+      "url": "https://ada.openbld.net/dns-query",
+      "provider": "OpenBLD",
+      "country": "DE",
+      "geo_cc": "DE",
+      "city": "Nuremberg",
+      "weight": 1,
+      "class": "other"
+    },
+    {
+      "url": "https://dns.comss.one/dns-query",
+      "provider": "Comss",
+      "country": "RU",
+      "geo_cc": "RU",
+      "city": "Moscow",
+      "weight": 3,
+      "class": "prio"
+    },
+    {
+      "url": "https://dns.controld.com/dns-query",
+      "provider": "ControlD",
+      "country": "ANYCAST",
+      "geo_cc": "CA",
+      "city": "Toronto",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://ordns.he.net/dns-query",
+      "provider": "HurricaneElectric",
+      "country": "ANYCAST",
+      "geo_cc": "US",
+      "city": "Gunnison",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://sky.rethinkdns.com/dns-query",
+      "provider": "RethinkDNS",
+      "country": "ANYCAST",
+      "geo_cc": "CA",
+      "city": "Toronto",
+      "weight": 2,
+      "class": "anycast"
+    },
+    {
+      "url": "https://basic.rethinkdns.com/dns-query",
+      "provider": "RethinkDNS-b",
+      "country": "ANYCAST",
+      "geo_cc": "CA",
+      "city": "Toronto",
+      "weight": 2,
+      "class": "anycast"
+    }
+  ]
+}

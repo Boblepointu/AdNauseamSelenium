@@ -22,7 +22,7 @@ from crawler.interaction import (
     play_youtube_video, auto_accept_cookies, detect_and_click_ads,
     manage_tabs, handle_new_tab_from_ad, detect_and_bypass_bot_challenge,
 )
-from crawler.noise import inject_noise, harvest_domains, load_noise_domains
+from crawler.noise import inject_noise, harvest_domains, load_noise_domains, load_doh_pool
 
 logger = logging.getLogger('crawler.orchestrator')
 
@@ -611,8 +611,9 @@ def setup():
         config.persona_manager = config.PersonaManager()
     if not config.sites:
         config.sites = load_websites()
-    # Load the noise domain corpus once so the pool is ready before crawling.
+    # Load the noise domain corpus + DoH resolver pool once, before crawling.
     load_noise_domains()
+    load_doh_pool()
 
 
 def main():

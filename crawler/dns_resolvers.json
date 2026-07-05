@@ -1,0 +1,502 @@
+{
+  "note": "Plain :53 public DNS resolvers for standard-DNS rotation (browser node resolv.conf). Validated: dig example.com A @ip (<=2s) returned an A record. geo_cc=ip-api geoip. weight: priority-country=3, reliable anchor=2, other=1. A stable fallback nameserver is always appended by the rotator so a slow/blocked pick cannot break crawling.",
+  "validated_utc": "2026-07-05T13:34:42Z",
+  "count": 55,
+  "resolvers": [
+    {
+      "ip": "199.85.126.10",
+      "geo_cc": "CA",
+      "city": "Toronto",
+      "org": "Gen Digital Inc",
+      "latency_ms": 31,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "199.85.127.10",
+      "geo_cc": "US",
+      "city": "New York",
+      "org": "Gen Digital Inc",
+      "latency_ms": 35,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "129.250.35.250",
+      "geo_cc": "US",
+      "city": "Chicago",
+      "org": "NTT America, Inc",
+      "latency_ms": 36,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "45.90.28.0",
+      "geo_cc": "US",
+      "city": "Wilmington",
+      "org": "nextdns, Inc",
+      "latency_ms": 36,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "76.76.10.0",
+      "geo_cc": "CA",
+      "city": "Toronto",
+      "org": "Controld Inc",
+      "latency_ms": 38,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "8.20.247.20",
+      "geo_cc": "US",
+      "city": "Clifton",
+      "org": "DNS.com, LLC",
+      "latency_ms": 39,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "9.9.9.9",
+      "geo_cc": "US",
+      "city": "Berkeley",
+      "org": "Quad9",
+      "latency_ms": 40,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "8.26.56.26",
+      "geo_cc": "US",
+      "city": "Clifton",
+      "org": "DNS.com, LLC",
+      "latency_ms": 40,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "185.228.168.9",
+      "geo_cc": "US",
+      "city": "Washington",
+      "org": "DNS Anycast Cleanbrowsing",
+      "latency_ms": 40,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "149.112.112.112",
+      "geo_cc": "US",
+      "city": "Berkeley",
+      "org": "Quad9",
+      "latency_ms": 41,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "76.76.2.0",
+      "geo_cc": "CA",
+      "city": "Toronto",
+      "org": "Controld Inc",
+      "latency_ms": 42,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "129.250.35.251",
+      "geo_cc": "US",
+      "city": "Chicago",
+      "org": "NTT America, Inc",
+      "latency_ms": 43,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "185.228.169.9",
+      "geo_cc": "GB",
+      "city": "London",
+      "org": "DNS Anycast Cleanbrowsing Secondary",
+      "latency_ms": 43,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "156.154.71.1",
+      "geo_cc": "US",
+      "city": "Lehi",
+      "org": "Vercara, LLC",
+      "latency_ms": 44,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "209.244.0.3",
+      "geo_cc": "US",
+      "city": "Monroe",
+      "org": "Level 3, LLC",
+      "latency_ms": 47,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "119.29.29.29",
+      "geo_cc": "CN",
+      "city": "Guangzhou",
+      "org": "",
+      "latency_ms": 47,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "216.146.35.35",
+      "geo_cc": "BR",
+      "city": "S\u00e3o Paulo",
+      "org": "Dynamic Network Services, Inc",
+      "latency_ms": 48,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "156.154.70.1",
+      "geo_cc": "US",
+      "city": "New York",
+      "org": "Vercara, LLC",
+      "latency_ms": 49,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "89.234.141.66",
+      "geo_cc": "FR",
+      "city": "Strasbourg",
+      "org": "Alsace Reseau Neutre network",
+      "latency_ms": 49,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "216.146.36.36",
+      "geo_cc": "BR",
+      "city": "S\u00e3o Paulo",
+      "org": "Dynamic Network Services, Inc",
+      "latency_ms": 50,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "8.8.4.4",
+      "geo_cc": "US",
+      "city": "Ashburn",
+      "org": "Google Public DNS",
+      "latency_ms": 55,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "212.230.255.1",
+      "geo_cc": "ES",
+      "city": "Alcobendas",
+      "org": "Global ISP by PriorityTelecom Spain, S.A",
+      "latency_ms": 55,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "8.8.8.8",
+      "geo_cc": "US",
+      "city": "Ashburn",
+      "org": "Google Public DNS",
+      "latency_ms": 73,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "193.58.251.251",
+      "geo_cc": "RU",
+      "city": "Yekaterinburg",
+      "org": "SkyDNS Ltd",
+      "latency_ms": 75,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "195.208.5.1",
+      "geo_cc": "RU",
+      "city": "Moscow",
+      "org": "Join-stock company \"Internet Exchange\"MS",
+      "latency_ms": 91,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "77.88.8.1",
+      "geo_cc": "RU",
+      "city": "Moscow",
+      "org": "Yandex LLC",
+      "latency_ms": 98,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "77.88.8.8",
+      "geo_cc": "RU",
+      "city": "Moscow",
+      "org": "Yandex LLC",
+      "latency_ms": 100,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "62.76.76.62",
+      "geo_cc": "RU",
+      "city": "Moscow",
+      "org": "JSC Msk-ix",
+      "latency_ms": 106,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "195.208.4.1",
+      "geo_cc": "RU",
+      "city": "Moscow",
+      "org": "Join-stock company \"Internet Exchange\"MS",
+      "latency_ms": 123,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "149.112.121.10",
+      "geo_cc": "CA",
+      "city": "Montreal",
+      "org": "CIRA Canadian Internet Registration Auth",
+      "latency_ms": 123,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "149.112.121.20",
+      "geo_cc": "CA",
+      "city": "Montreal",
+      "org": "CIRA Canadian Internet Registration Auth",
+      "latency_ms": 125,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "200.221.11.100",
+      "geo_cc": "BR",
+      "city": "Campos Eliseos",
+      "org": "Universo Online S.A",
+      "latency_ms": 223,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "114.114.115.115",
+      "geo_cc": "CN",
+      "city": "Jinan",
+      "org": "NanJing XinFeng Information Technologies",
+      "latency_ms": 231,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "223.6.6.6",
+      "geo_cc": "CN",
+      "city": "Hangzhou",
+      "org": "Aliyun Computing Co., LTD",
+      "latency_ms": 238,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "180.76.76.76",
+      "geo_cc": "CN",
+      "city": "Beijing",
+      "org": "Beijing Baidu Netcom Science and Technol",
+      "latency_ms": 257,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "1.2.4.8",
+      "geo_cc": "CN",
+      "city": "Fengtai",
+      "org": "Saiyu Technology (Beijing) Co., Ltd.",
+      "latency_ms": 290,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "223.5.5.5",
+      "geo_cc": "CN",
+      "city": "Hangzhou",
+      "org": "Aliyun Computing Co., LTD",
+      "latency_ms": 338,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "195.133.25.16",
+      "geo_cc": "RU",
+      "city": "Moscow",
+      "org": "JSC \"TIMEWEB\"",
+      "latency_ms": 420,
+      "priority": true,
+      "weight": 3
+    },
+    {
+      "ip": "1.1.1.1",
+      "geo_cc": "AU",
+      "city": "South Brisbane",
+      "org": "APNIC and Cloudflare DNS Resolver projec",
+      "latency_ms": 36,
+      "priority": false,
+      "weight": 2
+    },
+    {
+      "ip": "195.46.39.40",
+      "geo_cc": "DE",
+      "city": "Frankfurt am Main",
+      "org": "SafeDNS, Inc",
+      "latency_ms": 36,
+      "priority": false,
+      "weight": 1
+    },
+    {
+      "ip": "195.46.39.39",
+      "geo_cc": "DE",
+      "city": "Frankfurt am Main",
+      "org": "SafeDNS, Inc",
+      "latency_ms": 40,
+      "priority": false,
+      "weight": 1
+    },
+    {
+      "ip": "1.0.0.1",
+      "geo_cc": "AU",
+      "city": "South Brisbane",
+      "org": "APNIC and Cloudflare DNS Resolver projec",
+      "latency_ms": 44,
+      "priority": false,
+      "weight": 2
+    },
+    {
+      "ip": "94.140.14.14",
+      "geo_cc": "CY",
+      "city": "Limassol",
+      "org": "AdGuard Software Limited",
+      "latency_ms": 45,
+      "priority": false,
+      "weight": 2
+    },
+    {
+      "ip": "94.140.15.15",
+      "geo_cc": "CY",
+      "city": "Limassol",
+      "org": "AdGuard Software Limited",
+      "latency_ms": 49,
+      "priority": false,
+      "weight": 2
+    },
+    {
+      "ip": "88.198.92.222",
+      "geo_cc": "DE",
+      "city": "Nuremberg",
+      "org": "Hetzner Online GmbH",
+      "latency_ms": 51,
+      "priority": false,
+      "weight": 1
+    },
+    {
+      "ip": "45.11.45.11",
+      "geo_cc": "DE",
+      "city": "D\u00fcsseldorf",
+      "org": "",
+      "latency_ms": 52,
+      "priority": false,
+      "weight": 1
+    },
+    {
+      "ip": "185.222.222.222",
+      "geo_cc": "DE",
+      "city": "D\u00fcsseldorf",
+      "org": "",
+      "latency_ms": 61,
+      "priority": false,
+      "weight": 1
+    },
+    {
+      "ip": "95.85.95.85",
+      "geo_cc": "LU",
+      "city": "Luxembourg",
+      "org": "G-Core Labs S.A",
+      "latency_ms": 61,
+      "priority": false,
+      "weight": 1
+    },
+    {
+      "ip": "2.56.220.2",
+      "geo_cc": "LU",
+      "city": "Luxembourg",
+      "org": "G-Core Labs S.A",
+      "latency_ms": 62,
+      "priority": false,
+      "weight": 1
+    },
+    {
+      "ip": "80.80.81.81",
+      "geo_cc": "NL",
+      "city": "Amsterdam",
+      "org": "OpenTLD BV",
+      "latency_ms": 65,
+      "priority": false,
+      "weight": 1
+    },
+    {
+      "ip": "195.140.195.21",
+      "geo_cc": "FI",
+      "city": "Tampere",
+      "org": "TREX Tampere Region Exchange Oy",
+      "latency_ms": 66,
+      "priority": false,
+      "weight": 1
+    },
+    {
+      "ip": "195.140.195.22",
+      "geo_cc": "FI",
+      "city": "Tampere",
+      "org": "TREX Tampere Region Exchange Oy",
+      "latency_ms": 104,
+      "priority": false,
+      "weight": 1
+    },
+    {
+      "ip": "104.155.237.225",
+      "geo_cc": "TW",
+      "city": "Taipei",
+      "org": "Google Cloud (asia-east1)",
+      "latency_ms": 246,
+      "priority": false,
+      "weight": 1
+    },
+    {
+      "ip": "168.95.1.1",
+      "geo_cc": "TW",
+      "city": "Taipei",
+      "org": "Chunghwa Telecom Co. Ltd.",
+      "latency_ms": 295,
+      "priority": false,
+      "weight": 1
+    },
+    {
+      "ip": "168.95.192.1",
+      "geo_cc": "TW",
+      "city": "Taipei",
+      "org": "Chunghwa Telecom Co. Ltd.",
+      "latency_ms": 302,
+      "priority": false,
+      "weight": 1
+    }
+  ]
+}
