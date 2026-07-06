@@ -78,7 +78,8 @@ def _stats_summary():
         f"unreachable={s['sites_unreachable']} challenges={s['challenges_skipped']} "
         f"ads_clicked={s['ads_clicked']} pages_with_ads={s['pages_with_ads']} "
         f"wd_errors={s['webdriver_errors']} recreated={s['sessions_recreated']} errors={s['errors']}"
-        f" noise={s['noise_requests']} harvested={s['domains_harvested']}"
+        f" noise={s['noise_requests']} doh={s['noise_doh']} "
+        f"stdns={s['noise_requests'] - s['noise_doh']} harvested={s['domains_harvested']}"
     )
 
 

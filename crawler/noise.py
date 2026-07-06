@@ -339,6 +339,14 @@ def harvest_domains(driver, browser_type):
             if delta > 0:
                 config.STATS['noise_requests'] += delta
             driver._noise_last_sent = sent
+            # Same monotonic-delta accounting for the DoH subset, so operators can
+            # see the real standard-vs-DoH split rather than the configured ratio.
+            doh = int(stats.get('doh') or 0)
+            last_doh = getattr(driver, '_noise_last_doh', 0)
+            doh_delta = doh - last_doh if doh >= last_doh else doh
+            if doh_delta > 0:
+                config.STATS['noise_doh'] += doh_delta
+            driver._noise_last_doh = doh
     except Exception as e:
         logger.debug('[%s] noise stats read failed: %s', browser_type, str(e)[:80])
 
