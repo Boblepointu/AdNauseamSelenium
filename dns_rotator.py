@@ -41,6 +41,19 @@ NODE_CONTAINERS = [c.strip() for c in os.getenv(
 ).split(',') if c.strip()]
 POOL_PATH = os.getenv('DNS_POOL_PATH', '/app/crawler/dns_resolvers.json')
 DOCKER_SOCK = os.getenv('DOCKER_SOCK', '/var/run/docker.sock')
+# The container image's HEALTHCHECK tests that this file was touched within 180s.
+# The rotator writes it once per cycle so "healthy" == "rotation loop is alive"
+# (it inherits the crawler image, which otherwise expects a heartbeat this sidecar
+# would never produce — leaving it perpetually "unhealthy").
+HEARTBEAT_FILE = os.getenv('HEARTBEAT_FILE', '/tmp/crawler_heartbeat')
+
+
+def _touch_heartbeat():
+    try:
+        with open(HEARTBEAT_FILE, 'w') as fh:
+            fh.write(str(time.time()))
+    except Exception:
+        pass
 
 _IPV4 = re.compile(r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$')
 
@@ -151,6 +164,7 @@ def main():
     pool = load_pool()
     reload_every = max(1, int(3600 / max(INTERVAL, 1)))  # reload the pool ~hourly
     cycle = 0
+    _touch_heartbeat()  # mark alive immediately so the healthcheck passes from boot
     while True:
         try:
             if pool:
@@ -171,7 +185,8 @@ def main():
                 pool = load_pool() or pool
         except Exception as e:
             logger.warning('rotation cycle error: %s', str(e)[:120])
-        time.sleep(INTERVAL)
+        _touch_heartbeat()  # liveness: refreshed every cycle; healthcheck flips
+        time.sleep(INTERVAL)                       # unhealthy if the loop wedges > 180s
 
 
 if __name__ == '__main__':
