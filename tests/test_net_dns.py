@@ -273,14 +273,14 @@ class TestOPNsenseClientSetForwarders:
         # search_forward returns one existing MARKER row (to be deleted) plus a
         # user's split-DNS row (must be left alone).
         return {
-            "/api/unbound/settings/search_forward": {
+            "/api/unbound/settings/searchForward": {
                 "rows": [
                     {"uuid": "old-1", "description": "adnauseam-netrot", "server": "5.5.5.5"},
                     {"uuid": "user-keep", "description": "my-split-dns", "server": "192.168.1.1"},
                 ],
                 "total": 2,
             },
-            "/api/unbound/settings/add_forward": {"result": "saved", "uuid": "new"},
+            "/api/unbound/settings/addForward": {"result": "saved", "uuid": "new"},
             "/api/unbound/service/reconfigure": {"status": "ok"},
         }
 
@@ -294,12 +294,12 @@ class TestOPNsenseClientSetForwarders:
         assert "1.1.1.1" in applied
         paths = rec.paths()
         # Enumerated existing entries.
-        assert any(p.endswith("/api/unbound/settings/search_forward") for p in paths)
+        assert any(p.endswith("/api/unbound/settings/searchForward") for p in paths)
         # Deleted ONLY our marked uuid, never the user's split-DNS row.
-        assert any(p.endswith("/api/unbound/settings/del_forward/old-1") for p in paths)
+        assert any(p.endswith("/api/unbound/settings/delForward/old-1") for p in paths)
         assert not any("user-keep" in p for p in paths)
         # Added one forward per applied IP.
-        add_calls = [b for m, u, b in rec.calls if u.endswith("/api/unbound/settings/add_forward")]
+        add_calls = [b for m, u, b in rec.calls if u.endswith("/api/unbound/settings/addForward")]
         assert len(add_calls) == len(applied)
         added_servers = {c["dot"]["server"] for c in add_calls}
         assert added_servers == set(applied)

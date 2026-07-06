@@ -277,7 +277,7 @@ class OPNsenseClient:
 
     def _search_forward(self):
         """Return the list of forward rows (each has ``uuid``+``description``)."""
-        status, data = self._request('POST', '/api/unbound/settings/search_forward', {})
+        status, data = self._request('POST', '/api/unbound/settings/searchForward', {})
         if status != 200 or not isinstance(data, dict):
             return []
         rows = data.get('rows', [])
@@ -295,13 +295,13 @@ class OPNsenseClient:
         ``{"result":"failed",...}``; only ``{"result":"saved"}`` means the row was
         actually created — so success is read from the BODY, not the status code.
         """
-        status, data = self._request('POST', '/api/unbound/settings/add_forward',
+        status, data = self._request('POST', '/api/unbound/settings/addForward',
                                      build_unbound_forward_payload(ip, self.marker))
         ok = status == 200 and isinstance(data, dict) and data.get('result') == 'saved'
         return ok, (data.get('uuid') if isinstance(data, dict) else None)
 
     def _del_forward(self, uuid):
-        status, data = self._request('POST', '/api/unbound/settings/del_forward/%s' % uuid, {})
+        status, data = self._request('POST', '/api/unbound/settings/delForward/%s' % uuid, {})
         return status == 200 and isinstance(data, dict) and data.get('result') in ('deleted', 'ok')
 
     def set_forwarders(self, ips):
