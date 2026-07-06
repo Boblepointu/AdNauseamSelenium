@@ -43,6 +43,8 @@ COPY crawl.py /app/crawl.py
 COPY persona_manager.py /app/persona_manager.py
 COPY build_noise_corpus.py /app/build_noise_corpus.py
 COPY dns_rotator.py /app/dns_rotator.py
+COPY opnsense.py /app/opnsense.py
+COPY net_dns_rotator.py /app/net_dns_rotator.py
 COPY crawler/ /app/crawler/
 COPY websites.txt /app/websites.txt
 
